@@ -209,7 +209,7 @@
     const exportFormatCancel = g('export-format-cancel');
     if (exportFormatConfirm) {
       exportFormatConfirm.addEventListener('click', function () {
-        const selected = exportFormatDialog ? exportFormatDialog.querySelector('input[name="export-format"]:checked') : null;
+        const selected = exportFormatDialog ? exportFormatDialog.querySelector('input[name="cons-export-format"]:checked') : null;
         const fmt = selected ? selected.value : 'JSON';
         performExportWithFormat(fmt);
         closeExportFormatDialog();
@@ -755,7 +755,7 @@
   function onExportToFile() {
     const dialog = g('export-format-dialog');
     if (dialog) {
-      const jsonRadio = dialog.querySelector('input[name="export-format"][value="JSON"]');
+      const jsonRadio = dialog.querySelector('input[name="cons-export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
