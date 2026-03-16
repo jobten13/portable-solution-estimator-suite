@@ -209,8 +209,8 @@
     const exportFormatCancel = g('export-format-cancel');
     if (exportFormatConfirm) {
       exportFormatConfirm.addEventListener('click', function () {
-        const selected = exportFormatDialog ? exportFormatDialog.querySelector('input[name="cons-export-format"]:checked') : null;
-        const fmt = selected ? selected.value : 'JSON';
+        const selected = document.querySelector('#cons-export-format-dialog input[name="cons-export-format"]:checked');
+        const fmt = (selected && selected.value) ? selected.value : 'JSON';
         performExportWithFormat(fmt);
         closeExportFormatDialog();
       });
@@ -756,13 +756,13 @@
     const dialog = g('export-format-dialog');
     if (dialog) {
       const jsonRadio = dialog.querySelector('input[name="cons-export-format"][value="JSON"]');
-      if (jsonRadio) jsonRadio.checked = true;
-      dialog.hidden = false;
+      dialog.removeAttribute('hidden');
       dialog.setAttribute('aria-hidden', 'false');
     }
   }
 
   function performExportWithFormat(fmt) {
+    console.log('performExportWithFormat called with fmt:', fmt);
     const format = (fmt && String(fmt).toUpperCase()) || 'JSON';
     const scenario = buildExportScenario();
     if (format === 'CSV') {
