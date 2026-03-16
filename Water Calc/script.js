@@ -689,7 +689,7 @@
   function onExportToFile() {
     const dialog = g('water-export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#water-export-format-dialog input[name="export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#water-export-format-dialog input[name="water-export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
@@ -940,7 +940,7 @@
     const exportFormatConfirm = g('water-export-format-confirm');
     const exportFormatCancel = g('water-export-format-cancel');
     function onExportFormatConfirm() {
-      const selected = document.querySelector('#water-export-format-dialog input[name="export-format"]:checked');
+      const selected = document.querySelector('#water-export-format-dialog input[name="water-export-format"]:checked');
       const fmt = selected ? selected.value : 'JSON';
       performExportWithFormat(fmt);
       closeExportFormatDialog();

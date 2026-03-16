@@ -1011,7 +1011,7 @@
   function exportScenarioToFile() {
     const dialog = $('#load-pro-export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#load-pro-export-format-dialog input[name="export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#load-pro-export-format-dialog input[name="load-pro-export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
@@ -1177,7 +1177,7 @@
     const exportFormatCancel = $('#load-pro-export-format-cancel');
     if (exportFormatConfirm) {
       exportFormatConfirm.addEventListener('click', () => {
-        const selected = document.querySelector('#load-pro-export-format-dialog input[name="export-format"]:checked');
+        const selected = document.querySelector('#load-pro-export-format-dialog input[name="load-pro-export-format"]:checked');
         const fmt = selected ? selected.value : 'JSON';
         performExportWithFormat(fmt);
         closeExportFormatDialog();

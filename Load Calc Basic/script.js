@@ -1136,7 +1136,7 @@
   function onExportToFile() {
     const dialog = document.getElementById('load-export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#load-export-format-dialog input[name="export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#load-export-format-dialog input[name="load-export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
@@ -1410,7 +1410,7 @@
     const exportFormatConfirm = document.getElementById('load-export-format-confirm');
     const exportFormatCancel = document.getElementById('load-export-format-cancel');
     function onExportFormatConfirm() {
-      const selected = document.querySelector('#load-export-format-dialog input[name="export-format"]:checked');
+      const selected = document.querySelector('#load-export-format-dialog input[name="load-export-format"]:checked');
       const fmt = selected ? selected.value : 'JSON';
       performExportWithFormat(fmt);
       closeExportFormatDialog();

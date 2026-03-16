@@ -288,7 +288,7 @@
     const exportFormatCancel = g('meds-export-format-cancel');
     if (exportFormatConfirm) {
       exportFormatConfirm.addEventListener('click', function () {
-        const selected = document.querySelector('#meds-export-format-dialog input[name="export-format"]:checked');
+        const selected = document.querySelector('#meds-export-format-dialog input[name="meds-export-format"]:checked');
         const fmt = selected ? selected.value : 'JSON';
         performExportWithFormat(fmt);
         closeExportFormatDialog();
@@ -989,7 +989,7 @@
   function onExportToFile() {
     const dialog = g('meds-export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#meds-export-format-dialog input[name="export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#meds-export-format-dialog input[name="meds-export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
