@@ -141,7 +141,7 @@
   font-size: 1.25em;
 }
 
-.water-calc .section-heading-row + .water-calc .help-popover { margin-top: -8px; margin-bottom: 12px; }
+.water-calc .section-heading-row + .help-popover { margin-top: -8px; margin-bottom: 12px; }
 
 .water-calc .help-icon {
   display: inline-flex;
