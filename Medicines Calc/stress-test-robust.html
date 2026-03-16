@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicines Calc - Stress Test Robust</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; background: #f3f5f8; color: #0f172a; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 20px; }
+    h1 { margin: 0 0 10px; font-size: 1.35rem; }
+    p { margin: 0 0 14px; color: #334155; }
+    button {
+      border: 0; background: #1e40af; color: #fff; border-radius: 8px;
+      padding: 10px 14px; font-weight: 600; cursor: pointer;
+    }
+    button:hover { background: #1d4ed8; }
+    #summary {
+      margin-top: 14px; padding: 10px 12px; border-radius: 8px;
+      background: #e2e8f0; font-weight: 600;
+    }
+    #results {
+      margin-top: 14px; background: #fff; border: 1px solid #dbe2ea;
+      border-radius: 10px; overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #eef2f7; text-align: left; vertical-align: top; }
+    th { background: #f8fafc; font-weight: 700; }
+    .pass { color: #166534; font-weight: 700; }
+    .fail { color: #b91c1c; font-weight: 700; }
+    .mono { font-family: Consolas, monospace; font-size: 0.85rem; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Medicines Calculator - Stress Test Robust</h1>
+    <p>
+      Standalone robustness checks for medication quantity logic: boundary behavior, monotonicity,
+      rounding/display consistency, and real-data sweeps using <code>PHARMA_ITEMS</code>.
+    </p>
+    <button id="run-btn" type="button">Run Robust Stress Test</button>
+    <div id="summary">Ready.</div>
+    <div id="results"></div>
+  </div>
+
+  <script src="consumables-lists.js"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      function near(a, b, tol) {
+        return Math.abs(a - b) <= (tol || 1e-9);
+      }
+
+      function qty(rate, days, beds, bufferPercent) {
+        var usage = Number(rate) || 0;
+        var d = Number(days) || 0;
+        var b = Number(beds) || 0;
+        var buf = Number(bufferPercent) || 0;
+        return d * b * usage * (1 + (buf / 100));
+      }
+
+      function rowTotal(rate, days, beds, bufferPercent) {
+        return Math.ceil(qty(rate, days, beds, bufferPercent));
+      }
+
+      function computeForItems(items, days, beds, bufferPercent) {
+        var out = [];
+        for (var i = 0; i < items.length; i++) {
+          var it = items[i];
+          out.push({
+            name: it.name,
+            usagePerDayPerBed: Number(it.usagePerDayPerBed) || 0,
+            quantityRaw: qty(it.usagePerDayPerBed, days, beds, bufferPercent),
+            quantityRounded: rowTotal(it.usagePerDayPerBed, days, beds, bufferPercent)
+          });
+        }
+        return out;
+      }
+
+      function sumRounded(rows) {
+        var t = 0;
+        for (var i = 0; i < rows.length; i++) t += rows[i].quantityRounded;
+        return t;
+      }
+
+      function seededRandom(seed) {
+        var s = seed >>> 0;
+        return function () {
+          s = (1664525 * s + 1013904223) >>> 0;
+          return s / 4294967296;
+        };
+      }
+
+      var tests = [];
+      function test(name, fn) { tests.push({ name: name, fn: fn }); }
+
+      test('Zero days returns zero quantities', function () {
+        return near(qty(1.25, 0, 200, 35), 0) && rowTotal(1.25, 0, 200, 35) === 0;
+      });
+
+      test('Zero beds returns zero quantities', function () {
+        return near(qty(0.75, 50, 0, 10), 0) && rowTotal(0.75, 50, 0, 10) === 0;
+      });
+
+      test('Base formula matches expected multiplication', function () {
+        var got = qty(2, 10, 3, 25); // 2 * 10 * 3 * 1.25 = 75
+        return near(got, 75);
+      });
+
+      test('Rounding behavior uses ceil for display totals', function () {
+        return rowTotal(0.3333, 1, 1, 0) === 1 &&
+          rowTotal(1.0, 1, 1, 0) === 1 &&
+          rowTotal(1.01, 1, 1, 0) === 2;
+      });
+
+      test('Monotonic: increasing days does not decrease quantity', function () {
+        var low = qty(0.42, 10, 40, 15);
+        var high = qty(0.42, 20, 40, 15);
+        return high >= low;
+      });
+
+      test('Monotonic: increasing beds does not decrease quantity', function () {
+        var low = qty(0.42, 20, 10, 15);
+        var high = qty(0.42, 20, 100, 15);
+        return high >= low;
+      });
+
+      test('Monotonic: increasing buffer does not decrease quantity', function () {
+        var low = qty(0.42, 20, 40, 0);
+        var high = qty(0.42, 20, 40, 30);
+        return high >= low;
+      });
+
+      test('Validation boundary values remain finite at max inputs', function () {
+        var q = qty(3.25, 3650, 10000, 100);
+        return isFinite(q) && q > 0;
+      });
+
+      test('Large mixed list computes finite rounded totals', function () {
+        var list = [];
+        for (var i = 0; i < 500; i++) {
+          list.push({ name: 'X' + i, usagePerDayPerBed: (i % 11) * 0.017 + 0.001 });
+        }
+        var rows = computeForItems(list, 365, 400, 20);
+        for (var j = 0; j < rows.length; j++) {
+          if (!isFinite(rows[j].quantityRaw) || !isFinite(rows[j].quantityRounded)) return false;
+          if (rows[j].quantityRounded < 0) return false;
+        }
+        return sumRounded(rows) > 0;
+      });
+
+      test('Property test (deterministic fuzz): monotonic and finite', function () {
+        var rand = seededRandom(123456789);
+        for (var i = 0; i < 1000; i++) {
+          var usage = rand() * 5;
+          var days = Math.floor(rand() * 3651);   // 0..3650
+          var beds = Math.floor(rand() * 10001);  // 0..10000
+          var buffer = rand() * 100;              // 0..100
+
+          var base = qty(usage, days, beds, buffer);
+          var moreDays = qty(usage, days + 1, beds, buffer);
+          var moreBeds = qty(usage, days, beds + 1, buffer);
+          var moreBuffer = qty(usage, days, beds, Math.min(100, buffer + 1));
+
+          if (!isFinite(base) || base < 0) return false;
+          if (moreDays < base || moreBeds < base || moreBuffer < base) return false;
+        }
+        return true;
+      });
+
+      function runRealDataSweep() {
+        var rows = [];
+        if (typeof PHARMA_ITEMS === 'undefined' || !Array.isArray(PHARMA_ITEMS)) {
+          rows.push({
+            name: '[Real data] PHARMA_ITEMS is available',
+            status: 'FAIL',
+            detail: 'PHARMA_ITEMS missing or not an array'
+          });
+          return rows;
+        }
+
+        var count = PHARMA_ITEMS.length;
+        var badName = 0;
+        var badRate = 0;
+        for (var i = 0; i < PHARMA_ITEMS.length; i++) {
+          var it = PHARMA_ITEMS[i];
+          if (!it || typeof it.name !== 'string' || it.name.trim() === '') badName++;
+          var rate = Number(it && it.usagePerDayPerBed);
+          if (!isFinite(rate) || rate < 0) badRate++;
+        }
+
+        rows.push({
+          name: '[Real data] List loaded and non-empty',
+          status: count > 0 ? 'PASS' : 'FAIL',
+          detail: 'items=' + count
+        });
+
+        rows.push({
+          name: '[Real data] Name and multiplier fields valid',
+          status: (badName === 0 && badRate === 0) ? 'PASS' : 'FAIL',
+          detail: 'badName=' + badName + ', badRate=' + badRate
+        });
+
+        var a = computeForItems(PHARMA_ITEMS, 30, 40, 10);
+        var b = computeForItems(PHARMA_ITEMS, 60, 40, 10);
+        var c = computeForItems(PHARMA_ITEMS, 30, 80, 10);
+        var d = computeForItems(PHARMA_ITEMS, 30, 40, 20);
+
+        var sumA = sumRounded(a);
+        var sumB = sumRounded(b);
+        var sumC = sumRounded(c);
+        var sumD = sumRounded(d);
+
+        rows.push({
+          name: '[Real data] Aggregate totals are finite/positive',
+          status: (isFinite(sumA) && sumA > 0) ? 'PASS' : 'FAIL',
+          detail: '30d/40b/10% rounded total=' + sumA
+        });
+
+        rows.push({
+          name: '[Real data] Monotonic aggregate days/beds/buffer',
+          status: (sumB >= sumA && sumC >= sumA && sumD >= sumA) ? 'PASS' : 'FAIL',
+          detail: 'days60=' + sumB + ', beds80=' + sumC + ', buffer20=' + sumD
+        });
+
+        var allRowMonotonic = true;
+        for (var j = 0; j < a.length; j++) {
+          if (b[j].quantityRaw < a[j].quantityRaw) { allRowMonotonic = false; break; }
+          if (c[j].quantityRaw < a[j].quantityRaw) { allRowMonotonic = false; break; }
+          if (d[j].quantityRaw < a[j].quantityRaw) { allRowMonotonic = false; break; }
+        }
+        rows.push({
+          name: '[Real data] Per-row monotonic invariants hold',
+          status: allRowMonotonic ? 'PASS' : 'FAIL',
+          detail: allRowMonotonic ? 'all rows monotonic' : 'found monotonic regression'
+        });
+
+        return rows;
+      }
+
+      function run() {
+        var out = document.getElementById('results');
+        var summary = document.getElementById('summary');
+        var rows = [];
+        var pass = 0;
+        var fail = 0;
+
+        for (var i = 0; i < tests.length; i++) {
+          var t = tests[i];
+          var ok = false;
+          var err = '';
+          try {
+            ok = !!t.fn();
+          } catch (e) {
+            ok = false;
+            err = e && e.message ? e.message : String(e);
+          }
+          if (ok) pass++; else fail++;
+          rows.push({ name: t.name, status: ok ? 'PASS' : 'FAIL', detail: err });
+        }
+
+        var realSweep = runRealDataSweep();
+        for (var k = 0; k < realSweep.length; k++) {
+          var rs = realSweep[k];
+          if (rs.status === 'PASS') pass++; else fail++;
+          rows.push(rs);
+        }
+
+        var html = '<table><thead><tr><th>Test</th><th>Status</th><th>Notes</th></tr></thead><tbody>';
+        for (var j = 0; j < rows.length; j++) {
+          html += '<tr>' +
+            '<td>' + rows[j].name + '</td>' +
+            '<td class="' + (rows[j].status === 'PASS' ? 'pass' : 'fail') + '">' + rows[j].status + '</td>' +
+            '<td class="mono">' + (rows[j].detail || '-') + '</td>' +
+          '</tr>';
+        }
+        html += '</tbody></table>';
+        out.innerHTML = html;
+
+        summary.textContent = 'Completed ' + rows.length + ' checks: ' + pass + ' passed, ' + fail + ' failed.';
+        summary.style.background = fail ? '#fee2e2' : '#dcfce7';
+        summary.style.color = fail ? '#991b1b' : '#166534';
+      }
+
+      document.getElementById('run-btn').addEventListener('click', run);
+    })();
+  </script>
+</body>
+</html>

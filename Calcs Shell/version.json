@@ -1,0 +1,91 @@
+{
+  "version": "1.0.9",
+  "lastUpdated": "2026-02-11T00:00:00.000Z",
+  "changelog": [
+    {
+      "version": "1.0.9",
+      "date": "2026-02-11T00:00:00.000Z",
+      "changes": [
+        "Restore point created under RestorePoints/2026-02-11",
+        "Placeholder behavior aligned across calcs (0 disappears on focus like Medicines); Consumables, Water, Load Basic extended to min-qty-filter, new-item-rate, potable/wastewater rates where applicable",
+        "UCD button styling centralised in shell.css (single source); all RestorePoint calcs synced to UC Davis blue/gold"
+      ]
+    },
+    {
+      "version": "1.0.8",
+      "date": "2026-03-12T00:00:00.000Z",
+      "changes": [
+        "Toolbar (nav) reordered: Consumables, Medicines, Water, Load Basic, Load Pro; default panel Consumables",
+        "Nav buttons given tooltips; README intro and docs updated to match tab order"
+      ]
+    },
+    {
+      "version": "1.0.7",
+      "date": "2026-03-12T00:00:00.000Z",
+      "changes": [
+        "UCD list buttons updated to UC Davis blue/gold styling (Consumables + Medicines)",
+        "Restore point created under RestorePoints/2026-03-12-UCD-Colors"
+      ]
+    },
+    {
+      "version": "1.0.6",
+      "date": "2026-03-12T00:00:00.000Z",
+      "changes": [
+        "Medicines: rename list data script to pharma-lists.js (separate from Consumables) and update references",
+        "Review_Packet folder created for external AI review",
+        "Restore point snapshot created under RestorePoints/2026-03-12"
+      ]
+    },
+    {
+      "version": "1.0.5",
+      "date": "2025-02-11T00:00:00.000Z",
+      "changes": [
+        "Load Calc Pro integrated into shell",
+        "Load Pro: full panel HTML with load-pro- prefixed IDs; ROOT/PREFIX, g(), ROOT_OR_DOC; toast (load-pro-toast-container), help popovers and guide modal scoped; Pro styles.css, guide-content.js, equipment-data.js, script.js linked"
+      ]
+    },
+    {
+      "version": "1.0.4",
+      "date": "2025-02-11T00:00:00.000Z",
+      "changes": [
+        "Medicines Calc integrated into shell",
+        "Medicines: full panel HTML with meds- prefixed IDs; ROOT/PREFIX, g() prefix-aware; help popovers meds-help-popover-*, toast meds-toast-container; Medicines styles.css, pharma-lists.js, script.js linked"
+      ]
+    },
+    {
+      "version": "1.0.3",
+      "date": "2025-02-11T00:00:00.000Z",
+      "changes": [
+        "Consumables Calc integrated into shell",
+        "Consumables: ROOT, g() scoped to panel; cons-help-popover-*, cons-toast-container; help/toast/last-saved/import scoped; consumables-lists.js + consumables.js linked"
+      ]
+    },
+    {
+      "version": "1.0.2",
+      "date": "2025-02-11T00:00:00.000Z",
+      "changes": [
+        "Water Calc integrated into shell",
+        "Water: ROOT/PREFIX, g() prefix-aware, water- prefixed panel HTML; toast and help scoped to ROOT; Water CSS and scripts (water-data.js, script.js) linked"
+      ]
+    },
+    {
+      "version": "1.0.1",
+      "date": "2025-02-11T00:00:00.000Z",
+      "changes": [
+        "README and version.json updated to track progress",
+        "Integration status table added to README; both files will be updated as each calc is integrated"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2025-02-11T00:00:00.000Z",
+      "changes": [
+        "Initial suite shell",
+        "Nav tabs and hash-based panel switching",
+        "Load Calc Basic integrated",
+        "Shell toast and version display",
+        "Version control (version.json + version-control.js) and README"
+      ]
+    }
+  ]
+}

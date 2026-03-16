@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-version" content="1.0.0">
+  <title>Load Calc Basic</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="version-control.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="banner">
+      <h1 class="banner-title">Load Calculator Basic</h1>
+      <p class="banner-subtitle">Field Hospital Calculator</p>
+    </header>
+
+    <div class="toolbar-wrap">
+      <div class="toolbar">
+        <button type="button" id="btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+        <span id="load-basic-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
+        <button type="button" id="btn-print" class="btn btn-print" title="Print the current view.">Print</button>
+        <button type="button" id="guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
+        <button type="button" id="btn-reset-qty" class="btn btn-delete" title="Set all equipment quantities to zero. Does not clear scenario name, notes, or generator/fuel inputs.">Reset Quantities</button>
+        <button type="button" id="btn-full-reset" class="btn btn-clear" title="Clear quantities, scenario name/notes, generator/fuel inputs, and search; remove custom rows.">Reset Worksheet</button>
+      </div>
+    </div>
+
+    <div class="content-wrap">
+    <section class="scenario-section">
+      <div class="section-heading-row">
+        <h3 class="scenario-section-title lb-section-heading" id="lb-heading-scenarios">Scenarios</h3>
+        <button type="button" class="help-icon" aria-label="Help for this section" data-help="scenarios">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-scenarios" role="tooltip" hidden>
+        <ul>
+          <li><strong>Save Scenario</strong> stores your current quantities, generator and fuel inputs, and notes in this browser.</li>
+          <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
+          <li><strong>Load</strong> restores a scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
+          <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+          <li><strong>Autosave controls</strong> are in the top toolbar: use <strong>Clear Autosaved State</strong> to remove recovery data without deleting named scenarios.</li>
+        </ul>
+      </div>
+      <div class="scenario-actions">
+        <button type="button" id="btn-save" class="btn btn-save" title="Save current quantities, scenario name/notes, and generator/fuel inputs to this browser.">Save Scenario</button>
+        <div class="load-scenario-group">
+          <select id="scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
+            <option value="">— Select scenario to load —</option>
+          </select>
+          <button type="button" id="btn-load" class="btn btn-load" title="Load the scenario selected in the dropdown.">Load Scenario</button>
+          <button type="button" id="btn-delete-scenario" class="btn btn-delete" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
+          <button type="button" id="btn-clear-scenarios" class="btn btn-clear" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
+        </div>
+        <button type="button" id="btn-import" class="btn btn-secondary" title="Restore scenario from an exported JSON file.">Import from file</button>
+        <button type="button" id="btn-export" class="btn btn-secondary" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+      </div>
+      <div id="export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+        <div class="export-format-panel">
+          <p class="export-format-title">Export format</p>
+          <div class="export-format-options">
+            <label class="export-format-option">
+              <input type="radio" name="export-format" value="JSON" checked>
+              <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
+            </label>
+            <label class="export-format-option">
+              <input type="radio" name="export-format" value="CSV">
+              <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
+            </label>
+          </div>
+          <div class="export-format-actions">
+            <button type="button" id="export-format-cancel" class="btn btn-secondary">Cancel</button>
+            <button type="button" id="export-format-confirm" class="btn btn-save">Export</button>
+          </div>
+        </div>
+      </div>
+      <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+      <input type="file" id="scenario-file-input" accept=".json" hidden>
+      <div class="scenario-meta">
+        <div class="field">
+          <label for="scenario-name">Scenario name</label>
+          <input type="text" id="scenario-name" placeholder="e.g. Field Hospital Bravo – 2 OR + 4 ICU beds">
+        </div>
+        <div class="field field-notes">
+          <label for="scenario-notes">Notes / assumptions</label>
+          <textarea id="scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <div class="sort-bar">
+      <label for="sort-equipment">Sort equipment:</label>
+      <select id="sort-equipment" class="sort-select" aria-label="Sort equipment list">
+        <option value="name-asc">Name A–Z</option>
+        <option value="name-desc">Name Z–A</option>
+        <option value="kw-desc">kW High to Low</option>
+        <option value="kw-asc">kW Low to High</option>
+      </select>
+      <button type="button" class="help-icon" aria-label="Help for this section" data-help="equipment-list">?</button>
+    </div>
+    <div class="help-popover" id="help-popover-equipment-list" role="tooltip" hidden>
+      <ul>
+        <li>Use <strong>Sort</strong> and <strong>Search</strong> to focus the list quickly.</li>
+        <li>Search only filters the view; all-items totals remain authoritative in the summary card.</li>
+        <li><strong>Filtered view load</strong> appears when search is active so you can compare visible subset vs overall total.</li>
+      </ul>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="search-equipment" class="search-box" placeholder="🔍 Search equipment by name..." aria-label="Search equipment list">
+    </div>
+
+    <div class="main-grid">
+      <div class="categories-wrap" id="categories-wrap"></div>
+      <aside class="sidebar">
+        <div class="section-heading-row">
+          <h2>Load Summary & Generator Sizing</h2>
+          <button type="button" class="help-icon" aria-label="Help for this section" data-help="summary">?</button>
+        </div>
+        <div class="help-popover" id="help-popover-summary" role="tooltip" hidden>
+          <ul>
+            <li><strong>Total connected load (all items):</strong> Master planning total across all equipment rows, including rows hidden by search.</li>
+            <li><strong>Filtered view load:</strong> Subtotal for only rows currently visible after search filtering.</li>
+            <li><strong>Generator sizing basis:</strong> Recommended generator uses the all-items total, not the filtered subtotal.</li>
+          </ul>
+        </div>
+        <div class="card summary-card">
+          <div class="row">
+            <span class="label" title="Master planning total across all equipment rows, including rows hidden by search.">Total connected load (all items)</span>
+            <span class="value value-lg" id="total-kw">0.00 kW</span>
+          </div>
+          <div class="row" id="filtered-kw-row" style="display: none;">
+            <span class="label" title="Subtotal for only the rows currently visible after search filtering.">Filtered view load</span>
+            <span class="value value-lg" id="filtered-kw">0.00 kW</span>
+          </div>
+          <div class="row">
+            <span class="label">Recommended generator (80% max load)</span>
+            <span class="value value-lg" id="recommended-kw">0.00 kW</span>
+          </div>
+          <p class="note">Generator sizing uses: <strong>Gen kW = Total Load / 0.8</strong> (80% loading rule). Filtered view load is for analysis only and does not replace the all-items planning total.</p>
+        </div>
+
+        <div class="section-heading-row">
+          <h2>Check Against Available Generator</h2>
+          <button type="button" class="help-icon" aria-label="Help for this section" data-help="capacity">?</button>
+        </div>
+        <div class="help-popover" id="help-popover-capacity" role="tooltip" hidden>
+          <ul>
+            <li>Enter available generator capacity in kW to compare against all-items load.</li>
+            <li>Status shows safe range, high load, or overload based on percentage used.</li>
+          </ul>
+        </div>
+        <div class="card capacity-card">
+          <div class="capacity-head">
+            <div class="status-pill" id="capacity-status">CHECK INPUTS</div>
+          </div>
+          <div class="capacity-fields">
+            <div class="field">
+              <label for="gen-capacity">Available generator capacity</label>
+              <div class="input-with-unit">
+                <input type="number" id="gen-capacity" min="0" step="10" placeholder="0">
+                <span>kW</span>
+              </div>
+            </div>
+            <div class="field">
+              <span class="label">% of available capacity used</span>
+              <div class="input-with-unit">
+                <span class="value" id="percent-used">0.00</span>
+                <span>%</span>
+              </div>
+            </div>
+          </div>
+          <p class="note">
+            <span class="color-ok">Green</span>: &lt; 80% (Within Safe Range)<br>
+            <span class="color-warn">Orange</span>: 80–100% (High Load)<br>
+            <span class="color-danger">Red</span>: &gt; 100% (Overload)
+          </p>
+        </div>
+
+        <div class="section-heading-row">
+          <h2>Fuel & Runtime Estimate</h2>
+          <button type="button" class="help-icon" aria-label="Help for this section" data-help="fuel">?</button>
+        </div>
+        <div class="help-popover" id="help-popover-fuel" role="tooltip" hidden>
+          <ul>
+            <li>Runtime estimate uses all-items total kW, entered fuel capacity, and load-adjusted fuel rate.</li>
+            <li>This is a planning estimate; validate with real generator performance data.</li>
+          </ul>
+        </div>
+        <div class="card fuel-card">
+          <div class="capacity-fields">
+            <div class="field">
+              <label for="fuel-capacity">Fuel Tank Capacity (Gallons)</label>
+              <div class="input-with-unit">
+                <input type="number" id="fuel-capacity" min="0" step="10" placeholder="0">
+                <span>Gallons</span>
+              </div>
+            </div>
+            <div class="field">
+              <span class="label">Consumption Rate (Gal/hr per kW)</span>
+              <div class="input-with-unit">
+                <span class="value" id="consumption-rate">0.00</span>
+                <span>Gal/hr per kW</span>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <span class="label">Approximate Runtime (Hours)</span>
+            <span class="value value-lg" id="runtime">0.0</span>
+          </div>
+          <p class="note">Rate adjusted by load: &lt; 25% | 25–50% | 50–75% | &gt; 75%.</p>
+          <p class="note">kW values are approximate. Confirm nameplate ratings and motor starting (kVA) with manufacturer data.</p>
+        </div>
+      </aside>
+    </div>
+    </div>
+
+    <footer class="footer disclaimer">
+      Disclaimer: This tool is a simplified estimator based on fixed typical values and industry standards (0.8 PF). Actual site conditions, motor starting currents (kVA surge), and equipment specifications MUST be verified by a qualified electrical engineer. Not for final design without expert review.
+      <span class="version-label" id="version-info">Version 1.0.0</span>
+    </footer>
+
+    <div id="guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
+      <div class="guide-modal-panel">
+        <div class="guide-modal-header">
+          <span class="guide-modal-title">User guide</span>
+          <button type="button" id="guide-modal-close" class="btn btn-secondary guide-modal-close" aria-label="Close user guide">Close</button>
+        </div>
+        <div id="guide-modal-body" class="guide-modal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="guide-content.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

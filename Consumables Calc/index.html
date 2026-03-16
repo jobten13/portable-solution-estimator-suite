@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="app-version" content="1.1.0">
+  <title>Field Hospital Calculator – Consumables Supply List</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="version-control.js"></script>
+</head>
+<body>
+  <div class="calc-app">
+    <header class="banner">
+      <h1 class="banner-title">Consumables Supply List</h1>
+      <p class="banner-subtitle">Field Hospital Calculator</p>
+    </header>
+
+    <div class="toolbar-wrap">
+      <div class="toolbar">
+        <button type="button" id="cons-clear-autosave-btn" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+        <span id="cons-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
+        <button type="button" class="btn btn-print" id="cons-print-btn">Print</button>
+        <button type="button" class="btn btn-ucd" id="cons-ward-list-btn">UCD Ward List</button>
+        <button type="button" class="btn btn-ucd" id="cons-icu-list-btn">UCD ICU List</button>
+        <button type="button" class="btn btn-clear-items" id="cons-clear-items-btn">Reset Worksheet</button>
+        <span id="cons-file-status" class="status-text">No list loaded</span>
+      </div>
+    </div>
+
+    <div class="main-content">
+    <section class="section scenario-section">
+      <div class="section-heading-row">
+        <h3 class="scenario-section-title">Scenarios</h3>
+        <button type="button" class="help-icon" aria-label="Help for this section" data-help="scenarios">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-scenarios" role="tooltip" hidden>
+        <ul>
+          <li><strong>Save Scenario</strong> stores your current list, deployment inputs, and notes in this browser.</li>
+          <li>Use a clear scenario name and notes so assumptions are easy to understand later.</li>
+          <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
+          <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+        </ul>
+      </div>
+      <div class="scenario-actions">
+        <button type="button" class="btn btn-save" id="cons-save-btn">Save Scenario</button>
+        <div class="load-scenario-group">
+          <select id="cons-scenario-select" class="scenario-select">
+            <option value="">— Select scenario to load —</option>
+          </select>
+          <button type="button" class="btn btn-load" id="cons-load-btn">Load Scenario</button>
+          <button type="button" class="btn btn-delete" id="cons-delete-btn">Delete Scenario</button>
+          <button type="button" class="btn btn-clear" id="cons-clear-btn">Clear all Scenarios</button>
+        </div>
+        <button type="button" class="btn btn-secondary" id="cons-import-btn">Import from file</button>
+        <button type="button" class="btn btn-secondary" id="cons-export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+      </div>
+      <div id="cons-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+        <div class="export-format-panel">
+          <p class="export-format-title">Export format</p>
+          <div class="export-format-options">
+            <label class="export-format-option">
+              <input type="radio" name="export-format" value="JSON" checked>
+              <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
+            </label>
+            <label class="export-format-option">
+              <input type="radio" name="export-format" value="CSV">
+              <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
+            </label>
+          </div>
+          <div class="export-format-actions">
+            <button type="button" id="cons-export-format-cancel" class="btn btn-secondary">Cancel</button>
+            <button type="button" id="cons-export-format-confirm" class="btn btn-save">Export</button>
+          </div>
+        </div>
+      </div>
+      <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+      <div class="scenario-meta">
+        <div class="field">
+          <label for="cons-scenario-name">Scenario name</label>
+          <input type="text" id="cons-scenario-name" placeholder="e.g. 30-day, 40 beds">
+        </div>
+        <div class="field field-notes">
+          <label for="cons-scenario-notes">Notes / assumptions</label>
+          <textarea id="cons-scenario-notes" rows="3" placeholder="Optional notes"></textarea>
+        </div>
+      </div>
+      <input type="file" id="cons-import-file-input" accept=".json" style="display: none;">
+      <div id="cons-button-feedback" class="button-feedback"></div>
+    </section>
+
+    <section class="section highlight-section">
+      <div class="section-heading-row">
+        <h3>Deployment Parameters</h3>
+        <button type="button" class="help-icon" aria-label="Help for this section" data-help="params">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-params" role="tooltip" hidden>
+        <ul>
+          <li><strong>Days:</strong> Expected length of deployment in days.</li>
+          <li><strong>Beds:</strong> Number of ward (or ICU) beds for this scenario.</li>
+          <li><strong>Buffer %:</strong> Extra percentage added to every quantity (e.g. 10 for 10%). Use for safety margin or wastage.</li>
+        </ul>
+      </div>
+      <div class="params-grid">
+        <div class="param-group">
+          <label for="cons-days">Expected Length of Deployment (Days):</label>
+          <input type="number" id="cons-days" min="0" placeholder="0">
+        </div>
+        <div class="param-group">
+          <label for="cons-beds">Expected Number of Beds:</label>
+          <input type="number" id="cons-beds" min="0" placeholder="0">
+        </div>
+        <div class="param-group">
+          <label for="cons-buffer">Buffer Percentage (%):</label>
+          <input type="number" id="cons-buffer" min="0" max="100" step="0.1" placeholder="0">
+          <small style="color: #666; font-size: 0.85em; margin-top: 5px;">Add percentage buffer to quantities (e.g., 10 for 10%)</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-heading-row">
+        <h3>Consumables Requirements</h3>
+        <button type="button" class="help-icon" aria-label="Help for this section" data-help="inventory">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-inventory" role="tooltip" hidden>
+        <ul>
+          <li><strong>Per day/Per bed:</strong> Usage rate per bed per day. Total quantity = days × beds × rate × (1 + buffer%).</li>
+          <li>Load the UCD Ward or ICU list. Sort and search to find items quickly.</li>
+          <li><strong>Min Qty</strong> is a view-only filter on total quantity and does not change saved data.</li>
+          <li>Use <strong>Add Item</strong> to add custom consumables. Any row can be deleted in this working scenario, and loading a UCD list restores the original baseline list.</li>
+        </ul>
+      </div>
+      <div class="sort-bar">
+        <label for="cons-sort-equipment">Sort:</label>
+        <select id="cons-sort-equipment" class="sort-select" aria-label="Sort consumables requirements">
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+          <option value="qty-desc">Total quantity High to Low</option>
+          <option value="qty-asc">Total quantity Low to High</option>
+        </select>
+        <label for="cons-min-qty-filter">Min Qty:</label>
+        <input type="number" id="cons-min-qty-filter" class="min-qty-filter" min="0" step="1" placeholder="off" aria-label="Show rows with total quantity at or above this value">
+        <label class="nonzero-filter-toggle">
+          <input type="checkbox" id="cons-nonzero-only-filter" aria-label="Show non-zero total quantity rows only">
+          Non-zero only
+        </label>
+      </div>
+      <div class="add-item-bar">
+        <input type="text" id="cons-new-item-name" class="add-item-name" placeholder="Custom item name">
+        <input type="number" id="cons-new-item-rate" class="add-item-rate" min="0" step="0.001" placeholder="Per day/per bed">
+        <button type="button" class="btn btn-secondary" id="cons-add-item-btn">Add Item</button>
+      </div>
+      <input type="text" id="cons-search" placeholder="🔍 Search items..." class="search-box">
+      <div class="filter-notice" id="cons-filter-notice" style="display:none;"></div>
+      <div class="items-info" id="cons-items-info">0 items loaded</div>
+      <div id="cons-consumables-container">
+        <p class="empty-message">Load the UCD Ward or ICU list above.</p>
+      </div>
+    </section>
+    </div>
+
+    <footer class="disclaimer">
+      <p>Simplified estimator. Verify quantities and assumptions with qualified personnel before deployment.</p>
+      <span class="version-label" id="version-info">Version 1.1.0</span>
+    </footer>
+  </div>
+
+  <script src="consumables-lists.js"></script>
+  <script src="consumables.js"></script>
+</body>
+</html>

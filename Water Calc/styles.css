@@ -1,0 +1,794 @@
+/* Water Requirements Calculator - aligned with Field Hospital Calculator unified UX */
+
+.water-calc .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  overflow: hidden;
+  min-height: auto;
+}
+
+/* Banner - same as other calculators */
+.water-calc .banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #1e40af 100%);
+  color: white;
+  padding: 24px 30px;
+  text-align: center;
+}
+
+.water-calc .banner-title {
+  font-size: 1.75em;
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.water-calc .banner-subtitle {
+  font-size: 1.4em;
+  font-weight: bold;
+  opacity: 0.95;
+  margin: 0;
+}
+
+.water-calc .version-info {
+  font-size: 0.85em;
+  opacity: 0.85;
+  margin: 4px 0 0;
+}
+
+/* Toolbar – directly under banner (suite alignment with Load Calc Pro) */
+.water-calc .toolbar-wrap {
+  padding: 12px 24px 8px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.water-calc .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.water-calc .toolbar .btn {
+  padding: 8px 12px;
+  font-size: 0.85em;
+}
+
+.water-calc .toolbar #btn-clear-autosave {
+  margin-right: 0;
+}
+
+.water-calc .toolbar-last-saved {
+  font-size: 0.8em;
+  color: #6b7280;
+  white-space: nowrap;
+  margin-left: 8px;
+  margin-right: auto;
+}
+
+/* Toast (autosave clear feedback) */
+.water-calc .toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.water-calc .toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  min-width: 200px;
+  max-width: 300px;
+  animation: toast-in 0.3s ease-out;
+}
+
+.water-calc .toast-success { background: #22c55e; }
+.water-calc .toast-info { background: #3b82f6; }
+.water-calc .toast-warning { background: #f59e0b; }
+.water-calc .toast-error { background: #dc2626; }
+
+.water-calc .toast.fade-out { animation: toast-out 0.3s ease-in forwards; }
+
+@keyframes toast-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toast-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+@media print {
+  .water-calc .banner {
+    background: white;
+    color: black;
+  }
+  .water-calc .banner-title,
+  .water-calc .banner-subtitle {
+    color: black;
+  }
+}
+
+.water-calc .main-content { padding: 24px 30px; }
+
+.water-calc .section { margin-bottom: 24px; }
+
+.water-calc .section-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.water-calc .section-heading-row h3 {
+  margin: 0;
+}
+
+.water-calc .section h3 {
+  color: #2563eb;
+  font-size: 1.25em;
+}
+
+.water-calc .section-heading-row + .water-calc .help-popover { margin-top: -8px; margin-bottom: 12px; }
+
+.water-calc .help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid #2563eb;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.water-calc .help-icon:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.water-calc .help-icon[aria-expanded="true"] {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.water-calc .help-popover {
+  padding: 12px 14px;
+  /* Translucent: ~70% opacity so content behind shows through */
+  background: rgba(241, 245, 249, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  font-size: 0.9rem;
+  color: #1e293b;
+  max-width: 420px;
+}
+
+.water-calc .help-popover[hidden] {
+  display: none !important;
+}
+
+.water-calc .help-popover ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.water-calc .help-popover li {
+  margin-bottom: 6px;
+}
+
+.water-calc .help-popover li:last-child {
+  margin-bottom: 0;
+}
+
+.water-calc .section-note {
+  color: #666;
+  font-size: 0.9em;
+  margin: -6px 0 12px;
+}
+
+.water-calc .param-hint {
+  display: block;
+  color: #666;
+  font-size: 0.85em;
+  margin-top: 4px;
+}
+
+.water-calc .highlight-section {
+  background: #e0f2fe;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 2px solid #0ea5e9;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.water-calc .highlight-section:hover {
+  background: #bae6fd;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+  border-color: #0284c7;
+}
+
+.water-calc .params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.water-calc .param-group {
+  padding: 8px 10px;
+  margin: -8px -10px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.water-calc .param-group:hover {
+  background: rgba(59, 130, 246, 0.08);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.water-calc .param-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #555;
+}
+
+.water-calc .param-group input {
+  padding: 10px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 1em;
+  background: white;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.water-calc .param-group input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.water-calc .param-group input.input-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+.water-calc .param-group input.input-error:focus {
+  outline: none;
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.water-calc .validation-error {
+  display: none;
+  color: #ef4444;
+  font-size: 0.85em;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.water-calc .breakdown-toggle {
+  margin-top: 6px;
+  padding: 4px 8px;
+  font-size: 0.85em;
+  background: transparent;
+  border: 1px solid #2563eb;
+  color: #2563eb;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.water-calc .breakdown-toggle:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.water-calc .breakdown-display {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  font-size: 0.9em;
+}
+
+.water-calc .breakdown-text {
+  margin: 0 0 6px;
+  color: #1e40af;
+}
+
+.water-calc .breakdown-note {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+.water-calc .water-use-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.water-calc .water-use-header h3 {
+  margin-bottom: 0;
+}
+
+.water-calc .unit-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.water-calc .unit-toggle .unit-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.95em;
+  color: #374151;
+}
+
+.water-calc .unit-toggle input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.water-calc .water-rates-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* Bladder cards */
+.water-calc .bladder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.water-calc .bladder-card {
+  padding: 16px;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  background: #fafafa;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.water-calc .bladder-card:hover {
+  background: #f0f9ff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #bae6fd;
+}
+
+.water-calc .bladder-card h4 {
+  margin: 0 0 12px;
+  font-size: 1.05em;
+  color: #374151;
+}
+
+.water-calc .bladder-potable { border-left: 4px solid #2563eb; }
+.water-calc .bladder-potable:hover { border-left-color: #2563eb; }
+
+.water-calc .bladder-wastewater { border-left: 4px solid #6b7280; }
+.water-calc .bladder-wastewater:hover { background: #f9fafb; border-color: #d1d5db; }
+
+
+/* Input sections: wrappers that contain form fields get hover for orientation */
+.water-calc .input-section {
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.water-calc .input-section:hover {
+  background: rgba(59, 130, 246, 0.06);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Scenarios panel – match Load Calc Pro */
+.water-calc .scenario-section {
+  background: #f8f9fa;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 20px;
+}
+
+.water-calc .scenario-section-title {
+  margin: 0 0 12px 0;
+  font-size: 1.1em;
+  color: #495057;
+}
+
+.water-calc .scenario-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  align-items: center;
+  margin-bottom: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.water-calc .scenario-storage-note {
+  font-size: 0.8em;
+  color: #6b7280;
+  margin: 0 0 12px;
+  font-style: italic;
+}
+
+.water-calc .scenario-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.water-calc .scenario-meta .field-notes {
+  grid-column: 1 / -1;
+}
+
+.water-calc .scenario-meta .field {
+  padding: 8px 10px;
+  margin: -8px -10px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.water-calc .scenario-meta .field:hover {
+  background: rgba(59, 130, 246, 0.08);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.water-calc .scenario-meta .field label,
+.water-calc .field label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.water-calc .scenario-meta input[type="text"],
+.water-calc .scenario-meta textarea {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.water-calc .scenario-meta textarea {
+  min-height: 60px;
+  resize: vertical;
+}
+
+.water-calc .load-scenario-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.water-calc .scenario-select {
+  padding: 7px 9px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.85em;
+  min-width: 170px;
+  background: white;
+}
+
+/* Buttons – suite standard (match Load Calc Pro / Consumables / CALCULATOR_ASSESSMENT_REPORT) */
+.water-calc .btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.water-calc .scenario-actions .btn {
+  padding: 8px 12px;
+  font-size: 0.85em;
+}
+
+/* Print: blue */
+.water-calc .btn-print {
+  background: #2563eb;
+  color: white;
+}
+.water-calc .btn-print:hover {
+  background: #1d4ed8;
+  color: white;
+}
+
+/* Save / Load scenario: green */
+.water-calc .btn-save,
+.water-calc .btn-load {
+  background: #10b981;
+  color: white;
+}
+.water-calc .btn-save:hover,
+.water-calc .btn-load:hover {
+  background: #059669;
+  color: white;
+}
+
+/* Delete / Reset: amber */
+.water-calc .btn-delete {
+  background: #f59e0b;
+  color: white;
+}
+.water-calc .btn-delete:hover {
+  background: #d97706;
+  color: white;
+}
+
+/* Clear all / destructive: red */
+.water-calc .btn-clear {
+  background: #ef4444;
+  color: white;
+}
+.water-calc .btn-clear:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* Import / Export: gray */
+.water-calc .btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+.water-calc .btn-secondary:hover {
+  background: #4b5563;
+  color: white;
+}
+
+/* Disabled: Load/Delete/Clear when no scenarios; opacity 0.85 keeps colors visible */
+.water-calc .btn:disabled {
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.water-calc .button-feedback {
+  margin-top: 10px;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-weight: 600;
+  min-height: 20px;
+  transition: opacity 0.3s, transform 0.3s;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.water-calc .button-feedback.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.water-calc .button-feedback.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.water-calc .button-feedback.info {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #2563eb;
+}
+
+.water-calc .disclaimer {
+  margin-top: auto;
+  padding: 16px 30px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  text-align: center;
+}
+
+.water-calc .version-label {
+  display: block;
+  font-size: 0.75em;
+  color: #d1d5db;
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* Results */
+.water-calc .results-section h3 { margin-bottom: 16px; }
+
+.water-calc .results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.water-calc .result-card {
+  padding: 16px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.water-calc .result-card:hover {
+  background: #eff6ff;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.12);
+  border-color: #93c5fd;
+}
+
+.water-calc .result-card h4 {
+  margin: 0 0 12px;
+  font-size: 1.05em;
+  color: #1e40af;
+}
+
+.water-calc .result-row {
+  margin-bottom: 8px;
+  font-size: 0.95em;
+}
+
+.water-calc .result-row span { color: #64748b; }
+
+.water-calc #out-mains-status.mains-status-ok {
+  color: #065f46;
+  font-weight: 700;
+}
+
+.water-calc #out-mains-status.mains-status-warn {
+  color: #b45309;
+  font-weight: 700;
+}
+
+.water-calc #out-mains-status.mains-status-danger {
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+.water-calc .delivery-row {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.water-calc .schedule-note {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  font-size: 0.9em;
+  color: #92400e;
+}
+
+/* Export format dialog (radio choice) */
+.water-calc .export-format-dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.water-calc .export-format-dialog[hidden] { display: none !important; }
+.water-calc .export-format-panel {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 18px 22px;
+  min-width: 280px;
+}
+.water-calc .export-format-title { margin: 0 0 12px; font-size: 1rem; font-weight: 600; }
+.water-calc .export-format-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.water-calc .export-format-option {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  cursor: pointer;
+}
+.water-calc .export-format-option input { margin: 0; }
+.water-calc .export-format-hint { font-size: 0.85em; color: #6b7280; }
+.water-calc .export-format-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media print {
+  .water-calc .toolbar-wrap,
+  .water-calc .scenario-section,
+  .water-calc .btn,
+  .water-calc .scenario-select,
+  .water-calc .help-icon,
+  .water-calc .help-popover,
+  .water-calc .breakdown-toggle,
+  .water-calc #breakdown-display,
+  .water-calc .export-format-dialog { display: none !important; }
+
+  /* Estimated Totals & Schedule: keep on one page */
+  .water-calc .results-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .water-calc .results-section .results-grid,
+  .water-calc .results-section .schedule-note {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Deployment parameters: fix alignment for print */
+  .water-calc .highlight-section {
+    padding: 12px 16px;
+    break-inside: avoid;
+  }
+  .water-calc .highlight-section .params-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(140px, 1fr));
+    gap: 16px 24px;
+    align-items: start;
+  }
+  .water-calc .highlight-section .param-group {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .water-calc .highlight-section .param-group label {
+    margin-bottom: 4px;
+    min-height: 2.5em;
+    display: flex;
+    align-items: flex-start;
+  }
+  .water-calc .highlight-section .param-group input {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 8px;
+    border: 1px solid #333;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin-top: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  .water-calc .scenario-meta {
+    grid-template-columns: 1fr;
+  }
+}

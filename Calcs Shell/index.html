@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Field Hospital Calculator Suite</title>
+  <link rel="stylesheet" href="../Load Calc Basic/styles.css">
+  <link rel="stylesheet" href="../Load Calc Pro/styles.css">
+  <link rel="stylesheet" href="../Water Calc/styles.css">
+  <link rel="stylesheet" href="../Consumables Calc/styles.css">
+  <link rel="stylesheet" href="../Medicines Calc/styles.css">
+  <link rel="stylesheet" href="shell.css">
+  <script src="version-control.js"></script>
+</head>
+<body>
+  <div class="shell-app">
+    <header class="shell-header">
+      <h1 class="shell-title">Field Hospital Calculator Suite</h1>
+      <nav class="shell-nav" aria-label="Calculator selection">
+        <button type="button" class="shell-nav-btn" data-panel="panel-consumables" title="Consumables calculator" aria-label="Consumables calculator">Consumables</button>
+        <button type="button" class="shell-nav-btn" data-panel="panel-medications" title="Medicines calculator" aria-label="Medicines calculator">Medicines</button>
+        <button type="button" class="shell-nav-btn" data-panel="panel-water" title="Water calculator" aria-label="Water calculator">Water</button>
+        <button type="button" class="shell-nav-btn" data-panel="panel-load-calc" title="Load calculator (basic)" aria-label="Load calculator (basic)">Load Basic</button>
+        <button type="button" class="shell-nav-btn" data-panel="panel-load-pro" title="Load calculator (pro)" aria-label="Load calculator (pro)">Load Pro</button>
+      </nav>
+    </header>
+
+    <main class="shell-main">
+      <div id="panel-load-calc" class="load-basic-calc calc-panel" hidden>
+        <div class="app">
+          <header class="banner">
+            <h1 class="banner-title">Load Calculator Basic</h1>
+            <p class="banner-subtitle">Field Hospital Calculator</p>
+          </header>
+          <div class="toolbar-wrap">
+            <div class="toolbar">
+              <button type="button" id="load-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <span id="load-load-basic-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
+              <button type="button" id="load-btn-print" class="btn btn-print" title="Print the current view.">Print</button>
+              <button type="button" id="load-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
+              <button type="button" id="load-btn-reset-qty" class="btn btn-delete" title="Set all equipment quantities to zero. Does not clear scenario name, notes, or generator/fuel inputs.">Reset Quantities</button>
+              <button type="button" id="load-btn-full-reset" class="btn btn-clear" title="Clear quantities, scenario name/notes, generator/fuel inputs, and search; remove custom rows.">Reset Worksheet</button>
+            </div>
+          </div>
+          <div class="content-wrap">
+            <section class="scenario-section">
+              <div class="section-heading-row">
+                <h3 class="scenario-section-title lb-section-heading" id="load-lb-heading-scenarios">Scenarios</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="scenarios">?</button>
+              </div>
+              <div class="help-popover" id="load-help-popover-scenarios" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Save Scenario</strong> stores your current quantities, generator and fuel inputs, and notes in this browser.</li>
+                  <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
+                  <li><strong>Load</strong> restores a scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
+                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+                  <li><strong>Autosave controls</strong> are in the top toolbar: use <strong>Clear Autosaved State</strong> to remove recovery data without deleting named scenarios.</li>
+                </ul>
+              </div>
+              <div class="scenario-actions">
+                <button type="button" id="load-btn-save" class="btn btn-save" title="Save current quantities, scenario name/notes, and generator/fuel inputs to this browser.">Save Scenario</button>
+                <div class="load-scenario-group">
+                  <select id="load-scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
+                    <option value="">— Select scenario to load —</option>
+                  </select>
+                  <button type="button" id="load-btn-load" class="btn btn-load" title="Load the scenario selected in the dropdown.">Load Scenario</button>
+                  <button type="button" id="load-btn-delete-scenario" class="btn btn-delete" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
+                  <button type="button" id="load-btn-clear-scenarios" class="btn btn-clear" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
+                </div>
+                <button type="button" id="load-btn-import" class="btn btn-secondary" title="Restore scenario from an exported JSON file.">Import from file</button>
+                <button type="button" id="load-btn-export" class="btn btn-secondary" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+              </div>
+              <div id="load-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+                <div class="export-format-panel">
+                  <p class="export-format-title">Export format</p>
+                  <div class="export-format-options">
+                    <label class="export-format-option">
+                      <input type="radio" name="load-export-format" value="JSON" checked>
+                      <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
+                    </label>
+                    <label class="export-format-option">
+                      <input type="radio" name="load-export-format" value="CSV">
+                      <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
+                    </label>
+                  </div>
+                  <div class="export-format-actions">
+                    <button type="button" id="load-export-format-cancel" class="btn btn-secondary">Cancel</button>
+                    <button type="button" id="load-export-format-confirm" class="btn btn-save">Export</button>
+                  </div>
+                </div>
+              </div>
+              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <input type="file" id="load-scenario-file-input" accept=".json" hidden>
+              <div class="scenario-meta">
+                <div class="field">
+                  <label for="load-scenario-name">Scenario name</label>
+                  <input type="text" id="load-scenario-name" placeholder="e.g. Field Hospital Bravo – 2 OR + 4 ICU beds">
+                </div>
+                <div class="field field-notes">
+                  <label for="load-scenario-notes">Notes / assumptions</label>
+                  <textarea id="load-scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
+                </div>
+              </div>
+            </section>
+            <div class="sort-bar">
+              <label for="load-sort-equipment">Sort equipment:</label>
+              <select id="load-sort-equipment" class="sort-select" aria-label="Sort equipment list">
+                <option value="name-asc">Name A–Z</option>
+                <option value="name-desc">Name Z–A</option>
+                <option value="kw-desc">kW High to Low</option>
+                <option value="kw-asc">kW Low to High</option>
+              </select>
+              <button type="button" class="help-icon" aria-label="Help for this section" data-help="equipment-list">?</button>
+            </div>
+            <div class="help-popover" id="load-help-popover-equipment-list" role="tooltip" hidden>
+              <ul>
+                <li>Use <strong>Sort</strong> and <strong>Search</strong> to focus the list quickly.</li>
+                <li>Search only filters the view; all-items totals remain authoritative in the summary card.</li>
+                <li><strong>Filtered view load</strong> appears when search is active so you can compare visible subset vs overall total.</li>
+              </ul>
+            </div>
+            <div class="search-wrap">
+              <input type="text" id="load-search-equipment" class="search-box" placeholder="🔍 Search equipment by name..." aria-label="Search equipment list">
+            </div>
+            <div class="main-grid">
+              <div class="categories-wrap" id="load-categories-wrap"></div>
+              <aside class="sidebar">
+                <div class="section-heading-row">
+                  <h2>Load Summary &amp; Generator Sizing</h2>
+                  <button type="button" class="help-icon" aria-label="Help for this section" data-help="summary">?</button>
+                </div>
+                <div class="help-popover" id="load-help-popover-summary" role="tooltip" hidden>
+                  <ul>
+                    <li><strong>Total connected load (all items):</strong> Master planning total across all equipment rows, including rows hidden by search.</li>
+                    <li><strong>Filtered view load:</strong> Subtotal for only rows currently visible after search filtering.</li>
+                    <li><strong>Generator sizing basis:</strong> Recommended generator uses the all-items total, not the filtered subtotal.</li>
+                  </ul>
+                </div>
+                <div class="card summary-card">
+                  <div class="row">
+                    <span class="label" title="Master planning total across all equipment rows, including rows hidden by search.">Total connected load (all items)</span>
+                    <span class="value value-lg" id="load-total-kw">0.00 kW</span>
+                  </div>
+                  <div class="row" id="load-filtered-kw-row" style="display: none;">
+                    <span class="label" title="Subtotal for only the rows currently visible after search filtering.">Filtered view load</span>
+                    <span class="value value-lg" id="load-filtered-kw">0.00 kW</span>
+                  </div>
+                  <div class="row">
+                    <span class="label">Recommended generator (80% max load)</span>
+                    <span class="value value-lg" id="load-recommended-kw">0.00 kW</span>
+                  </div>
+                  <p class="note">Generator sizing uses: <strong>Gen kW = Total Load / 0.8</strong> (80% loading rule). Filtered view load is for analysis only and does not replace the all-items planning total.</p>
+                </div>
+                <div class="section-heading-row">
+                  <h2>Check Against Available Generator</h2>
+                  <button type="button" class="help-icon" aria-label="Help for this section" data-help="capacity">?</button>
+                </div>
+                <div class="help-popover" id="load-help-popover-capacity" role="tooltip" hidden>
+                  <ul>
+                    <li>Enter available generator capacity in kW to compare against all-items load.</li>
+                    <li>Status shows safe range, high load, or overload based on percentage used.</li>
+                  </ul>
+                </div>
+                <div class="card capacity-card">
+                  <div class="capacity-head">
+                    <div class="status-pill" id="load-capacity-status">CHECK INPUTS</div>
+                  </div>
+                  <div class="capacity-fields">
+                    <div class="field">
+                      <label for="load-gen-capacity">Available generator capacity</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="load-gen-capacity" min="0" step="10" placeholder="0">
+                        <span>kW</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <span class="label">% of available capacity used</span>
+                      <div class="input-with-unit">
+                        <span class="value" id="load-percent-used">0.00</span>
+                        <span>%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="note">
+                    <span class="color-ok">Green</span>: &lt; 80% (Within Safe Range)<br>
+                    <span class="color-warn">Orange</span>: 80–100% (High Load)<br>
+                    <span class="color-danger">Red</span>: &gt; 100% (Overload)
+                  </p>
+                </div>
+                <div class="section-heading-row">
+                  <h2>Fuel &amp; Runtime Estimate</h2>
+                  <button type="button" class="help-icon" aria-label="Help for this section" data-help="fuel">?</button>
+                </div>
+                <div class="help-popover" id="load-help-popover-fuel" role="tooltip" hidden>
+                  <ul>
+                    <li>Runtime estimate uses all-items total kW, entered fuel capacity, and load-adjusted fuel rate.</li>
+                    <li>This is a planning estimate; validate with real generator performance data.</li>
+                  </ul>
+                </div>
+                <div class="card fuel-card">
+                  <div class="capacity-fields">
+                    <div class="field">
+                      <label for="load-fuel-capacity">Fuel Tank Capacity (Gallons)</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="load-fuel-capacity" min="0" step="10" placeholder="0">
+                        <span>Gallons</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <span class="label">Consumption Rate (Gal/hr per kW)</span>
+                      <div class="input-with-unit">
+                        <span class="value" id="load-consumption-rate">0.00</span>
+                        <span>Gal/hr per kW</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <span class="label">Approximate Runtime (Hours)</span>
+                    <span class="value value-lg" id="load-runtime">0.0</span>
+                  </div>
+                  <p class="note">Rate adjusted by load: &lt; 25% | 25–50% | 50–75% | &gt; 75%.</p>
+                  <p class="note">kW values are approximate. Confirm nameplate ratings and motor starting (kVA) with manufacturer data.</p>
+                </div>
+              </aside>
+            </div>
+          </div>
+          <footer class="footer disclaimer">
+            Disclaimer: This tool is a simplified estimator based on fixed typical values and industry standards (0.8 PF). Actual site conditions, motor starting currents (kVA surge), and equipment specifications MUST be verified by a qualified electrical engineer. Not for final design without expert review.
+            <span class="version-label" id="load-version-info">Version 1.0.0</span>
+          </footer>
+          <div id="load-guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
+            <div class="guide-modal-panel">
+              <div class="guide-modal-header">
+                <span class="guide-modal-title">User guide</span>
+                <button type="button" id="load-guide-modal-close" class="btn btn-secondary guide-modal-close" aria-label="Close user guide">Close</button>
+              </div>
+              <div id="load-guide-modal-body" class="guide-modal-body"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panel-load-pro" class="load-pro-calc calc-panel" hidden>
+        <div class="calc-app">
+          <header class="banner">
+            <h1 class="banner-title">Load Calculator Pro</h1>
+            <p class="banner-subtitle">Field Hospital Calculator</p>
+          </header>
+          <div class="toolbar-wrap">
+            <div class="toolbar">
+              <button type="button" id="load-pro-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <span id="load-pro-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
+              <button type="button" id="load-pro-print-summary-btn" class="btn btn-print" title="Print the current view.">Print</button>
+              <button type="button" id="load-pro-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
+              <button type="button" id="load-pro-reset-btn" class="btn btn-delete" title="Set all equipment quantities to zero. Does not clear scenario name, notes, or generator/fuel inputs.">Reset Quantities</button>
+              <button type="button" id="load-pro-clear-sheet-btn" class="btn btn-clear" title="Clear quantities, kW/PF to defaults, generator/fuel inputs, and search; remove custom rows.">Reset Worksheet</button>
+            </div>
+          </div>
+          <input type="file" id="load-pro-load-scenario-file" accept="application/json" hidden>
+          <div class="content-wrap">
+            <section class="scenario-section">
+              <div class="section-heading-row">
+                <h3 class="scenario-section-title">Scenarios</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="scenarios">?</button>
+              </div>
+              <div class="help-popover" id="load-pro-help-popover-scenarios" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Save Scenario</strong> stores your current table values, generator inputs, and notes in this browser.</li>
+                  <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
+                  <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
+                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+                  <li><strong>Autosave controls</strong> are in the top toolbar: use <strong>Clear Autosaved State</strong> to remove recovery data without deleting named scenarios.</li>
+                </ul>
+              </div>
+              <div class="scenario-actions">
+                <button type="button" id="load-pro-save-scenario-btn" class="btn btn-save" title="Save current quantities, kW/PF, custom rows, and generator/fuel inputs to this browser.">Save Scenario</button>
+                <div class="load-scenario-group">
+                  <select id="load-pro-scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
+                    <option value="">— Select scenario to load —</option>
+                  </select>
+                  <button type="button" id="load-pro-load-scenario-btn" class="btn btn-load" title="Load the scenario selected in the dropdown.">Load Scenario</button>
+                  <button type="button" id="load-pro-delete-scenario-btn" class="btn btn-delete" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
+                  <button type="button" id="load-pro-clear-scenarios-btn" class="btn btn-clear" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
+                </div>
+                <button type="button" id="load-pro-import-file-btn" class="btn btn-secondary" title="Restore scenario from an exported JSON file.">Import from file</button>
+                <button type="button" id="load-pro-export-file-btn" class="btn btn-secondary" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+              </div>
+              <div id="load-pro-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+                <div class="export-format-panel">
+                  <p class="export-format-title">Export format</p>
+                  <div class="export-format-options">
+                    <label class="export-format-option">
+                      <input type="radio" name="load-pro-export-format" value="JSON" checked>
+                      <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
+                    </label>
+                    <label class="export-format-option">
+                      <input type="radio" name="load-pro-export-format" value="CSV">
+                      <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
+                    </label>
+                  </div>
+                  <div class="export-format-actions">
+                    <button type="button" id="load-pro-export-format-cancel" class="btn btn-secondary">Cancel</button>
+                    <button type="button" id="load-pro-export-format-confirm" class="btn btn-save">Export</button>
+                  </div>
+                </div>
+              </div>
+              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <div class="scenario-meta">
+                <div class="field">
+                  <label for="load-pro-scenario-name">Scenario name</label>
+                  <input type="text" id="load-pro-scenario-name" placeholder="e.g. Field Hospital Bravo – 2 OR + 4 ICU beds">
+                </div>
+                <div class="field field-notes">
+                  <label for="load-pro-scenario-notes">Notes / assumptions</label>
+                  <textarea id="load-pro-scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
+                </div>
+              </div>
+            </section>
+            <div class="sort-bar">
+              <label for="load-pro-sort-equipment">Sort equipment:</label>
+              <select id="load-pro-sort-equipment" class="sort-select" aria-label="Sort equipment list">
+                <option value="name-asc">Name A–Z</option>
+                <option value="name-desc">Name Z–A</option>
+                <option value="kw-desc">kW High to Low</option>
+                <option value="kw-asc">kW Low to High</option>
+                <option value="kva-peak-desc">kVA Peak High to Low</option>
+                <option value="kva-peak-asc">kVA Peak Low to High</option>
+              </select>
+              <button type="button" class="help-icon" aria-label="Help for this section" data-help="equipment-list">?</button>
+            </div>
+            <div class="help-popover" id="load-pro-help-popover-equipment-list" role="tooltip" hidden>
+              <ul>
+                <li>Use <strong>Sort</strong> and <strong>Search</strong> to focus rows quickly.</li>
+                <li>Main totals remain all-items values; filtered subtotals appear only when search is active.</li>
+                <li>Category rows can be expanded/collapsed and reset independently.</li>
+              </ul>
+            </div>
+            <div class="search-wrap">
+              <input type="text" id="load-pro-search-equipment" class="search-box" placeholder="🔍 Search equipment by name..." aria-label="Search equipment list">
+            </div>
+            <div class="table-note">
+              Running kW is continuous power. PF (power factor) matters for motor/non-linear loads (default 1.0 for resistive/IT). Peak kVA drives generator capacity.
+            </div>
+            <div id="load-pro-filter-notice" class="filter-notice" style="display:none;"></div>
+            <div class="main-grid">
+              <div class="categories-column" id="load-pro-categories-column"></div>
+              <aside class="sidebar">
+                <div class="section-heading-row">
+                  <h2>Load calculation summary</h2>
+                  <button type="button" class="help-icon" aria-label="Help for this section" data-help="summary">?</button>
+                </div>
+                <div class="help-popover" id="load-pro-help-popover-summary" role="tooltip" hidden>
+                  <ul>
+                    <li><strong>kVA vs kW:</strong> Running kVA = kW ÷ power factor (PF). Resistive/IT loads use PF 1.0; motors use lower PF.</li>
+                    <li><strong>Peak starting kVA:</strong> Motors can draw 4× running kVA at start. Generator must meet this peak.</li>
+                    <li><strong>Totals shown:</strong> Main totals are all items. When search is active, filtered-view subtotals are shown for analysis.</li>
+                    <li>Recommended size uses safety factor ÷0.8. Final generator must meet both peak kVA and recommended kVA.</li>
+                  </ul>
+                </div>
+                <div class="card summary-card">
+                  <div class="summary-row">
+                    <span class="summary-label">Total running load (kW, all items)</span>
+                    <span class="summary-value large" id="load-pro-total-kw">0.00</span>
+                  </div>
+                  <div class="summary-row main-result">
+                    <span class="summary-label">Total running load (kVA, all items)</span>
+                    <span class="summary-value large" id="load-pro-total-kva">0.00</span>
+                  </div>
+                  <div class="summary-row small" id="load-pro-filtered-kw-row" style="display:none;">
+                    <span class="summary-label">Filtered view load (kW)</span>
+                    <span class="summary-value" id="load-pro-filtered-kw">0.00</span>
+                  </div>
+                  <div class="summary-row small" id="load-pro-filtered-kva-row" style="display:none;">
+                    <span class="summary-label">Filtered view load (kVA)</span>
+                    <span class="summary-value" id="load-pro-filtered-kva">0.00</span>
+                  </div>
+                  <div class="summary-row main-result">
+                    <span class="summary-label summary-label-critical">Peak starting kVA (critical)</span>
+                    <span class="summary-value large critical" id="load-pro-peak-kva">0.00</span>
+                  </div>
+                  <p class="note">This drives the minimum instantaneous generator rating.</p>
+                  <hr class="card-divider">
+                  <div class="summary-row small">
+                    <span class="summary-label">Safety factor for continuous load</span>
+                    <span class="summary-value">÷ 0.8 (kW/PF)</span>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">Recommended generator size (kVA)</span>
+                    <span class="summary-value" id="load-pro-recommended-kva">0.00</span>
+                  </div>
+                  <p class="note">Final size must meet both peak kVA and recommended kVA.</p>
+                </div>
+                <div class="section-heading-row">
+                  <h2>Generator capacity check</h2>
+                  <button type="button" class="help-icon" aria-label="Help for this section" data-help="capacity">?</button>
+                </div>
+                <div class="help-popover" id="load-pro-help-popover-capacity" role="tooltip" hidden>
+                  <ul>
+                    <li>Capacity status uses all-items running load and peak-start check.</li>
+                    <li><strong>ADEQUATE MARGIN</strong> means generator size covers running and peak-start needs.</li>
+                    <li><strong>PEAK START FAIL</strong> means motor-start demand exceeds generator instantaneous capability.</li>
+                  </ul>
+                </div>
+                <div class="card capacity-card">
+                  <div class="capacity-header">
+                    <h3>Required capacity check</h3>
+                    <div id="load-pro-capacity-status-pill" class="status-pill status-grey">CHECK INPUTS</div>
+                  </div>
+                  <div class="capacity-fields">
+                    <div class="field">
+                      <label for="load-pro-available-kva">Actual generator size (kVA)</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="load-pro-available-kva" placeholder="0" min="0" step="0.01">
+                        <span>kVA</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <span class="label">kVA margin (remaining kVA)</span>
+                      <div class="input-with-unit">
+                        <span class="value" id="load-pro-kva-margin">0.00</span>
+                        <span>kVA</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="note">Margin = generator size − total running kVA.</p>
+                </div>
+                <div class="section-heading-row fuel-runtime-heading">
+                  <h2>Fuel & runtime estimate</h2>
+                  <button type="button" class="help-icon" aria-label="Help for this section" data-help="fuel-runtime">?</button>
+                </div>
+                <div class="help-popover" id="load-pro-help-popover-fuel-runtime" role="tooltip" hidden>
+                  <ul>
+                    <li>Runtime is estimated from total running kW, fuel tank gallons, and entered consumption rate.</li>
+                    <li>This is a planning estimate; validate with generator-specific performance curves when available.</li>
+                  </ul>
+                </div>
+                <div class="card runtime-card">
+                  <div class="capacity-fields">
+                    <div class="field">
+                      <label for="load-pro-fuel-capacity">Fuel tank capacity</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="load-pro-fuel-capacity" placeholder="0" min="0" step="1">
+                        <span>Gallons</span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="load-pro-fuel-rate-per-kw">Consumption (per kW)</label>
+                      <div class="input-with-unit">
+                        <input type="number" id="load-pro-fuel-rate-per-kw" placeholder="0" min="0" step="0.01">
+                        <span>Gal/hr per kW</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="summary-row">
+                    <span class="summary-label">Approximate runtime</span>
+                    <span class="summary-value large" id="load-pro-approximate-runtime">0.0</span>
+                    <span>hours</span>
+                  </div>
+                  <p class="note">Based on total running kW. Actual runtime varies with load and conditions.</p>
+                </div>
+                <div class="footer-note">
+                  <p><strong>Critical kVA/kW sizing:</strong> Size for (1) peak starting kVA (largest motor start while others run) and (2) continuous kVA (e.g. total kW / 0.8). This tool uses a 4× running kVA assumption for the largest motor start.</p>
+                </div>
+              </aside>
+            </div>
+            <footer class="disclaimer">
+              <p>Simplified estimator. Actual site conditions, motor starting currents (kVA surge), and equipment specifications must be verified by a qualified electrical engineer. Not for final design without expert review.</p>
+              <span class="version-label" id="load-pro-version-info">Version 1.1.0</span>
+            </footer>
+          </div>
+          <div id="load-pro-guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
+            <div class="guide-modal-panel">
+              <div class="guide-modal-header">
+                <span class="guide-modal-title">User guide</span>
+                <button type="button" id="load-pro-guide-modal-close" class="btn btn-secondary guide-modal-close" aria-label="Close user guide">Close</button>
+              </div>
+              <div id="load-pro-guide-modal-body" class="guide-modal-body"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="panel-water" class="water-calc calc-panel" hidden>
+        <div class="container">
+          <header class="banner">
+            <h1 class="banner-title">Water Requirements</h1>
+            <p class="banner-subtitle">Field Hospital Calculator</p>
+          </header>
+          <div class="toolbar-wrap">
+            <div class="toolbar">
+              <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <span id="water-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
+              <button type="button" class="btn btn-print" id="water-print-btn" title="Print the current view.">Print</button>
+              <button type="button" class="btn btn-clear" id="water-reset-btn" title="Reset all inputs, unit, and modes to baseline values.">Reset to Defaults</button>
+            </div>
+          </div>
+          <div class="main-content">
+            <section class="section scenario-section">
+              <div class="section-heading-row">
+                <h3 class="scenario-section-title">Scenarios</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="scenarios">?</button>
+              </div>
+              <div class="help-popover" id="water-help-popover-scenarios" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Save Scenario</strong> stores your current inputs, unit, and modes in this browser.</li>
+                  <li>Use a clear scenario name and notes so others can quickly understand assumptions.</li>
+                  <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
+                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+                  <li><strong>Autosave controls</strong> are in the top toolbar: use <strong>Clear Autosaved State</strong> to remove recovery data without deleting named scenarios.</li>
+                </ul>
+              </div>
+              <div class="scenario-actions">
+                <button type="button" class="btn btn-save" id="water-save-btn" title="Save current inputs, unit, and modes to this browser.">Save Scenario</button>
+                <div class="load-scenario-group">
+                  <select id="water-scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
+                    <option value="">— Select scenario to load —</option>
+                  </select>
+                  <button type="button" class="btn btn-load" id="water-load-btn" title="Load the scenario selected in the dropdown.">Load Scenario</button>
+                  <button type="button" class="btn btn-delete" id="water-delete-btn" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
+                  <button type="button" class="btn btn-clear" id="water-clear-btn" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
+                </div>
+                <button type="button" class="btn btn-secondary" id="water-import-btn" title="Restore scenario from an exported JSON file.">Import from file</button>
+                <button type="button" class="btn btn-secondary" id="water-export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+              </div>
+              <div id="water-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+                <div class="export-format-panel">
+                  <p class="export-format-title">Export format</p>
+                  <div class="export-format-options">
+                    <label class="export-format-option">
+                      <input type="radio" name="water-export-format" value="JSON" checked>
+                      <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
+                    </label>
+                    <label class="export-format-option">
+                      <input type="radio" name="water-export-format" value="CSV">
+                      <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
+                    </label>
+                  </div>
+                  <div class="export-format-actions">
+                    <button type="button" id="water-export-format-cancel" class="btn btn-secondary">Cancel</button>
+                    <button type="button" id="water-export-format-confirm" class="btn btn-save">Export</button>
+                  </div>
+                </div>
+              </div>
+              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <div class="scenario-meta">
+                <div class="field">
+                  <label for="water-scenario-name">Scenario name</label>
+                  <input type="text" id="water-scenario-name" placeholder="e.g. Field Hospital Bravo – 2 OR + 4 ICU beds">
+                </div>
+                <div class="field field-notes">
+                  <label for="water-scenario-notes">Notes / assumptions</label>
+                  <textarea id="water-scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
+                </div>
+              </div>
+              <input type="file" id="water-file-input" accept=".json" style="display: none;">
+              <div id="water-button-feedback" class="button-feedback"></div>
+            </section>
+            <section class="section highlight-section">
+              <div class="section-heading-row">
+                <h3>Deployment Parameters</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="deployment">?</button>
+              </div>
+              <div class="help-popover" id="water-help-popover-deployment" role="tooltip" hidden>
+                <ul>
+                  <li>Length of operation and bed count drive total water demand.</li>
+                  <li><strong>Typical:</strong> 30–90 days, 10–50 beds.</li>
+                  <li>Buffer adds a safety margin (e.g. 10% = 10 extra percent on all quantities).</li>
+                </ul>
+              </div>
+              <div class="params-grid">
+                <div class="param-group">
+                  <label for="water-days">Expected Length of Deployment (Days):</label>
+                  <input type="number" id="water-days" min="0" placeholder="0">
+                </div>
+                <div class="param-group">
+                  <label for="water-beds">Expected Number of Beds:</label>
+                  <input type="number" id="water-beds" min="0" placeholder="0">
+                </div>
+                <div class="param-group">
+                  <label for="water-buffer">Buffer Percentage (%):</label>
+                  <input type="number" id="water-buffer" min="0" max="100" step="0.1" placeholder="0">
+                  <small class="param-hint">Add percentage buffer to water quantities (e.g. 10 for 10%)</small>
+                </div>
+              </div>
+            </section>
+            <section class="section input-section">
+              <div class="water-use-header">
+                <div class="section-heading-row">
+                  <h3>Water Use (per bed per day)</h3>
+                  <button type="button" class="help-icon" aria-label="Help for this section" data-help="water-use">?</button>
+                </div>
+                <div class="unit-toggle" role="group" aria-label="Unit for water rates">
+                  <label class="unit-option"><input type="radio" name="water-unit" value="L"> Liters</label>
+                  <label class="unit-option"><input type="radio" name="water-unit" value="G" checked> Gallons</label>
+                </div>
+              </div>
+              <div class="help-popover" id="water-help-popover-water-use" role="tooltip" hidden>
+                <ul>
+                  <li>Rates are per bed per day in the unit you select (L or Gal).</li>
+                  <li><strong>Typical potable:</strong> 22–27 Gal (80–100 L)/bed/day.</li>
+                  <li><strong>Typical wastewater:</strong> ~18 Gal (~65 L)/bed/day (gray + black).</li>
+                </ul>
+              </div>
+              <p class="section-note">Estimate potable demand and wastewater output per bed per day using field-planning references (MSF/WHO/Sphere).</p>
+              <div class="params-grid water-rates-grid">
+                <div class="param-group">
+                  <label for="water-potable-rate">Potable water (<span class="water-unit">L</span>/bed/day):</label>
+                  <input type="number" id="water-potable-rate" min="0" step="0.1" placeholder="0">
+                </div>
+                <div class="param-group">
+                  <label for="water-wastewater-rate">Wastewater output (<span class="water-unit">L</span>/bed/day):</label>
+                  <input type="number" id="water-wastewater-rate" min="0" step="0.1" placeholder="0">
+                  <button type="button" class="breakdown-toggle" id="water-breakdown-toggle" title="Show estimated breakdown">ℹ️ Show breakdown</button>
+                </div>
+              </div>
+              <div id="water-breakdown-display" class="breakdown-display" style="display: none;">
+                <p class="breakdown-text"><strong>Estimated breakdown:</strong> <span id="water-breakdown-gray">—</span> gray water (~77%), <span id="water-breakdown-black">—</span> black water (~23%)</p>
+                <p class="breakdown-note">Breakdown is an estimate. Actual ratios vary by facility design and operations.</p>
+              </div>
+            </section>
+            <section class="section">
+              <div class="section-heading-row">
+                <h3>Storage Configuration</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="bladder">?</button>
+              </div>
+              <div class="help-popover" id="water-help-popover-bladder" role="tooltip" hidden>
+                <ul>
+                  <li>Number of containers and capacity per container (in L or Gal, same as above).</li>
+                  <li>Used to estimate how often water deliveries and waste pickups are needed.</li>
+                </ul>
+              </div>
+              <div class="bladder-grid">
+                <div class="bladder-card bladder-potable">
+                  <h4>Potable water</h4>
+                  <div class="param-group">
+                    <label for="water-potable-count">Number of containers:</label>
+                    <input type="number" id="water-potable-count" min="0" placeholder="0">
+                  </div>
+                  <div class="param-group">
+                    <label for="water-potable-capacity">Capacity per container (<span class="bladder-capacity-unit">L</span>):</label>
+                    <input type="number" id="water-potable-capacity" min="0" placeholder="0">
+                  </div>
+                </div>
+                <div class="bladder-card bladder-wastewater">
+                  <h4>Wastewater</h4>
+                  <div class="param-group">
+                    <label for="water-wastewater-count">Number of containers:</label>
+                    <input type="number" id="water-wastewater-count" min="0" placeholder="0">
+                  </div>
+                  <div class="param-group">
+                    <label for="water-wastewater-capacity">Capacity per container (<span class="bladder-capacity-unit">L</span>):</label>
+                    <input type="number" id="water-wastewater-capacity" min="0" placeholder="0">
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="section">
+              <div class="section-heading-row">
+                <h3>Supply &amp; Disposal Mode</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="supply-mode">?</button>
+              </div>
+              <div class="help-popover" id="water-help-popover-supply-mode" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Self-supplied:</strong> Water delivered to on-site storage; wastewater collected and removed.</li>
+                  <li><strong>Mains water:</strong> Connected to municipal or base water supply.</li>
+                  <li><strong>Mains sewer:</strong> Connected to municipal or base sewage. No wastewater pickups required.</li>
+                </ul>
+              </div>
+              <div class="params-grid">
+                <div class="param-group">
+                  <label>Potable water supply:</label>
+                  <select id="water-potable-supply-mode">
+                    <option value="self">Self-supplied (deliveries to containers)</option>
+                    <option value="mains">Mains / base water supply connected</option>
+                    <option value="hybrid">Hybrid (mains primary, containers as backup)</option>
+                  </select>
+                </div>
+                <div class="param-group">
+                  <label>Wastewater disposal:</label>
+                  <select id="water-wastewater-disposal-mode">
+                    <option value="containers">Container collection (pickups needed)</option>
+                    <option value="mains">Mains / sewer connected (no pickups)</option>
+                  </select>
+                </div>
+              </div>
+              <div id="water-mains-flow-section" class="params-grid" style="display:none; margin-top:16px;">
+                <div class="param-group">
+                  <label for="water-mains-flow-rate">Mains flow rate (<span class="water-unit">G</span>/hour):</label>
+                  <input type="number" id="water-mains-flow-rate" min="0" step="1" placeholder="0">
+                </div>
+              </div>
+            </section>
+            <section class="section results-section">
+              <div class="section-heading-row">
+                <h3>Estimated Totals &amp; Schedule</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="results">?</button>
+              </div>
+              <div class="help-popover" id="water-help-popover-results" role="tooltip" hidden>
+                <ul>
+                  <li>Totals use your deployment days, beds, rates, and buffer.</li>
+                  <li>Delivery and pickup intervals are based on container capacity and daily demand.</li>
+                </ul>
+              </div>
+              <div class="results-grid">
+                <div class="result-card">
+                  <h4>Potable water</h4>
+                  <div class="result-row"><span>Total demand (deployment):</span> <strong id="water-out-potable-total">—</strong> <span class="result-unit">L</span></div>
+                  <div class="result-row"><span>Per day:</span> <strong id="water-out-potable-per-day">—</strong> <span class="result-unit">L</span>/day</div>
+                  <div class="result-row delivery-row" id="water-potable-delivery-row"><span>Water deliveries:</span> <strong id="water-out-potable-deliveries">—</strong></div>
+                  <div class="result-row delivery-row" id="water-potable-mains-row" style="display:none;"><span>Mains supply status:</span> <strong id="water-out-mains-status">—</strong></div>
+                  <div class="result-row" id="water-potable-buffer-row" style="display:none;"><span>Recommended emergency stored water (48 hours):</span> <strong id="water-out-potable-buffer">—</strong> <span class="result-unit">L</span></div>
+                </div>
+                <div class="result-card">
+                  <h4>Wastewater</h4>
+                  <div class="result-row"><span>Total output (deployment):</span> <strong id="water-out-wastewater-total">—</strong> <span class="result-unit">L</span></div>
+                  <div class="result-row"><span>Per day:</span> <strong id="water-out-wastewater-per-day">—</strong> <span class="result-unit">L</span>/day</div>
+                  <div class="result-row delivery-row" id="water-wastewater-pickup-row"><span>Pickups needed:</span> <strong id="water-out-wastewater-pickups">—</strong></div>
+                  <div class="result-row delivery-row" id="water-wastewater-mains-row" style="display:none;"><span>Wastewater disposal:</span> <strong id="water-out-wastewater-mains">Discharged to mains — no pickups required</strong></div>
+                </div>
+              </div>
+              <div class="schedule-note" id="water-schedule-note"></div>
+            </section>
+          </div>
+          <footer class="disclaimer">
+            <span class="version-label" id="water-version-info">Version 1.0.0</span>
+          </footer>
+        </div>
+      </div>
+      <div id="panel-consumables" class="cons-calc calc-panel" hidden>
+        <div class="calc-app">
+          <header class="banner">
+            <h1 class="banner-title">Consumables Supply List</h1>
+            <p class="banner-subtitle">Field Hospital Calculator</p>
+          </header>
+          <div class="toolbar-wrap">
+            <div class="toolbar">
+              <button type="button" id="cons-clear-autosave-btn" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <span id="cons-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
+              <button type="button" class="btn btn-print" id="cons-print-btn">Print</button>
+              <button type="button" class="btn btn-ucd" id="cons-ward-list-btn">UCD Ward List</button>
+              <button type="button" class="btn btn-ucd" id="cons-icu-list-btn">UCD ICU List</button>
+              <button type="button" class="btn btn-clear-items" id="cons-clear-items-btn">Reset Worksheet</button>
+              <span id="cons-file-status" class="status-text">No list loaded</span>
+            </div>
+          </div>
+          <div class="main-content">
+            <section class="section scenario-section">
+              <div class="section-heading-row">
+                <h3 class="scenario-section-title">Scenarios</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="scenarios">?</button>
+              </div>
+              <div class="help-popover" id="cons-help-popover-scenarios" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Save Scenario</strong> stores your current list, deployment inputs, and notes in this browser.</li>
+                  <li>Use a clear scenario name and notes so assumptions are easy to understand later.</li>
+                  <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
+                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+                </ul>
+              </div>
+              <div class="scenario-actions">
+                <button type="button" class="btn btn-save" id="cons-save-btn">Save Scenario</button>
+                <div class="load-scenario-group">
+                  <select id="cons-scenario-select" class="scenario-select">
+                    <option value="">— Select scenario to load —</option>
+                  </select>
+                  <button type="button" class="btn btn-load" id="cons-load-btn">Load Scenario</button>
+                  <button type="button" class="btn btn-delete" id="cons-delete-btn">Delete Scenario</button>
+                  <button type="button" class="btn btn-clear" id="cons-clear-btn">Clear all Scenarios</button>
+                </div>
+                <button type="button" class="btn btn-secondary" id="cons-import-btn">Import from file</button>
+                <button type="button" class="btn btn-secondary" id="cons-export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+              </div>
+              <div id="cons-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+                <div class="export-format-panel">
+                  <p class="export-format-title">Export format</p>
+                  <div class="export-format-options">
+                    <label class="export-format-option">
+                      <input type="radio" name="cons-export-format" value="JSON" checked>
+                      <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
+                    </label>
+                    <label class="export-format-option">
+                      <input type="radio" name="cons-export-format" value="CSV">
+                      <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
+                    </label>
+                  </div>
+                  <div class="export-format-actions">
+                    <button type="button" id="cons-export-format-cancel" class="btn btn-secondary">Cancel</button>
+                    <button type="button" id="cons-export-format-confirm" class="btn btn-save">Export</button>
+                  </div>
+                </div>
+              </div>
+              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <div class="scenario-meta">
+                <div class="field">
+                  <label for="cons-scenario-name">Scenario name</label>
+                  <input type="text" id="cons-scenario-name" placeholder="e.g. 30-day, 40 beds">
+                </div>
+                <div class="field field-notes">
+                  <label for="cons-scenario-notes">Notes / assumptions</label>
+                  <textarea id="cons-scenario-notes" rows="3" placeholder="Optional notes"></textarea>
+                </div>
+              </div>
+              <input type="file" id="cons-import-file-input" accept=".json" style="display: none;">
+              <div id="cons-button-feedback" class="button-feedback"></div>
+            </section>
+            <section class="section highlight-section">
+              <div class="section-heading-row">
+                <h3>Deployment Parameters</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="params">?</button>
+              </div>
+              <div class="help-popover" id="cons-help-popover-params" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Days:</strong> Expected length of deployment in days.</li>
+                  <li><strong>Beds:</strong> Number of ward (or ICU) beds for this scenario.</li>
+                  <li><strong>Buffer %:</strong> Extra percentage added to every quantity (e.g. 10 for 10%). Use for safety margin or wastage.</li>
+                </ul>
+              </div>
+              <div class="params-grid">
+                <div class="param-group">
+                  <label for="cons-days">Expected Length of Deployment (Days):</label>
+                  <input type="number" id="cons-days" min="0" placeholder="0">
+                </div>
+                <div class="param-group">
+                  <label for="cons-beds">Expected Number of Beds:</label>
+                  <input type="number" id="cons-beds" min="0" placeholder="0">
+                </div>
+                <div class="param-group">
+                  <label for="cons-buffer">Buffer Percentage (%):</label>
+                  <input type="number" id="cons-buffer" min="0" max="100" step="0.1" placeholder="0">
+                  <small style="color: #666; font-size: 0.85em; margin-top: 5px;">Add percentage buffer to quantities (e.g., 10 for 10%)</small>
+                </div>
+              </div>
+            </section>
+            <section class="section">
+              <div class="section-heading-row">
+                <h3>Consumables Requirements</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="inventory">?</button>
+              </div>
+              <div class="help-popover" id="cons-help-popover-inventory" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Per day/Per bed:</strong> Usage rate per bed per day. Total quantity = days × beds × rate × (1 + buffer%).</li>
+                  <li>Load the UCD Ward or ICU list. Sort and search to find items quickly.</li>
+                  <li><strong>Min Qty</strong> is a view-only filter on total quantity and does not change saved data.</li>
+                  <li>Use <strong>Add Item</strong> to add custom consumables.</li>
+                </ul>
+              </div>
+              <div class="sort-bar">
+                <label for="cons-sort-equipment">Sort:</label>
+                <select id="cons-sort-equipment" class="sort-select" aria-label="Sort consumables requirements">
+                  <option value="name-asc">Name A–Z</option>
+                  <option value="name-desc">Name Z–A</option>
+                  <option value="qty-desc">Total quantity High to Low</option>
+                  <option value="qty-asc">Total quantity Low to High</option>
+                </select>
+                <label for="cons-min-qty-filter">Min Qty:</label>
+                <input type="number" id="cons-min-qty-filter" class="min-qty-filter" min="0" step="1" placeholder="off" aria-label="Show rows with total quantity at or above this value">
+                <label class="nonzero-filter-toggle">
+                  <input type="checkbox" id="cons-nonzero-only-filter" aria-label="Show non-zero total quantity rows only">
+                  Non-zero only
+                </label>
+              </div>
+              <div class="add-item-bar">
+                <input type="text" id="cons-new-item-name" class="add-item-name" placeholder="Custom item name">
+                <input type="number" id="cons-new-item-rate" class="add-item-rate" min="0" step="0.001" placeholder="Per day/per bed">
+                <button type="button" class="btn btn-secondary" id="cons-add-item-btn">Add Item</button>
+              </div>
+              <input type="text" id="cons-search" placeholder="🔍 Search items..." class="search-box">
+              <div class="filter-notice" id="cons-filter-notice" style="display:none;"></div>
+              <div class="items-info" id="cons-items-info">0 items loaded</div>
+              <div id="cons-consumables-container">
+                <p class="empty-message">Load the UCD Ward or ICU list above.</p>
+              </div>
+            </section>
+          </div>
+          <footer class="disclaimer">
+            <p>Simplified estimator. Verify quantities and assumptions with qualified personnel before deployment.</p>
+            <span class="version-label" id="cons-version-info">Version 1.1.0</span>
+          </footer>
+        </div>
+      </div>
+      <div id="panel-medications" class="meds-calc calc-panel" hidden>
+        <div class="container">
+          <header class="banner">
+            <h1 class="banner-title">Medications Supply List</h1>
+            <p class="banner-subtitle">Field Hospital Calculator</p>
+          </header>
+          <div class="toolbar-wrap">
+            <div class="toolbar">
+              <button type="button" id="meds-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <span id="meds-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
+              <button type="button" class="btn btn-print" id="meds-print-btn" title="Print the current view.">Print</button>
+              <button type="button" class="btn btn-ucd" id="meds-pharma-list-btn" title="Load the UCD Ward medications list.">UCD Ward Meds</button>
+              <button type="button" class="btn btn-ucd" id="meds-pharma-secondary-list-btn" title="Load the UCD ICU medications list.">UCD ICU Meds</button>
+              <button type="button" class="btn btn-clear-items" id="meds-clear-items-btn" title="Clear list, scenario name/notes, and deployment inputs; reset to empty worksheet.">Reset Worksheet</button>
+              <span id="meds-file-status" class="status-text">No list loaded</span>
+            </div>
+          </div>
+          <div class="main-content">
+            <section class="section scenario-section">
+              <div class="section-heading-row">
+                <h3 class="scenario-section-title">Scenarios</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="scenarios">?</button>
+              </div>
+              <div class="help-popover" id="meds-help-popover-scenarios" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Save Scenario</strong> stores your current medications list and deployment inputs in this browser.</li>
+                  <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
+                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+                </ul>
+              </div>
+              <div class="scenario-actions">
+                <button type="button" class="btn btn-save" id="meds-save-btn" title="Save current medications list and deployment inputs to this browser.">Save Scenario</button>
+                <div class="load-scenario-group">
+                  <select id="meds-scenario-select" class="scenario-select">
+                    <option value="">— Select scenario to load —</option>
+                  </select>
+                  <button type="button" class="btn btn-load" id="meds-load-btn" title="Load the scenario selected in the dropdown.">Load Scenario</button>
+                  <button type="button" class="btn btn-delete" id="meds-delete-btn" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
+                  <button type="button" class="btn btn-clear" id="meds-clear-btn" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
+                </div>
+                <button type="button" class="btn btn-secondary" id="meds-import-btn" title="Restore scenario from an exported JSON file.">Import from file</button>
+                <button type="button" class="btn btn-secondary" id="meds-export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+              </div>
+              <div id="meds-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+                <div class="export-format-panel">
+                  <p class="export-format-title">Export format</p>
+                  <div class="export-format-options">
+                    <label class="export-format-option">
+                      <input type="radio" name="meds-export-format" value="JSON" checked>
+                      <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
+                    </label>
+                    <label class="export-format-option">
+                      <input type="radio" name="meds-export-format" value="CSV">
+                      <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
+                    </label>
+                  </div>
+                  <div class="export-format-actions">
+                    <button type="button" id="meds-export-format-cancel" class="btn btn-secondary">Cancel</button>
+                    <button type="button" id="meds-export-format-confirm" class="btn btn-save">Export</button>
+                  </div>
+                </div>
+              </div>
+              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <div class="scenario-meta">
+                <div class="field">
+                  <label for="meds-scenario-name">Scenario name</label>
+                  <input type="text" id="meds-scenario-name" placeholder="e.g. 30-day, 40 beds">
+                </div>
+                <div class="field field-notes">
+                  <label for="meds-scenario-notes">Notes / assumptions</label>
+                  <textarea id="meds-scenario-notes" rows="3" placeholder="Optional notes"></textarea>
+                </div>
+              </div>
+              <input type="file" id="meds-import-file-input" accept=".json" style="display: none;">
+              <div id="meds-button-feedback" class="button-feedback"></div>
+            </section>
+            <section class="section highlight-section">
+              <div class="section-heading-row">
+                <h3>Deployment Parameters</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="params">?</button>
+              </div>
+              <div class="help-popover" id="meds-help-popover-params" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Days:</strong> Expected length of deployment in days.</li>
+                  <li><strong>Beds:</strong> Number of ward (or ICU) beds for this scenario.</li>
+                  <li><strong>Buffer %:</strong> Extra percentage added to every quantity (e.g. 10 for 10%). Use for safety margin or wastage.</li>
+                </ul>
+              </div>
+              <div class="params-grid">
+                <div class="param-group">
+                  <label for="meds-days">Expected Length of Deployment (Days):</label>
+                  <input type="number" id="meds-days" min="0" placeholder="0">
+                </div>
+                <div class="param-group">
+                  <label for="meds-beds">Expected Number of Beds:</label>
+                  <input type="number" id="meds-beds" min="0" placeholder="0">
+                </div>
+                <div class="param-group">
+                  <label for="meds-buffer">Buffer Percentage (%):</label>
+                  <input type="number" id="meds-buffer" min="0" max="100" step="0.1" placeholder="0">
+                  <small style="color: #666; font-size: 0.85em; margin-top: 5px;">Add percentage buffer to quantities (e.g., 10 for 10%)</small>
+                </div>
+              </div>
+            </section>
+            <section class="section">
+              <div class="section-heading-row">
+                <h3>Medicines Requirements</h3>
+                <button type="button" class="help-icon" aria-label="Help for this section" data-help="inventory">?</button>
+              </div>
+              <div class="help-popover" id="meds-help-popover-inventory" role="tooltip" hidden>
+                <ul>
+                  <li><strong>Per day/Per bed:</strong> Usage rate per bed per day. Total quantity = days × beds × rate × (1 + buffer%).</li>
+                  <li>Load the UCD Ward or ICU list. Sort and search to find items quickly.</li>
+                  <li><strong>Min Qty</strong> is a view-only filter. Use <strong>Add Item</strong> to add custom medications.</li>
+                </ul>
+              </div>
+              <div class="sort-bar">
+                <label for="meds-sort-equipment">Sort:</label>
+                <select id="meds-sort-equipment" class="sort-select" aria-label="Sort medicines requirements">
+                  <option value="name-asc">Name A–Z</option>
+                  <option value="name-desc">Name Z–A</option>
+                  <option value="qty-desc">Total quantity High to Low</option>
+                  <option value="qty-asc">Total quantity Low to High</option>
+                </select>
+                <label for="meds-min-qty-filter">Min Qty:</label>
+                <input type="number" id="meds-min-qty-filter" class="min-qty-filter" min="0" step="1" placeholder="off" aria-label="Show rows with total quantity at or above this value">
+                <label class="nonzero-filter-toggle">
+                  <input type="checkbox" id="meds-nonzero-only-filter" aria-label="Show non-zero total quantity rows only">
+                  Non-zero only
+                </label>
+              </div>
+              <div class="add-item-bar">
+                <input type="text" id="meds-new-item-name" class="add-item-name" placeholder="Custom item name">
+                <input type="number" id="meds-new-item-rate" class="add-item-rate" min="0" step="0.001" placeholder="Per day/per bed">
+                <button type="button" class="btn btn-secondary" id="meds-add-item-btn">Add Item</button>
+              </div>
+              <input type="text" id="meds-search" placeholder="🔍 Search items..." class="search-box">
+              <div class="filter-notice" id="meds-filter-notice" style="display:none;"></div>
+              <div class="items-info" id="meds-items-info">0 items loaded</div>
+              <div id="meds-consumables-container">
+                <p class="empty-message">Load the UCD Ward or ICU list above.</p>
+              </div>
+            </section>
+          </div>
+          <footer class="disclaimer">
+            <p>This tool is a simplified estimator. Verify requirements with qualified personnel before deployment.</p>
+            <span class="version-label" id="meds-version-info">Version 1.0.0</span>
+          </footer>
+        </div>
+      </div>
+    </main>
+
+    <footer class="shell-footer">
+      <span id="shell-version" class="shell-version">Field Hospital Suite</span>
+    </footer>
+
+    <div id="shell-toast" class="shell-toast" role="status" aria-live="polite" hidden></div>
+  </div>
+
+  <script src="shell.js"></script>
+  <script src="../Load Calc Basic/guide-content.js"></script>
+  <script src="../Load Calc Basic/equipment-data-basic.js"></script>
+  <script src="../Load Calc Basic/script.js"></script>
+  <script src="../Load Calc Pro/guide-content.js"></script>
+  <script src="../Load Calc Pro/equipment-data.js"></script>
+  <script src="../Load Calc Pro/script.js"></script>
+  <script src="../Water Calc/water-data.js"></script>
+  <script src="../Water Calc/script.js"></script>
+  <script src="../Consumables Calc/consumables-lists.js"></script>
+  <script src="../Consumables Calc/consumables.js"></script>
+  <script src="../Medicines Calc/medications-data.js"></script>
+  <script src="../Medicines Calc/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+/**
+ * Field Hospital Calculator Suite – Shell styles.
+ * Layout: header, nav, main (panels), footer. Only one panel visible at a time.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.4;
+  color: #1a1a1a;
+  background: #f5f5f5;
+}
+
+.shell-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Header --- */
+.shell-header {
+  background: #1e3a5f;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.shell-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.shell-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.shell-nav-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.shell-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.shell-nav-btn.active {
+  background: #fff;
+  color: #1e3a5f;
+  border-color: #fff;
+}
+
+/* --- UCD buttons (Consumables + Medicines; single source) --- */
+.btn-ucd {
+  /* UC Davis CA: Aggie Blue (readable blue), Aggie Gold #FFBF00 */
+  background: #0d4a87;
+  color: #ffffff;
+  border: 2px solid #FFBF00;
+  font-weight: 700;
+}
+.btn-ucd:hover {
+  background: #0a3d70;
+  color: #ffffff;
+  border-color: #FFBF00;
+}
+.btn-ucd.active {
+  background: #0a3d70;
+  color: #ffffff;
+  box-shadow: inset 0 0 0 2px #FFBF00;
+}
+
+/* --- Main (panels) --- */
+.shell-main {
+  flex: 1;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.calc-panel {
+  display: none;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.calc-panel[hidden] {
+  display: none !important;
+}
+
+.calc-panel:not([hidden]) {
+  display: block;
+}
+
+/* Placeholder when a calc is not yet loaded */
+.shell-panel-placeholder {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px dashed #ccc;
+}
+
+/* --- Footer --- */
+.shell-footer {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: #666;
+  background: #e8e8e8;
+  border-top: 1px solid #ddd;
+}
+
+.shell-version {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Shell toast (optional shared) --- */
+.shell-toast {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  max-width: 90vw;
+}
+
+.shell-toast[hidden] {
+  display: none !important;
+}
+
+.shell-toast--info {
+  background: #1e3a5f;
+  color: #fff;
+}
+
+.shell-toast--success {
+  background: #0d6b4c;
+  color: #fff;
+}
+
+.shell-toast--error {
+  background: #b91c1c;
+  color: #fff;
+}
+
+.shell-toast--warn {
+  background: #b45309;
+  color: #fff;
+}
+
+@media print {
+  .shell-header,
+  .shell-footer,
+  .shell-toast { display: none !important; }
+
+  .shell-main { padding: 0; }
+
+  .calc-panel[hidden] { display: none !important; }
+
+  .calc-panel:not([hidden]) {
+    display: block !important;
+    max-width: 100%;
+  }
+}
