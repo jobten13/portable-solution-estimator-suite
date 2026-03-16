@@ -104,7 +104,7 @@
   }
 
   function updateInventoryHelpRateLabel() {
-    const pop = document.getElementById('help-popover-inventory');
+    const pop = document.getElementById('meds-help-popover-inventory');
     if (!pop) return;
     const firstLi = pop.querySelector('ul li:first-child');
     if (!firstLi) return;
@@ -113,7 +113,7 @@
   }
 
   function updateAddItemRatePlaceholder() {
-    const rateEl = g('new-item-rate');
+    const rateEl = g('meds-new-item-rate');
     if (!rateEl) return;
     rateEl.placeholder = getRatePlaceholder(currentListType);
   }
@@ -142,7 +142,7 @@
 
     function getPopoverForBtn(btn) {
       const key = btn.getAttribute('data-help');
-      return key ? document.getElementById('help-popover-' + key) : null;
+      return key ? document.getElementById('meds-help-popover-' + key) : null;
     }
 
     function closeAllHelpPopovers(unpin) {
@@ -200,7 +200,7 @@
     document.querySelectorAll('.help-popover').forEach(function (pop) {
       pop.addEventListener('mouseenter', cancelHoverHide);
       pop.addEventListener('mouseleave', function () {
-        var helpId = (pop.id || '').replace('help-popover-', '');
+        var helpId = (pop.id || '').replace('meds-help-popover-', '');
         var b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
         if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
       });
@@ -215,13 +215,13 @@
   }
 
   function setupEventListeners() {
-    if (g('btn-clear-autosave')) g('btn-clear-autosave').addEventListener('click', clearAutosavedState);
-    if (g('clear-items-btn')) g('clear-items-btn').addEventListener('click', clearAllItems);
-    if (g('pharma-list-btn')) g('pharma-list-btn').addEventListener('click', loadPharmaList);
-    if (g('pharma-secondary-list-btn')) g('pharma-secondary-list-btn').addEventListener('click', loadSecondaryPharmaList);
+    if (g('meds-btn-clear-autosave')) g('meds-btn-clear-autosave').addEventListener('click', clearAutosavedState);
+    if (g('meds-clear-items-btn')) g('meds-clear-items-btn').addEventListener('click', clearAllItems);
+    if (g('meds-pharma-list-btn')) g('meds-pharma-list-btn').addEventListener('click', loadPharmaList);
+    if (g('meds-pharma-secondary-list-btn')) g('meds-pharma-secondary-list-btn').addEventListener('click', loadSecondaryPharmaList);
 
-    if (g('days')) {
-      const daysEl = g('days');
+    if (g('meds-days')) {
+      const daysEl = g('meds-days');
       setupPlaceholderBehavior(daysEl);
       daysEl.addEventListener('input', function () {
         deploymentDays = parseFloat(this.value) || 0;
@@ -230,8 +230,8 @@
       });
       daysEl.addEventListener('blur', () => validateAndShow('days'));
     }
-    if (g('beds')) {
-      const bedsEl = g('beds');
+    if (g('meds-beds')) {
+      const bedsEl = g('meds-beds');
       setupPlaceholderBehavior(bedsEl);
       bedsEl.addEventListener('input', function () {
         deploymentBeds = parseFloat(this.value) || 0;
@@ -240,8 +240,8 @@
       });
       bedsEl.addEventListener('blur', () => validateAndShow('beds'));
     }
-    if (g('buffer')) {
-      const bufferEl = g('buffer');
+    if (g('meds-buffer')) {
+      const bufferEl = g('meds-buffer');
       setupPlaceholderBehavior(bufferEl);
       bufferEl.addEventListener('input', function () {
         bufferPercentage = parseFloat(this.value) || 0;
@@ -250,45 +250,45 @@
       });
       bufferEl.addEventListener('blur', () => validateAndShow('buffer'));
     }
-    if (g('search')) g('search').addEventListener('input', filterItems);
-    if (g('min-qty-filter')) g('min-qty-filter').addEventListener('input', filterItems);
-    if (g('nonzero-only-filter')) g('nonzero-only-filter').addEventListener('change', filterItems);
-    if (g('add-item-btn')) g('add-item-btn').addEventListener('click', addCustomItem);
-    if (g('new-item-name')) {
-      g('new-item-name').addEventListener('keydown', (e) => {
+    if (g('meds-search')) g('meds-search').addEventListener('input', filterItems);
+    if (g('meds-min-qty-filter')) g('meds-min-qty-filter').addEventListener('input', filterItems);
+    if (g('meds-nonzero-only-filter')) g('meds-nonzero-only-filter').addEventListener('change', filterItems);
+    if (g('meds-add-item-btn')) g('meds-add-item-btn').addEventListener('click', addCustomItem);
+    if (g('meds-new-item-name')) {
+      g('meds-new-item-name').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           addCustomItem();
         }
       });
     }
-    if (g('new-item-rate')) {
-      g('new-item-rate').addEventListener('keydown', (e) => {
+    if (g('meds-new-item-rate')) {
+      g('meds-new-item-rate').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           addCustomItem();
         }
       });
     }
-    if (g('sort-equipment')) g('sort-equipment').addEventListener('change', onSortChange);
-    if (g('consumables-container')) {
-      g('consumables-container').addEventListener('click', onConsumablesTableClick);
+    if (g('meds-sort-equipment')) g('meds-sort-equipment').addEventListener('change', onSortChange);
+    if (g('meds-consumables-container')) {
+      g('meds-consumables-container').addEventListener('click', onConsumablesTableClick);
     }
-    if (g('print-btn')) g('print-btn').addEventListener('click', printReport);
-    if (g('save-btn')) g('save-btn').addEventListener('click', saveScenario);
-    if (g('load-btn')) g('load-btn').addEventListener('click', loadSelectedScenario);
-    if (g('delete-btn')) g('delete-btn').addEventListener('click', deleteSelectedScenario);
-    if (g('clear-btn')) g('clear-btn').addEventListener('click', clearAllScenarios);
-    if (g('import-btn')) g('import-btn').addEventListener('click', () => { g('import-file-input').click(); });
-    if (g('import-file-input')) g('import-file-input').addEventListener('change', handleImportFile);
-    if (g('export-btn')) g('export-btn').addEventListener('click', onExportToFile);
+    if (g('meds-print-btn')) g('meds-print-btn').addEventListener('click', printReport);
+    if (g('meds-save-btn')) g('meds-save-btn').addEventListener('click', saveScenario);
+    if (g('meds-load-btn')) g('meds-load-btn').addEventListener('click', loadSelectedScenario);
+    if (g('meds-delete-btn')) g('meds-delete-btn').addEventListener('click', deleteSelectedScenario);
+    if (g('meds-clear-btn')) g('meds-clear-btn').addEventListener('click', clearAllScenarios);
+    if (g('meds-import-btn')) g('meds-import-btn').addEventListener('click', () => { g('meds-import-file-input').click(); });
+    if (g('meds-import-file-input')) g('meds-import-file-input').addEventListener('change', handleImportFile);
+    if (g('meds-export-btn')) g('meds-export-btn').addEventListener('click', onExportToFile);
 
-    const exportFormatDialog = g('export-format-dialog');
-    const exportFormatConfirm = g('export-format-confirm');
-    const exportFormatCancel = g('export-format-cancel');
+    const exportFormatDialog = g('meds-export-format-dialog');
+    const exportFormatConfirm = g('meds-export-format-confirm');
+    const exportFormatCancel = g('meds-export-format-cancel');
     if (exportFormatConfirm) {
       exportFormatConfirm.addEventListener('click', function () {
-        const selected = document.querySelector('#export-format-dialog input[name="export-format"]:checked');
+        const selected = document.querySelector('#meds-export-format-dialog input[name="export-format"]:checked');
         const fmt = selected ? selected.value : 'JSON';
         performExportWithFormat(fmt);
         closeExportFormatDialog();
@@ -308,7 +308,7 @@
   }
 
   function getMinQtyThreshold() {
-    const minQtyEl = g('min-qty-filter');
+    const minQtyEl = g('meds-min-qty-filter');
     if (!minQtyEl) return { active: false, value: 0 };
     const raw = minQtyEl.value.trim();
     if (raw === '') return { active: false, value: 0 };
@@ -318,12 +318,12 @@
   }
 
   function isNonZeroOnlyEnabled() {
-    const checkbox = g('nonzero-only-filter');
+    const checkbox = g('meds-nonzero-only-filter');
     return !!(checkbox && checkbox.checked);
   }
 
   function updateFilterNotice(searchActive, minQtyActive, nonZeroOnly, hiddenCount, minQtyValue) {
-    const notice = g('filter-notice');
+    const notice = g('meds-filter-notice');
     if (!notice) return;
     if (!searchActive && !minQtyActive && !nonZeroOnly) {
       notice.style.display = 'none';
@@ -340,16 +340,16 @@
   }
 
   function clearViewFilters() {
-    const searchEl = g('search');
+    const searchEl = g('meds-search');
     if (searchEl) searchEl.value = '';
-    const minQtyEl = g('min-qty-filter');
+    const minQtyEl = g('meds-min-qty-filter');
     if (minQtyEl) minQtyEl.value = '';
-    const nonZeroEl = g('nonzero-only-filter');
+    const nonZeroEl = g('meds-nonzero-only-filter');
     if (nonZeroEl) nonZeroEl.checked = false;
   }
 
   function filterItems() {
-    const searchEl = g('search');
+    const searchEl = g('meds-search');
     const searchTerm = searchEl ? searchEl.value.toLowerCase().trim() : '';
     const minQty = getMinQtyThreshold();
     const nonZeroOnly = isNonZeroOnlyEnabled();
@@ -369,7 +369,7 @@
   }
 
   function displayConsumables() {
-    const container = g('consumables-container');
+    const container = g('meds-consumables-container');
     if (!container) return;
 
     updateAddItemRatePlaceholder();
@@ -427,7 +427,7 @@
   }
 
   function applySort() {
-    const container = g('consumables-container');
+    const container = g('meds-consumables-container');
     if (!container) return;
     const tbody = container.querySelector('.data-table tbody');
     if (!tbody) return;
@@ -439,7 +439,7 @@
     const selStart = wasSearch ? active.selectionStart : 0;
     const selEnd = wasSearch ? active.selectionEnd : 0;
 
-    const sel = g('sort-equipment');
+    const sel = g('meds-sort-equipment');
     const key = (sel && sel.value) || currentSortKey;
     currentSortKey = key;
 
@@ -461,7 +461,7 @@
   }
 
   function onSortChange() {
-    const sel = g('sort-equipment');
+    const sel = g('meds-sort-equipment');
     if (sel) {
       currentSortKey = sel.value;
       try {
@@ -496,8 +496,8 @@
   }
 
   function addCustomItem() {
-    const nameEl = g('new-item-name');
-    const rateEl = g('new-item-rate');
+    const nameEl = g('meds-new-item-name');
+    const rateEl = g('meds-new-item-rate');
     if (!nameEl || !rateEl) return;
 
     const name = nameEl.value.trim();
@@ -526,7 +526,7 @@
     currentFileName = currentFileName || 'Custom List';
     currentListType = currentListType || 'custom';
 
-    const fs = g('file-status');
+    const fs = g('meds-file-status');
     if (fs) {
       fs.textContent = currentFileName;
       fs.style.color = '#28a745';
@@ -618,7 +618,7 @@
   }
 
   function updateItemsInfo() {
-    const info = g('items-info');
+    const info = g('meds-items-info');
     if (!info) return;
     const count = filteredConsumables.length;
     const total = allConsumables.length;
@@ -637,9 +637,9 @@
 
     showFeedback('Opening print preview...', 'info');
 
-    const daysEl = g('days');
-    const bedsEl = g('beds');
-    const bufferEl = g('buffer');
+    const daysEl = g('meds-days');
+    const bedsEl = g('meds-beds');
+    const bufferEl = g('meds-buffer');
     const days = daysEl ? daysEl.value : '';
     const beds = bedsEl ? bedsEl.value : '';
     const buffer = bufferEl ? bufferEl.value : '';
@@ -700,8 +700,8 @@
       showFeedback('Please fix validation errors before saving.', 'info');
       return;
     }
-    const nameEl = g('scenario-name');
-    const notesEl = g('scenario-notes');
+    const nameEl = g('meds-scenario-name');
+    const notesEl = g('meds-scenario-notes');
     let baseName = nameEl ? nameEl.value.trim() : '';
     if (!baseName) {
       const promptedName = prompt('Enter a scenario name:');
@@ -767,7 +767,7 @@
   }
 
   function updateScenarioDropdown() {
-    const select = g('scenario-select');
+    const select = g('meds-scenario-select');
     if (!select) return;
 
     const scenarios = getSavedScenarios();
@@ -785,9 +785,9 @@
       select.appendChild(opt);
     });
 
-    const loadBtn = g('load-btn');
-    const deleteBtn = g('delete-btn');
-    const clearBtn = g('clear-btn');
+    const loadBtn = g('meds-load-btn');
+    const deleteBtn = g('meds-delete-btn');
+    const clearBtn = g('meds-clear-btn');
     const disabled = scenarios.length === 0;
     select.disabled = disabled;
     if (loadBtn) loadBtn.disabled = disabled;
@@ -796,7 +796,7 @@
   }
 
   function loadSelectedScenario() {
-    const select = g('scenario-select');
+    const select = g('meds-scenario-select');
     const scenarioId = select ? select.value : '';
 
     if (!scenarioId) {
@@ -817,32 +817,32 @@
     }
     if (scenario.deploymentDays != null) {
       deploymentDays = scenario.deploymentDays;
-      const de = g('days');
+      const de = g('meds-days');
       if (de) de.value = (deploymentDays !== 0) ? deploymentDays : '';
     }
     if (scenario.deploymentBeds != null) {
       deploymentBeds = scenario.deploymentBeds;
-      const be = g('beds');
+      const be = g('meds-beds');
       if (be) be.value = (deploymentBeds !== 0) ? deploymentBeds : '';
     }
     if (scenario.bufferPercentage !== undefined) {
       bufferPercentage = scenario.bufferPercentage;
-      const bu = g('buffer');
+      const bu = g('meds-buffer');
       if (bu) bu.value = (bufferPercentage !== 0) ? bufferPercentage : '';
     }
     if (scenario.fileName) {
       currentFileName = scenario.fileName;
       currentListType = resolveListType(scenario);
-      const fse = g('file-status');
+      const fse = g('meds-file-status');
       if (fse) { fse.textContent = currentFileName; fse.style.color = '#28a745'; }
     } else {
       currentFileName = null;
       currentListType = null;
-      const fse2 = g('file-status');
+      const fse2 = g('meds-file-status');
       if (fse2) { fse2.textContent = 'No list loaded'; fse2.style.color = '#666'; }
     }
-    if (g('scenario-name')) g('scenario-name').value = scenario.baseName || scenario.name || '';
-    if (g('scenario-notes')) g('scenario-notes').value = scenario.notes || '';
+    if (g('meds-scenario-name')) g('meds-scenario-name').value = scenario.baseName || scenario.name || '';
+    if (g('meds-scenario-notes')) g('meds-scenario-notes').value = scenario.notes || '';
     clearViewFilters();
 
     filterItems();
@@ -852,7 +852,7 @@
   }
 
   function deleteSelectedScenario() {
-    const select = g('scenario-select');
+    const select = g('meds-scenario-select');
     const scenarioId = select ? select.value : '';
     if (!scenarioId) {
       showFeedback('Please select a scenario to delete.', 'info');
@@ -924,7 +924,7 @@
           } else {
             deploymentDays = parsedDays;
           }
-          const de = g('days');
+          const de = g('meds-days');
           if (de) de.value = (deploymentDays !== 0) ? deploymentDays : '';
         }
         if (scenario.deploymentBeds !== undefined) {
@@ -935,7 +935,7 @@
           } else {
             deploymentBeds = parsedBeds;
           }
-          const be = g('beds');
+          const be = g('meds-beds');
           if (be) be.value = (deploymentBeds !== 0) ? deploymentBeds : '';
         }
         if (scenario.bufferPercentage !== undefined) {
@@ -950,23 +950,23 @@
           } else {
             bufferPercentage = parsedBuffer;
           }
-          const bu = g('buffer');
+          const bu = g('meds-buffer');
           if (bu) bu.value = (bufferPercentage !== 0) ? bufferPercentage : '';
         }
         if (scenario.fileName) {
           currentFileName = scenario.fileName;
           currentListType = resolveListType(scenario);
-          const fse = g('file-status');
+          const fse = g('meds-file-status');
           if (fse) { fse.textContent = currentFileName; fse.style.color = '#28a745'; }
         } else {
           currentFileName = null;
           currentListType = null;
-          const fse2 = g('file-status');
+          const fse2 = g('meds-file-status');
           if (fse2) { fse2.textContent = 'No list loaded'; fse2.style.color = '#666'; }
         }
         // Imported files have name only; saved scenarios have baseName and name.
-        if (g('scenario-name')) g('scenario-name').value = scenario.name || '';
-        if (g('scenario-notes')) g('scenario-notes').value = scenario.notes || '';
+        if (g('meds-scenario-name')) g('meds-scenario-name').value = scenario.name || '';
+        if (g('meds-scenario-notes')) g('meds-scenario-notes').value = scenario.notes || '';
         clearViewFilters();
         filterItems();
         calculateAndDisplay();
@@ -987,9 +987,9 @@
   }
 
   function onExportToFile() {
-    const dialog = g('export-format-dialog');
+    const dialog = g('meds-export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#export-format-dialog input[name="export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#meds-export-format-dialog input[name="export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
@@ -1014,7 +1014,7 @@
   }
 
   function closeExportFormatDialog() {
-    const dialog = g('export-format-dialog');
+    const dialog = g('meds-export-format-dialog');
     if (dialog) {
       dialog.hidden = true;
       dialog.setAttribute('aria-hidden', 'true');
@@ -1031,8 +1031,8 @@
   }
 
   function buildExportScenario() {
-    const nameEl = g('scenario-name');
-    const notesEl = g('scenario-notes');
+    const nameEl = g('meds-scenario-name');
+    const notesEl = g('meds-scenario-notes');
     return {
       name: (nameEl && nameEl.value.trim()) || `Medications scenario ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`,
       notes: notesEl ? notesEl.value.trim() : '',
@@ -1143,8 +1143,8 @@
     const savedBuffer = localStorage.getItem(STORAGE_BUFFER);
     const savedConsumables = localStorage.getItem(STORAGE_CONSUMABLES);
 
-    const de = g('days');
-    const be = g('beds');
+    const de = g('meds-days');
+    const be = g('meds-beds');
     // Intentional UX choice: start with blank placeholders on open.
     deploymentDays = 0;
     deploymentBeds = 0;
@@ -1153,10 +1153,10 @@
 
     if (savedBuffer !== null) {
       bufferPercentage = parseFloat(savedBuffer) || 0;
-      const bu = g('buffer');
+      const bu = g('meds-buffer');
       if (bu) bu.value = (bufferPercentage !== 0) ? String(bufferPercentage) : '';
     } else {
-      const bu = g('buffer');
+      const bu = g('meds-buffer');
       if (bu) bu.value = '';
     }
     if (savedConsumables) {
@@ -1174,12 +1174,12 @@
     if (savedFileName) {
       currentFileName = savedFileName;
       currentListType = listTypeFromFileName(savedFileName);
-      const fs = g('file-status');
+      const fs = g('meds-file-status');
       if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
     } else {
       currentFileName = null;
       currentListType = allConsumables.length > 0 ? 'custom' : null;
-      const fs = g('file-status');
+      const fs = g('meds-file-status');
       if (fs) { fs.textContent = 'No list loaded'; fs.style.color = '#666'; }
     }
     calculateAndDisplay();
@@ -1215,7 +1215,7 @@
 
   function showFeedback(message, type) {
     type = type || 'success';
-    const feedbackEl = g('button-feedback');
+    const feedbackEl = g('meds-button-feedback');
     if (!feedbackEl) return;
     feedbackEl.textContent = message;
     feedbackEl.className = `button-feedback show ${type}`;
@@ -1246,16 +1246,16 @@
       showFeedback('Items cleared; storage preference could not be updated.', 'info');
     }
 
-    const fs = g('file-status');
+    const fs = g('meds-file-status');
     if (fs) { fs.textContent = 'No list loaded'; fs.style.color = '#666'; }
 
-    const pb = g('pharma-list-btn');
+    const pb = g('meds-pharma-list-btn');
     if (pb) pb.classList.remove('active');
-    const psb = g('pharma-secondary-list-btn');
+    const psb = g('meds-pharma-secondary-list-btn');
     if (psb) psb.classList.remove('active');
-    const minQtyEl = g('min-qty-filter');
+    const minQtyEl = g('meds-min-qty-filter');
     if (minQtyEl) minQtyEl.value = '';
-    const nonZeroEl = g('nonzero-only-filter');
+    const nonZeroEl = g('meds-nonzero-only-filter');
     if (nonZeroEl) nonZeroEl.checked = false;
 
     filterItems();
@@ -1281,16 +1281,16 @@
     currentFileName = 'UCD Ward Meds';
     currentListType = 'ward';
 
-    const fs = g('file-status');
+    const fs = g('meds-file-status');
     if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
-    const searchEl = g('search');
+    const searchEl = g('meds-search');
     if (searchEl) searchEl.value = '';
-    const minQtyEl = g('min-qty-filter');
+    const minQtyEl = g('meds-min-qty-filter');
     if (minQtyEl) minQtyEl.value = '';
-    const nonZeroEl = g('nonzero-only-filter');
+    const nonZeroEl = g('meds-nonzero-only-filter');
     if (nonZeroEl) nonZeroEl.checked = false;
-    const pb = g('pharma-list-btn');
-    const psb = g('pharma-secondary-list-btn');
+    const pb = g('meds-pharma-list-btn');
+    const psb = g('meds-pharma-secondary-list-btn');
     if (pb) pb.classList.add('active');
     if (psb) psb.classList.remove('active');
 
@@ -1318,16 +1318,16 @@
     currentFileName = 'UCD ICU Meds';
     currentListType = 'icu';
 
-    const fs = g('file-status');
+    const fs = g('meds-file-status');
     if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
-    const searchEl = g('search');
+    const searchEl = g('meds-search');
     if (searchEl) searchEl.value = '';
-    const minQtyEl = g('min-qty-filter');
+    const minQtyEl = g('meds-min-qty-filter');
     if (minQtyEl) minQtyEl.value = '';
-    const nonZeroEl = g('nonzero-only-filter');
+    const nonZeroEl = g('meds-nonzero-only-filter');
     if (nonZeroEl) nonZeroEl.checked = false;
-    const pb = g('pharma-list-btn');
-    const psb = g('pharma-secondary-list-btn');
+    const pb = g('meds-pharma-list-btn');
+    const psb = g('meds-pharma-secondary-list-btn');
     if (pb) pb.classList.remove('active');
     if (psb) psb.classList.add('active');
 
@@ -1343,7 +1343,7 @@
       const saved = localStorage.getItem(SORT_STORAGE_KEY);
       if (saved && ['name-asc', 'name-desc', 'qty-desc', 'qty-asc'].includes(saved)) {
         currentSortKey = saved;
-        const sel = g('sort-equipment');
+        const sel = g('meds-sort-equipment');
         if (sel) sel.value = saved;
       }
     } catch (e) {}
