@@ -1134,9 +1134,9 @@
   }
 
   function onExportToFile() {
-    const dialog = document.getElementById('export-format-dialog');
+    const dialog = document.getElementById('load-export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#export-format-dialog input[name="export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#load-export-format-dialog input[name="export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
@@ -1158,7 +1158,7 @@
   }
 
   function closeExportFormatDialog() {
-    const dialog = document.getElementById('export-format-dialog');
+    const dialog = document.getElementById('load-export-format-dialog');
     if (dialog) {
       dialog.hidden = true;
       dialog.setAttribute('aria-hidden', 'true');
@@ -1364,8 +1364,8 @@
     const btnClearAutosave = $(id('btn-clear-autosave'));
     const fileInput = $(id('scenario-file-input'));
     if (btnPrint) { btnPrint.removeEventListener('click', onPrint); btnPrint.addEventListener('click', onPrint); }
-    const guideOverlay = document.getElementById('guide-modal-overlay');
-    const guideBody = document.getElementById('guide-modal-body');
+    const guideOverlay = document.getElementById('load-guide-modal-overlay');
+    const guideBody = document.getElementById('load-guide-modal-body');
     function openGuide() {
       if (!guideOverlay || !guideBody) return;
       if (guideBody.innerHTML === '') {
@@ -1384,12 +1384,12 @@
       guideOverlay.hidden = false;
       guideOverlay.setAttribute('aria-hidden', 'false');
     }
-    const btnGuide = document.getElementById('guide-btn');
+    const btnGuide = document.getElementById('load-guide-btn');
     if (btnGuide) { btnGuide.removeEventListener('click', openGuide); btnGuide.addEventListener('click', openGuide); }
     function closeGuide() {
       if (guideOverlay) { guideOverlay.hidden = true; guideOverlay.setAttribute('aria-hidden', 'true'); }
     }
-    const guideClose = document.getElementById('guide-modal-close');
+    const guideClose = document.getElementById('load-guide-modal-close');
     if (guideClose) { guideClose.removeEventListener('click', closeGuide); guideClose.addEventListener('click', closeGuide); }
     function closeGuideOnOverlayClick(e) {
       if (e.target === guideOverlay) { guideOverlay.hidden = true; guideOverlay.setAttribute('aria-hidden', 'true'); }
@@ -1406,11 +1406,11 @@
     if (btnClearScen) { btnClearScen.removeEventListener('click', onClearAllScenarios); btnClearScen.addEventListener('click', onClearAllScenarios); }
     if (btnImport) { btnImport.removeEventListener('click', onImportFromFile); btnImport.addEventListener('click', onImportFromFile); }
     if (btnExport) { btnExport.removeEventListener('click', onExportToFile); btnExport.addEventListener('click', onExportToFile); }
-    const exportFormatDialog = document.getElementById('export-format-dialog');
-    const exportFormatConfirm = document.getElementById('export-format-confirm');
-    const exportFormatCancel = document.getElementById('export-format-cancel');
+    const exportFormatDialog = document.getElementById('load-export-format-dialog');
+    const exportFormatConfirm = document.getElementById('load-export-format-confirm');
+    const exportFormatCancel = document.getElementById('load-export-format-cancel');
     function onExportFormatConfirm() {
-      const selected = document.querySelector('#export-format-dialog input[name="export-format"]:checked');
+      const selected = document.querySelector('#load-export-format-dialog input[name="export-format"]:checked');
       const fmt = selected ? selected.value : 'JSON';
       performExportWithFormat(fmt);
       closeExportFormatDialog();
