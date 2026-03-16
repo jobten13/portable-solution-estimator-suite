@@ -23,16 +23,16 @@
 
   // Validation rules
   const VALIDATION_RULES = {
-    days: { min: 0, max: 3650, message: 'Days must be between 0 and 3650 (10 years)' },
-    beds: { min: 0, max: 10000, message: 'Beds must be between 0 and 10,000' },
-    buffer: { min: 0, max: 100, message: 'Buffer must be between 0% and 100%' },
-    'potable-rate': { min: 0, max: 10000, message: 'Rate must be between 0 and 10,000' },
-    'wastewater-rate': { min: 0, max: 10000, message: 'Rate must be between 0 and 10,000' },
-    'potable-count': { min: 0, max: 1000, integer: true, message: 'Count must be a whole number between 0 and 1,000' },
-    'potable-capacity': { min: 0, max: 1000000, message: 'Capacity must be between 0 and 1,000,000' },
-    'wastewater-count': { min: 0, max: 1000, integer: true, message: 'Count must be a whole number between 0 and 1,000' },
-    'wastewater-capacity': { min: 0, max: 1000000, message: 'Capacity must be between 0 and 1,000,000' },
-    'mains-flow-rate': { min: 0, max: 1000000, message: 'Flow rate must be 0 or greater' }
+    'water-days': { min: 0, max: 3650, message: 'Days must be between 0 and 3650 (10 years)' },
+    'water-beds': { min: 0, max: 10000, message: 'Beds must be between 0 and 10,000' },
+    'water-buffer': { min: 0, max: 100, message: 'Buffer must be between 0% and 100%' },
+    'water-potable-rate': { min: 0, max: 10000, message: 'Rate must be between 0 and 10,000' },
+    'water-wastewater-rate': { min: 0, max: 10000, message: 'Rate must be between 0 and 10,000' },
+    'water-potable-count': { min: 0, max: 1000, integer: true, message: 'Count must be a whole number between 0 and 1,000' },
+    'water-potable-capacity': { min: 0, max: 1000000, message: 'Capacity must be between 0 and 1,000,000' },
+    'water-wastewater-count': { min: 0, max: 1000, integer: true, message: 'Count must be a whole number between 0 and 1,000' },
+    'water-wastewater-capacity': { min: 0, max: 1000000, message: 'Capacity must be between 0 and 1,000,000' },
+    'water-mains-flow-rate': { min: 0, max: 1000000, message: 'Flow rate must be 0 or greater' }
   };
 
   function validateInput(inputId) {
@@ -106,18 +106,18 @@
   }
 
   function getPotableSupplyMode() {
-    const el = g('potable-supply-mode');
+    const el = g('water-potable-supply-mode');
     return el ? el.value : 'self';
   }
 
   function getWastewaterDisposalMode() {
-    const el = g('wastewater-disposal-mode');
+    const el = g('water-wastewater-disposal-mode');
     return el ? el.value : 'containers';
   }
 
   function updateSupplyModeUI() {
     const potableMode = getPotableSupplyMode();
-    const mainsFlowSection = g('mains-flow-section');
+    const mainsFlowSection = g('water-mains-flow-section');
     if (mainsFlowSection) {
       mainsFlowSection.style.display =
         (potableMode === 'mains' || potableMode === 'hybrid') ? 'grid' : 'none';
@@ -135,20 +135,20 @@
   }
 
   function getState() {
-    let days = getNum(g('days'), 0);
-    let beds = getNum(g('beds'), 0);
-    let buffer = getNum(g('buffer'), 0) / 100;
-    let potableRate = getNum(g('potable-rate'), 80);
-    let wastewaterRate = getNum(g('wastewater-rate'), 65);
+    let days = getNum(g('water-days'), 0);
+    let beds = getNum(g('water-beds'), 0);
+    let buffer = getNum(g('water-buffer'), 0) / 100;
+    let potableRate = getNum(g('water-potable-rate'), 80);
+    let wastewaterRate = getNum(g('water-wastewater-rate'), 65);
     if (isGallons()) {
       potableRate *= L_PER_GAL;
       wastewaterRate *= L_PER_GAL;
     }
-    const potableCount = getNum(g('potable-count'), 0);
-    const potableCap = getNum(g('potable-capacity'), 0);
-    const wastewaterCount = getNum(g('wastewater-count'), 0);
-    const wastewaterCap = getNum(g('wastewater-capacity'), 0);
-    const mainsFlowVal = getNum(g('mains-flow-rate'), 0);
+    const potableCount = getNum(g('water-potable-count'), 0);
+    const potableCap = getNum(g('water-potable-capacity'), 0);
+    const wastewaterCount = getNum(g('water-wastewater-count'), 0);
+    const wastewaterCap = getNum(g('water-wastewater-capacity'), 0);
+    const mainsFlowVal = getNum(g('water-mains-flow-rate'), 0);
     const mainsFlowLhr = isGallons() ? mainsFlowVal * L_PER_GAL : mainsFlowVal;
 
     return {
@@ -156,8 +156,8 @@
       beds,
       bufferPercent: buffer * 100,
       waterUnit: isGallons() ? 'G' : 'L',
-      scenarioName: g('scenario-name') ? g('scenario-name').value : '',
-      scenarioNotes: g('scenario-notes') ? g('scenario-notes').value : '',
+      scenarioName: g('water-scenario-name') ? g('water-scenario-name').value : '',
+      scenarioNotes: g('water-scenario-notes') ? g('water-scenario-notes').value : '',
       potablePerBedPerDay: potableRate,
       wastewaterPerBedPerDay: wastewaterRate,
       potableContainerCount: potableCount,
@@ -175,11 +175,11 @@
     // Clear any existing validation errors
     Object.keys(VALIDATION_RULES).forEach(id => clearValidationError(id));
     
-    if (g('days')) g('days').value = s.days != null ? s.days : 0;
-    if (g('beds')) g('beds').value = s.beds != null ? s.beds : 0;
-    if (g('buffer')) g('buffer').value = s.bufferPercent != null ? s.bufferPercent : 0;
-    if (g('scenario-name')) g('scenario-name').value = s.scenarioName != null ? s.scenarioName : '';
-    if (g('scenario-notes')) g('scenario-notes').value = s.scenarioNotes != null ? s.scenarioNotes : '';
+    if (g('water-days')) g('water-days').value = s.days != null ? s.days : 0;
+    if (g('water-beds')) g('water-beds').value = s.beds != null ? s.beds : 0;
+    if (g('water-buffer')) g('water-buffer').value = s.bufferPercent != null ? s.bufferPercent : 0;
+    if (g('water-scenario-name')) g('water-scenario-name').value = s.scenarioName != null ? s.scenarioName : '';
+    if (g('water-scenario-notes')) g('water-scenario-notes').value = s.scenarioNotes != null ? s.scenarioNotes : '';
     const unit = (s.waterUnit === 'G') ? 'G' : 'L';
     const radioGal = document.querySelector('input[name="water-unit"][value="G"]');
     const radioL = document.querySelector('input[name="water-unit"][value="L"]');
@@ -192,22 +192,22 @@
     baseLiterValues.potable = potableL;
     baseLiterValues.wastewater = wastewaterL;
     // Display based on unit
-    if (g('potable-rate')) g('potable-rate').value = unit === 'G' ? Math.ceil(potableL / L_PER_GAL) : potableL;
-    if (g('wastewater-rate')) g('wastewater-rate').value = unit === 'G' ? Math.ceil(wastewaterL / L_PER_GAL) : wastewaterL;
+    if (g('water-potable-rate')) g('water-potable-rate').value = unit === 'G' ? Math.ceil(potableL / L_PER_GAL) : potableL;
+    if (g('water-wastewater-rate')) g('water-wastewater-rate').value = unit === 'G' ? Math.ceil(wastewaterL / L_PER_GAL) : wastewaterL;
     updateUnitLabels();
-    if (g('potable-count')) g('potable-count').value = s.potableContainerCount ?? s.potableBladderCount ?? 0;
-    if (g('potable-capacity')) g('potable-capacity').value = s.potableContainerCapacity ?? s.potableBladderCapacity ?? 0;
-    if (g('wastewater-count')) g('wastewater-count').value = s.wastewaterContainerCount ?? s.wastewaterBladderCount ?? s.grayBladderCount ?? 0;
-    if (g('wastewater-capacity')) g('wastewater-capacity').value = s.wastewaterContainerCapacity ?? s.wastewaterBladderCapacity ?? s.grayBladderCapacity ?? 0;
-    if (g('potable-supply-mode')) {
-      g('potable-supply-mode').value = s.potableSupplyMode || 'self';
+    if (g('water-potable-count')) g('water-potable-count').value = s.potableContainerCount ?? s.potableBladderCount ?? 0;
+    if (g('water-potable-capacity')) g('water-potable-capacity').value = s.potableContainerCapacity ?? s.potableBladderCapacity ?? 0;
+    if (g('water-wastewater-count')) g('water-wastewater-count').value = s.wastewaterContainerCount ?? s.wastewaterBladderCount ?? s.grayBladderCount ?? 0;
+    if (g('water-wastewater-capacity')) g('water-wastewater-capacity').value = s.wastewaterContainerCapacity ?? s.wastewaterBladderCapacity ?? s.grayBladderCapacity ?? 0;
+    if (g('water-potable-supply-mode')) {
+      g('water-potable-supply-mode').value = s.potableSupplyMode || 'self';
     }
-    if (g('wastewater-disposal-mode')) {
-      g('wastewater-disposal-mode').value = s.wastewaterDisposalMode || 'containers';
+    if (g('water-wastewater-disposal-mode')) {
+      g('water-wastewater-disposal-mode').value = s.wastewaterDisposalMode || 'containers';
     }
-    if (g('mains-flow-rate')) {
+    if (g('water-mains-flow-rate')) {
       const mainsFlowLhr = s.mainsFlowRate != null ? s.mainsFlowRate : 0;
-      g('mains-flow-rate').value = isGallons() ? Math.round(mainsFlowLhr / L_PER_GAL) : mainsFlowLhr;
+      g('water-mains-flow-rate').value = isGallons() ? Math.round(mainsFlowLhr / L_PER_GAL) : mainsFlowLhr;
     }
     updateSupplyModeUI();
     updateBreakdown();
@@ -217,8 +217,8 @@
   }
 
   function onUnitChange() {
-    const potableEl = g('potable-rate');
-    const wastewaterEl = g('wastewater-rate');
+    const potableEl = g('water-potable-rate');
+    const wastewaterEl = g('water-wastewater-rate');
     if (!potableEl || !wastewaterEl) return;
     const nowGal = isGallons();
     // Get current displayed values
@@ -249,7 +249,7 @@
   }
 
   function updateBreakdown() {
-    const wastewaterEl = g('wastewater-rate');
+    const wastewaterEl = g('water-wastewater-rate');
     if (!wastewaterEl) return;
     let wastewater = getNum(wastewaterEl, 0);
     if (isGallons()) wastewater *= L_PER_GAL;
@@ -290,12 +290,12 @@
     const wastewaterStorage = st.wastewaterContainerCount * st.wastewaterContainerCapacity;
 
     // Show/hide result rows based on mode
-    const deliveryRow = g('potable-delivery-row');
-    const mainsRow = g('potable-mains-row');
-    const bufferRow = g('potable-buffer-row');
-    const pickupRow = g('wastewater-pickup-row');
-    const wwMainsRow = g('wastewater-mains-row');
-    const mainsStatusEl = g('out-mains-status');
+    const deliveryRow = g('water-potable-delivery-row');
+    const mainsRow = g('water-potable-mains-row');
+    const bufferRow = g('water-potable-buffer-row');
+    const pickupRow = g('water-wastewater-pickup-row');
+    const wwMainsRow = g('water-wastewater-mains-row');
+    const mainsStatusEl = g('water-out-mains-status');
     const showMains = potableMode === 'mains' || potableMode === 'hybrid';
     if (deliveryRow) deliveryRow.style.display = showMains && potableMode !== 'hybrid' ? 'none' : '';
     if (mainsRow) mainsRow.style.display = showMains ? '' : 'none';
@@ -377,7 +377,7 @@
       setText('out-wastewater-pickups', wastewaterPickups);
     }
 
-    const note = g('schedule-note');
+    const note = g('water-schedule-note');
     if (note) {
       const parts = [];
       if (potableMode === 'self' || potableMode === 'hybrid') {
@@ -507,7 +507,7 @@
   }
 
   function updateScenarioDropdown() {
-    const select = g('scenario-select');
+    const select = g('water-scenario-select');
     if (!select) return;
     const list = getSavedScenarios();
     if (list.length === 0) {
@@ -526,9 +526,9 @@
       opt.textContent = `${s.name || 'Unnamed'} (${s.timestamp ? new Date(s.timestamp).toLocaleString() : ''})`;
       select.appendChild(opt);
     });
-    const loadBtn = g('load-btn');
-    const deleteBtn = g('delete-btn');
-    const clearBtn = g('clear-btn');
+    const loadBtn = g('water-load-btn');
+    const deleteBtn = g('water-delete-btn');
+    const clearBtn = g('water-clear-btn');
     const disabled = list.length === 0;
     select.disabled = disabled;
     if (loadBtn) loadBtn.disabled = disabled;
@@ -555,7 +555,7 @@
         return;
       }
       name = name.trim();
-      if (g('scenario-name')) g('scenario-name').value = name;
+      if (g('water-scenario-name')) g('water-scenario-name').value = name;
       state.scenarioName = name;
     }
     const scenario = {
@@ -584,7 +584,7 @@
   }
 
   function loadSelectedScenario() {
-    const select = g('scenario-select');
+    const select = g('water-scenario-select');
     const id = select ? select.value : '';
     if (!id) {
       showFeedback('Select a scenario to load.', 'info');
@@ -597,13 +597,13 @@
       return;
     }
     applyState(scenario.state);
-    if (g('scenario-name')) g('scenario-name').value = scenario.name || (scenario.state && scenario.state.scenarioName) || '';
+    if (g('water-scenario-name')) g('water-scenario-name').value = scenario.name || (scenario.state && scenario.state.scenarioName) || '';
     recalc();
     showFeedback(`Scenario "${scenario.name || ''}" loaded.`, 'success');
   }
 
   function deleteSelectedScenario() {
-    const select = g('scenario-select');
+    const select = g('water-scenario-select');
     const id = select ? select.value : '';
     if (!id) {
       showFeedback('Select a scenario to delete.', 'info');
@@ -642,7 +642,7 @@
   }
 
   function importFromFile() {
-    const input = g('file-input');
+    const input = g('water-file-input');
     if (!input) return;
     input.value = '';
     input.click();
@@ -687,9 +687,9 @@
   }
 
   function onExportToFile() {
-    const dialog = g('export-format-dialog');
+    const dialog = g('water-export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#export-format-dialog input[name="export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#water-export-format-dialog input[name="export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
@@ -717,7 +717,7 @@
   }
 
   function closeExportFormatDialog() {
-    const dialog = g('export-format-dialog');
+    const dialog = g('water-export-format-dialog');
     if (dialog) {
       dialog.hidden = true;
       dialog.setAttribute('aria-hidden', 'true');
@@ -770,7 +770,7 @@
 
   function showFeedback(msg, type) {
     type = type || 'success';
-    const el = g('button-feedback');
+    const el = g('water-button-feedback');
     if (!el) return;
     el.textContent = msg;
     el.className = `button-feedback show ${type}`;
@@ -789,8 +789,8 @@
   }
 
   function updateBaseLiterValues() {
-    const potableEl = g('potable-rate');
-    const wastewaterEl = g('wastewater-rate');
+    const potableEl = g('water-potable-rate');
+    const wastewaterEl = g('water-wastewater-rate');
     if (isGallons()) {
       // User edited in gallons mode: convert to liters and store
       if (potableEl) baseLiterValues.potable = getNum(potableEl, 0) * L_PER_GAL;
@@ -803,8 +803,8 @@
   }
 
   function toggleBreakdown() {
-    const display = g('breakdown-display');
-    const toggle = g('breakdown-toggle');
+    const display = g('water-breakdown-display');
+    const toggle = g('water-breakdown-toggle');
     if (!display || !toggle) return;
     if (display.style.display === 'none') {
       display.style.display = 'block';
@@ -853,7 +853,7 @@
       if (el) {
         setupPlaceholderBehavior(el);
         el.addEventListener('input', recalc);
-        if (id === 'mains-flow-rate') el.addEventListener('blur', () => validateAndShow('mains-flow-rate'));
+        if (id === 'water-mains-flow-rate') el.addEventListener('blur', () => validateAndShow('water-mains-flow-rate'));
       }
     });
     // Water rate inputs: update base values and recalc
@@ -867,8 +867,8 @@
       }
     });
 
-    if (g('breakdown-toggle')) {
-      g('breakdown-toggle').addEventListener('click', toggleBreakdown);
+    if (g('water-breakdown-toggle')) {
+      g('water-breakdown-toggle').addEventListener('click', toggleBreakdown);
     }
 
     // Section-level help: hover for quick glance; click to pin open
@@ -926,21 +926,21 @@
     });
     document.addEventListener('click', () => closeAllHelpPopovers(true));
 
-    if (g('btn-clear-autosave')) g('btn-clear-autosave').addEventListener('click', clearAutosavedState);
-    if (g('print-btn')) g('print-btn').addEventListener('click', printReport);
-    if (g('reset-btn')) g('reset-btn').addEventListener('click', resetToDefaults);
-    if (g('save-btn')) g('save-btn').addEventListener('click', saveScenario);
-    if (g('load-btn')) g('load-btn').addEventListener('click', loadSelectedScenario);
-    if (g('delete-btn')) g('delete-btn').addEventListener('click', deleteSelectedScenario);
-    if (g('clear-btn')) g('clear-btn').addEventListener('click', clearAllScenarios);
-    if (g('import-btn')) g('import-btn').addEventListener('click', importFromFile);
-    if (g('export-btn')) g('export-btn').addEventListener('click', onExportToFile);
+    if (g('water-btn-clear-autosave')) g('water-btn-clear-autosave').addEventListener('click', clearAutosavedState);
+    if (g('water-print-btn')) g('water-print-btn').addEventListener('click', printReport);
+    if (g('water-reset-btn')) g('water-reset-btn').addEventListener('click', resetToDefaults);
+    if (g('water-save-btn')) g('water-save-btn').addEventListener('click', saveScenario);
+    if (g('water-load-btn')) g('water-load-btn').addEventListener('click', loadSelectedScenario);
+    if (g('water-delete-btn')) g('water-delete-btn').addEventListener('click', deleteSelectedScenario);
+    if (g('water-clear-btn')) g('water-clear-btn').addEventListener('click', clearAllScenarios);
+    if (g('water-import-btn')) g('water-import-btn').addEventListener('click', importFromFile);
+    if (g('water-export-btn')) g('water-export-btn').addEventListener('click', onExportToFile);
 
-    const exportFormatDialog = g('export-format-dialog');
-    const exportFormatConfirm = g('export-format-confirm');
-    const exportFormatCancel = g('export-format-cancel');
+    const exportFormatDialog = g('water-export-format-dialog');
+    const exportFormatConfirm = g('water-export-format-confirm');
+    const exportFormatCancel = g('water-export-format-cancel');
     function onExportFormatConfirm() {
-      const selected = document.querySelector('#export-format-dialog input[name="export-format"]:checked');
+      const selected = document.querySelector('#water-export-format-dialog input[name="export-format"]:checked');
       const fmt = selected ? selected.value : 'JSON';
       performExportWithFormat(fmt);
       closeExportFormatDialog();
@@ -957,7 +957,7 @@
       });
     }
 
-    const fileInput = g('file-input');
+    const fileInput = g('water-file-input');
     if (fileInput) fileInput.addEventListener('change', onFileSelected);
 
     const unitRadios = document.querySelectorAll('input[name="water-unit"]');
@@ -972,8 +972,8 @@
       if (typeof WATER_DEFAULTS !== 'undefined') {
         applyState(WATER_DEFAULTS);
       } else {
-        const potableEl = g('potable-rate');
-        const wastewaterEl = g('wastewater-rate');
+        const potableEl = g('water-potable-rate');
+        const wastewaterEl = g('water-wastewater-rate');
         if (potableEl && !isGallons()) baseLiterValues.potable = getNum(potableEl, baseLiterValues.potable);
         if (wastewaterEl && !isGallons()) baseLiterValues.wastewater = getNum(wastewaterEl, baseLiterValues.wastewater);
       }
