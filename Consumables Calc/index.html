@@ -84,6 +84,7 @@
           <textarea id="cons-scenario-notes" rows="3" placeholder="Optional notes"></textarea>
         </div>
       </div>
+      <p class="scenario-saved-line" id="cons-saved-display" aria-live="polite"></p>
       <input type="file" id="cons-import-file-input" accept=".json" style="display: none;">
       <div id="cons-button-feedback" class="button-feedback"></div>
     </section>
@@ -102,7 +103,7 @@
       </div>
       <div class="params-grid">
         <div class="param-group">
-          <label for="cons-days">Expected Length of Deployment (Days):</label>
+          <label for="cons-days">Deployment Length (Days):</label>
           <input type="number" id="cons-days" min="0" placeholder="0">
         </div>
         <div class="param-group">

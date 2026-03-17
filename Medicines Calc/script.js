@@ -385,7 +385,11 @@
     }
 
     const rateHeader = getRateColumnLabel(currentListType);
-    let html = '<div class="table-wrapper"><table class="data-table"><thead><tr>';
+    let html = '';
+    if (bufferPercentage > 0) {
+      html += '<div class="buffer-badge" role="status">Buffer: +' + bufferPercentage + '% applied to all quantities</div>';
+    }
+    html += '<div class="table-wrapper"><table class="data-table"><thead><tr>';
     html += '<th>Item Description</th>';
     html += '<th class="col-rate-header" aria-live="polite">' + rateHeader + '</th>';
     html += '<th>Total quantity</th>';
@@ -676,7 +680,7 @@
     let fullHtml = '<!DOCTYPE html><html><head><title>Medications Supply List</title>';
     fullHtml += '<style>body{font-family:Arial,sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;} th{background:#2563eb;color:white;padding:12px;text-align:left;} td{padding:10px;border-bottom:1px solid #ddd;} .number-cell{text-align:center;font-family:monospace;}</style></head><body>';
     fullHtml += '<h1>Medications Supply List</h1>';
-    fullHtml += `<div class="params"><strong>Expected Length of Deployment (Days):</strong> ${escapeHtml(String(days))}<br><strong>Expected Number of Beds:</strong> ${escapeHtml(String(beds))}<br><strong>Buffer Percentage:</strong> ${escapeHtml(String(buffer))}%</div>`;
+    fullHtml += `<div class="params"><strong>Deployment Length (Days):</strong> ${escapeHtml(String(days))}<br><strong>Expected Number of Beds:</strong> ${escapeHtml(String(beds))}<br><strong>Buffer Percentage:</strong> ${escapeHtml(String(buffer))}%</div>`;
     fullHtml += summaryHtml;
     fullHtml += `<p style="margin-top:30px;font-size:0.9em;color:#666;">Generated on ${new Date().toLocaleString()}</p></body></html>`;
 
@@ -753,6 +757,7 @@
       return;
     }
     updateScenarioDropdown();
+    updateSavedDisplay(scenario.timestamp || null);
     showFeedback(`Scenario "${scenario.name}" saved successfully!`, 'success');
   }
 
@@ -763,6 +768,21 @@
     } catch (e) {
       console.error('Failed to read saved scenarios:', e);
       return [];
+    }
+  }
+
+  function updateSavedDisplay(isoTimestampOrNull) {
+    const el = g('meds-saved-display');
+    if (!el) return;
+    if (isoTimestampOrNull) {
+      try {
+        const d = new Date(isoTimestampOrNull);
+        el.textContent = 'Saved: ' + (d.toLocaleString && d.toLocaleString());
+      } catch (e) {
+        el.textContent = '';
+      }
+    } else {
+      el.textContent = '';
     }
   }
 
@@ -843,6 +863,7 @@
     }
     if (g('meds-scenario-name')) g('meds-scenario-name').value = scenario.baseName || scenario.name || '';
     if (g('meds-scenario-notes')) g('meds-scenario-notes').value = scenario.notes || '';
+    updateSavedDisplay(scenario.timestamp || null);
     clearViewFilters();
 
     filterItems();
@@ -891,6 +912,7 @@
       return;
     }
     updateScenarioDropdown();
+    updateSavedDisplay(null);
     showFeedback('All scenarios cleared successfully!', 'success');
   }
 
@@ -1258,6 +1280,23 @@
     const nonZeroEl = g('meds-nonzero-only-filter');
     if (nonZeroEl) nonZeroEl.checked = false;
 
+    deploymentDays = 0;
+    deploymentBeds = 0;
+    bufferPercentage = 0;
+    const daysEl = g('meds-days');
+    if (daysEl) daysEl.value = '';
+    const bedsEl = g('meds-beds');
+    if (bedsEl) bedsEl.value = '';
+    const bufferEl = g('meds-buffer');
+    if (bufferEl) bufferEl.value = '';
+    ['days', 'beds', 'buffer'].forEach(clearValidationError);
+
+    const nameEl = g('meds-scenario-name');
+    if (nameEl) nameEl.value = '';
+    const notesEl = g('meds-scenario-notes');
+    if (notesEl) notesEl.value = '';
+
+    updateSavedDisplay(null);
     filterItems();
     calculateAndDisplay();
     saveData();

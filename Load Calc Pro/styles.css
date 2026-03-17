@@ -166,12 +166,12 @@
 
 .load-pro-calc .btn-icon:hover { background: #fecaca; border-color: #ef4444; }
 
-/* Scenarios panel – unified spec (light background) */
+/* Scenarios panel – green box aligned with Medicines/Consumables/Basic */
 .load-pro-calc .scenario-section {
-  background: #f8f9fa;
+  background: #ecfdf5;
   padding: 16px 20px;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 2px solid #059669;
   margin-bottom: 20px;
 }
 
@@ -204,7 +204,16 @@
 
 .load-pro-calc .scenario-meta .field-notes { grid-column: 1 / -1; }
 
+.load-pro-calc .scenario-meta .field {
+  padding: 8px 10px;
+  margin: -8px -10px;
+  border-radius: 6px;
+}
+
 .load-pro-calc .scenario-meta .field label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
   color: #374151;
   font-weight: 600;
 }
@@ -228,6 +237,12 @@
 }
 
 .load-pro-calc .scenario-meta textarea { min-height: 60px; resize: vertical; }
+
+.load-pro-calc .scenario-saved-line {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: #374151;
+}
 
 .load-pro-calc input:hover, .load-pro-calc textarea:hover, .load-pro-calc select:hover {
   outline: 2px solid rgba(59,130,246,0.4);
@@ -698,7 +713,8 @@
   .load-pro-calc .calc-app { box-shadow: none; padding: 0; }
   .load-pro-calc .banner { background: white; color: black; }
   .load-pro-calc .banner-title, .load-pro-calc .banner-subtitle { color: black; }
-  .load-pro-calc .toolbar-wrap, .load-pro-calc .toolbar, .load-pro-calc .scenario-section, .load-pro-calc .sort-bar, .load-pro-calc .search-wrap, .load-pro-calc .disclaimer, .load-pro-calc .note, .load-pro-calc .category-actions, .load-pro-calc .col-delete, .load-pro-calc .custom-form, .load-pro-calc .btn-icon, .load-pro-calc .help-icon, .load-pro-calc .help-popover, .load-pro-calc .guide-modal-overlay, .load-pro-calc .export-format-dialog { display: none !important; }
+  .load-pro-calc .toolbar-wrap, .load-pro-calc .toolbar, .load-pro-calc .scenario-actions, .load-pro-calc .scenario-storage-note, .load-pro-calc .sort-bar, .load-pro-calc .search-wrap, .load-pro-calc .disclaimer, .load-pro-calc .note, .load-pro-calc .category-actions, .load-pro-calc .col-delete, .load-pro-calc .custom-form, .load-pro-calc .btn-icon, .load-pro-calc .help-icon, .load-pro-calc .help-popover, .load-pro-calc .guide-modal-overlay, .load-pro-calc .export-format-dialog { display: none !important; }
+  .load-pro-calc .scenario-section { display: block !important; }
   .load-pro-calc .main-grid { grid-template-columns: 1fr 280px; gap: 20px; }
   .load-pro-calc .equipment-table input[type="number"] { border: none; font-weight: bold; padding: 0; }
   .load-pro-calc .sidebar { 

@@ -676,6 +676,21 @@
     }
   }
 
+  function updateSavedDisplay(isoTimestampOrNull) {
+    const el = document.getElementById('load-pro-saved-display');
+    if (!el) return;
+    if (isoTimestampOrNull) {
+      try {
+        const d = new Date(isoTimestampOrNull);
+        el.textContent = 'Saved: ' + (d.toLocaleString && d.toLocaleString());
+      } catch (e) {
+        el.textContent = '';
+      }
+    } else {
+      el.textContent = '';
+    }
+  }
+
   function showToast(message, type = 'info', duration = 3000) {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -890,6 +905,8 @@
       return;
     }
     updateScenarioDropdown();
+    updateAutosaveTimestampDisplay(scenario.timestamp);
+    updateSavedDisplay(scenario.timestamp);
     acknowledge('load-pro-save-scenario-btn', 'Saved!');
   }
 
@@ -907,6 +924,8 @@
       return;
     }
     applyScenarioData(scenario.data);
+    updateAutosaveTimestampDisplay(scenario.timestamp || '');
+    updateSavedDisplay(scenario.timestamp || null);
     acknowledge('load-pro-load-scenario-btn', 'Loaded!');
   }
 
@@ -938,6 +957,8 @@
     if (!confirm(`Delete all ${scenarios.length} saved scenarios? This cannot be undone.`)) return;
     try { localStorage.removeItem(STORAGE_SCENARIOS); } catch (e) {}
     updateScenarioDropdown();
+    updateAutosaveTimestampDisplay('');
+    updateSavedDisplay(null);
     acknowledge('load-pro-clear-scenarios-btn', 'Cleared');
   }
 
@@ -1078,6 +1099,7 @@
     const searchEl = $('#load-pro-search-equipment');
     if (searchEl) searchEl.value = '';
     filterEquipmentSearch();
+    updateSavedDisplay(null);
     recalc();
   }
 
@@ -1220,6 +1242,8 @@
     });
 
     document.addEventListener('click', (e) => {
+      const basicPanel = document.getElementById('panel-load-calc');
+      if (basicPanel && basicPanel.contains(e.target)) return;
       const title = e.target.closest('.category-title');
       if (title) {
         const category = title.closest('.category');

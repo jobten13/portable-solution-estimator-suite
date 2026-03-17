@@ -82,6 +82,7 @@
             <textarea id="scenario-notes" rows="3" placeholder="Optional notes"></textarea>
           </div>
         </div>
+        <p class="scenario-saved-line" id="meds-saved-display" aria-live="polite"></p>
         <input type="file" id="import-file-input" accept=".json" style="display: none;">
         <div id="button-feedback" class="button-feedback"></div>
       </section>
@@ -91,7 +92,7 @@
         <h3>Deployment Parameters</h3>
         <div class="params-grid">
           <div class="param-group">
-            <label for="days">Expected Length of Deployment (Days):</label>
+            <label for="days">Deployment Length (Days):</label>
             <input type="number" id="days" min="0" placeholder="0">
           </div>
           <div class="param-group">

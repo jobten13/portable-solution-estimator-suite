@@ -12,7 +12,8 @@
   const GRAY_RATIO = 0.77; // Estimated ~77% gray water, ~23% black water
 
   function g(id) {
-    return document.getElementById(id);
+    const fullId = (id && id.startsWith('water-')) ? id : 'water-' + (id || '');
+    return document.getElementById(fullId);
   }
 
   function getNum(el, def) {
@@ -268,6 +269,14 @@
   function recalc() {
     const st = getState();
     const { days, beds, bufferPercent } = st;
+    const bufferBadgeContainer = g('buffer-badge-container');
+    if (bufferBadgeContainer) {
+      const pct = Number(bufferPercent);
+      const showBadge = pct > 0 && Number.isFinite(pct);
+      bufferBadgeContainer.innerHTML = showBadge
+        ? '<div class="buffer-badge" role="status">Buffer: +' + Math.round(pct) + '% applied to all quantities</div>'
+        : '';
+    }
     const mult = 1 + (bufferPercent / 100);
 
     const potablePerDay = beds * st.potablePerBedPerDay;
@@ -536,6 +545,21 @@
     if (clearBtn) clearBtn.disabled = disabled;
   }
 
+  function updateSavedDisplay(isoTimestampOrNull) {
+    const el = g('saved-display');
+    if (!el) return;
+    if (isoTimestampOrNull) {
+      try {
+        const d = new Date(isoTimestampOrNull);
+        el.textContent = 'Saved: ' + (d.toLocaleString && d.toLocaleString());
+      } catch (e) {
+        el.textContent = '';
+      }
+    } else {
+      el.textContent = '';
+    }
+  }
+
   function saveScenario() {
     // Validate all inputs before saving
     let hasErrors = false;
@@ -580,6 +604,7 @@
       return;
     }
     updateScenarioDropdown();
+    updateSavedDisplay(scenario.timestamp || null);
     showFeedback(`Scenario "${scenario.name}" saved.`, 'success');
   }
 
@@ -598,6 +623,7 @@
     }
     applyState(scenario.state);
     if (g('water-scenario-name')) g('water-scenario-name').value = scenario.name || (scenario.state && scenario.state.scenarioName) || '';
+    updateSavedDisplay(scenario.timestamp || null);
     recalc();
     showFeedback(`Scenario "${scenario.name || ''}" loaded.`, 'success');
   }
@@ -638,6 +664,7 @@
       return;
     }
     updateScenarioDropdown();
+    updateSavedDisplay(null);
     showFeedback('All scenarios cleared.', 'success');
   }
 
@@ -735,6 +762,7 @@
         if (state.days != null || state.beds != null) {
           if (!state.scenarioName && data.name) state.scenarioName = data.name;
           applyState(state);
+          updateSavedDisplay(data.timestamp || null);
           recalc();
           showFeedback('Scenario imported and applied.', 'success');
         } else {
@@ -848,7 +876,7 @@
     });
 
     // Setup placeholder behavior for all number inputs
-    ['days', 'beds', 'buffer', 'potable-count', 'potable-capacity', 'wastewater-count', 'wastewater-capacity', 'mains-flow-rate'].forEach(id => {
+    ['water-days', 'water-beds', 'water-buffer', 'water-potable-count', 'water-potable-capacity', 'water-wastewater-count', 'water-wastewater-capacity', 'water-mains-flow-rate'].forEach(id => {
       const el = g(id);
       if (el) {
         setupPlaceholderBehavior(el);
@@ -857,7 +885,7 @@
       }
     });
     // Water rate inputs: update base values and recalc
-    ['potable-rate', 'wastewater-rate'].forEach(id => {
+    ['water-potable-rate', 'water-wastewater-rate'].forEach(id => {
       const el = g(id);
       if (el) {
         el.addEventListener('input', () => {
@@ -875,7 +903,8 @@
     let helpHoverHideTimeout = null;
     function getPopoverForBtn(btn) {
       const id = btn.getAttribute('data-help');
-      return id ? document.getElementById('help-popover-' + id) : null;
+      if (!id) return null;
+      return document.getElementById('water-help-popover-' + id) || document.getElementById('help-popover-' + id) || null;
     }
     function closeAllHelpPopovers(unpin) {
       if (unpin) document.querySelectorAll('.help-popover').forEach(pop => { pop.classList.remove('pinned'); });
@@ -905,26 +934,33 @@
       });
       btn.addEventListener('mouseleave', () => { if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, btn); });
       btn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         cancelHoverHide();
         const wasPinned = pop.classList.contains('pinned');
         closeAllHelpPopovers(true);
         if (!wasPinned) {
-          pop.classList.add('pinned');
-          pop.hidden = false;
-          btn.setAttribute('aria-expanded', 'true');
+          const popToShow = pop;
+          const btnToUpdate = btn;
+          setTimeout(function () {
+            popToShow.classList.add('pinned');
+            popToShow.hidden = false;
+            btnToUpdate.setAttribute('aria-expanded', 'true');
+          }, 0);
         }
       });
     });
     document.querySelectorAll('.help-popover').forEach(pop => {
       pop.addEventListener('mouseenter', cancelHoverHide);
       pop.addEventListener('mouseleave', () => {
-        const helpId = (pop.id || '').replace('help-popover-', '');
+        const helpId = (pop.id || '').replace(/^(water-)?help-popover-/, '');
         const b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
         if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
       });
     });
-    document.addEventListener('click', () => closeAllHelpPopovers(true));
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.help-icon, .help-popover')) closeAllHelpPopovers(true);
+    });
 
     if (g('water-btn-clear-autosave')) g('water-btn-clear-autosave').addEventListener('click', clearAutosavedState);
     if (g('water-print-btn')) g('water-print-btn').addEventListener('click', printReport);
@@ -963,7 +999,7 @@
     const unitRadios = document.querySelectorAll('input[name="water-unit"]');
     unitRadios.forEach(radio => radio.addEventListener('change', onUnitChange));
 
-    ['potable-supply-mode', 'wastewater-disposal-mode'].forEach(id => {
+    ['water-potable-supply-mode', 'water-wastewater-disposal-mode'].forEach(id => {
       const el = g(id);
       if (el) el.addEventListener('change', () => { updateSupplyModeUI(); recalc(); });
     });

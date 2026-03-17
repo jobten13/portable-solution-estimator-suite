@@ -157,13 +157,13 @@
 }
 .load-basic-calc .btn-delete-row:hover { background: #fecaca; border-color: #ef4444; }
 
-/* Scenario section – suite alignment (border-radius, border, margin) */
+/* Scenario section – green box aligned with Medicines/Consumables */
 .load-basic-calc .scenario-section {
   margin: 0 0 20px;
   padding: 16px 20px;
-  background: #f8f9fa;
+  background: #ecfdf5;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 2px solid #059669;
 }
 
 .load-basic-calc .scenario-section-title {
@@ -171,7 +171,7 @@
   font-size: var(--lb-section-heading-size);
   font-weight: var(--lb-section-heading-weight);
   line-height: var(--lb-section-heading-line-height);
-  color: var(--lb-section-heading-color);
+  color: #495057;
 }
 
 /* Explicit shared heading class for non-sidebar section titles */
@@ -242,9 +242,24 @@
 
 .load-basic-calc .scenario-meta .field-notes { grid-column: 1 / -1; }
 
+.load-basic-calc .scenario-meta .field {
+  padding: 8px 10px;
+  margin: -8px -10px;
+  border-radius: 6px;
+}
+
 .load-basic-calc .scenario-meta .field label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
   color: #374151;
   font-weight: 600;
+}
+
+.load-basic-calc .scenario-saved-line {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: #374151;
 }
 
 .load-basic-calc .section-heading-row {
@@ -476,6 +491,12 @@
 }
 
 .load-basic-calc .category.collapsed .chevron { transform: rotate(-90deg); }
+
+/* Standalone: root is .app, not .load-basic-calc */
+.app .category-head { cursor: pointer; }
+.app .category-head:hover { background: #e5e7eb; }
+.app .category.collapsed .category-body { display: none; }
+.app .category.collapsed .chevron { transform: rotate(-90deg); }
 
 .load-basic-calc .category-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
@@ -771,7 +792,8 @@
   .load-basic-calc .banner-title,
   .load-basic-calc .banner-subtitle { color: black; }
   .load-basic-calc .toolbar-wrap,
-  .load-basic-calc .scenario-section,
+  .load-basic-calc .scenario-actions,
+  .load-basic-calc .scenario-storage-note,
   .load-basic-calc .sort-bar,
   .load-basic-calc .search-wrap,
   .load-basic-calc .btn,
@@ -783,6 +805,7 @@
   .load-basic-calc .equipment-list-heading,
   .load-basic-calc .guide-modal-overlay,
   .load-basic-calc .export-format-dialog { display: none !important; }
+  .load-basic-calc .scenario-section { display: block !important; }
   .load-basic-calc .main-grid { padding: 0; }
   .load-basic-calc .category-body { display: block !important; }
   .load-basic-calc .category.collapsed .category-body { display: block !important; }

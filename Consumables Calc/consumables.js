@@ -232,7 +232,8 @@
       let helpHoverHideTimeout = null;
       function getPopoverForBtn(btn) {
         const id = btn.getAttribute('data-help');
-        return id ? document.getElementById('help-popover-' + id) : null;
+        if (!id) return null;
+        return document.getElementById('cons-help-popover-' + id) || document.getElementById('help-popover-' + id) || null;
       }
       function closeAllHelpPopovers(unpin) {
         if (unpin) document.querySelectorAll('.help-popover').forEach(p => p.classList.remove('pinned'));
@@ -261,27 +262,34 @@
         });
         btn.addEventListener('mouseleave', () => { if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, btn); });
         btn.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           cancelHoverHide();
           const wasPinned = pop.classList.contains('pinned');
           closeAllHelpPopovers(true);
           if (!wasPinned) {
-            pop.classList.add('pinned');
-            pop.hidden = false;
-            btn.setAttribute('aria-expanded', 'true');
-            if (pop.id) btn.setAttribute('aria-describedby', pop.id);
+            const popToShow = pop;
+            const btnToUpdate = btn;
+            setTimeout(function () {
+              popToShow.classList.add('pinned');
+              popToShow.hidden = false;
+              btnToUpdate.setAttribute('aria-expanded', 'true');
+              if (popToShow.id) btnToUpdate.setAttribute('aria-describedby', popToShow.id);
+            }, 0);
           }
         });
       });
       document.querySelectorAll('.help-popover').forEach(pop => {
         pop.addEventListener('mouseenter', cancelHoverHide);
         pop.addEventListener('mouseleave', () => {
-          const helpId = (pop.id || '').replace('help-popover-', '');
+          const helpId = (pop.id || '').replace(/^(cons-)?help-popover-/, '');
           const b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
           if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
         });
       });
-      document.addEventListener('click', () => closeAllHelpPopovers(true));
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.help-icon, .help-popover')) closeAllHelpPopovers(true);
+      });
     })();
 
     updateScenarioDropdown();
@@ -356,7 +364,7 @@
   }
 
   function updateInventoryHelpRateLabel() {
-    const pop = document.getElementById('help-popover-inventory');
+    const pop = document.getElementById('cons-help-popover-inventory') || document.getElementById('help-popover-inventory');
     if (!pop) return;
     const firstLi = pop.querySelector('ul li:first-child');
     if (!firstLi) return;
@@ -908,6 +916,7 @@
       return;
     }
     updateScenarioDropdown();
+    updateSavedDisplay(scenario.timestamp || null);
     showFeedback(`Scenario "${scenario.name}" saved successfully!`, 'success');
   }
 
@@ -918,6 +927,21 @@
       return Array.isArray(list) ? list : [];
     } catch (e) {
       return [];
+    }
+  }
+
+  function updateSavedDisplay(isoTimestampOrNull) {
+    const el = g('saved-display');
+    if (!el) return;
+    if (isoTimestampOrNull) {
+      try {
+        const d = new Date(isoTimestampOrNull);
+        el.textContent = 'Saved: ' + (d.toLocaleString && d.toLocaleString());
+      } catch (e) {
+        el.textContent = '';
+      }
+    } else {
+      el.textContent = '';
     }
   }
 
@@ -997,6 +1021,7 @@
 
     if (g('scenario-name')) g('scenario-name').value = scenario.baseName || scenario.name || '';
     if (g('scenario-notes')) g('scenario-notes').value = scenario.notes || '';
+    updateSavedDisplay(scenario.timestamp || null);
     clearViewFilters();
     filterItems();
     calculateAndDisplay();
@@ -1039,6 +1064,7 @@
       localStorage.removeItem(STORAGE_KEY);
     } catch (e) {}
     updateScenarioDropdown();
+    updateSavedDisplay(null);
     showFeedback('All scenarios cleared successfully!', 'success');
   }
 
@@ -1211,6 +1237,23 @@
     filteredConsumables = [];
     currentFileName = null;
     currentListType = null;
+    bufferPercentage = 0;
+    const bu = g('buffer');
+    if (bu) bu.value = '';
+    clearValidationError('buffer');
+    deploymentDays = 0;
+    deploymentBeds = 0;
+    const de = g('days');
+    const be = g('beds');
+    if (de) de.value = '';
+    if (be) be.value = '';
+    clearValidationError('days');
+    clearValidationError('beds');
+    const nameEl = g('scenario-name');
+    const notesEl = g('scenario-notes');
+    if (nameEl) nameEl.value = '';
+    if (notesEl) notesEl.value = '';
+    updateSavedDisplay(null);
     try {
       localStorage.removeItem(STORAGE_CONSUMABLES);
       localStorage.removeItem(STORAGE_FILENAME);

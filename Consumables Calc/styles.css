@@ -111,15 +111,22 @@
 .cons-calc .scenario-section {
   margin-bottom: 20px;
   padding: 16px 20px;
-  background: #f8f9fa;
+  background: #ecfdf5;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 2px solid #059669;
+  box-sizing: border-box;
 }
 
 .cons-calc .scenario-section-title {
   margin: 0 0 12px 0;
   font-size: 1.1em;
   color: #495057;
+}
+
+.cons-calc .scenario-saved-line {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: #374151;
 }
 
 .cons-calc .scenario-actions {
@@ -185,8 +192,10 @@
 }
 
 .cons-calc .section {
-  padding: 0;
   margin-bottom: 20px;
+}
+.cons-calc .section:not(.scenario-section):not(.highlight-section) {
+  padding: 0;
 }
 
 .cons-calc .section:last-of-type {
@@ -393,6 +402,19 @@
   outline: 2px solid #3b82f6;
   outline-offset: -2px;
   border-color: #3b82f6;
+}
+
+.cons-calc .btn:disabled {
+  opacity: 0.85;
+}
+
+.cons-calc select.scenario-select:disabled,
+.cons-calc select.scenario-select:disabled:hover,
+.cons-calc select.scenario-select:disabled:focus,
+.cons-calc select.scenario-select:disabled:invalid {
+  border-color: #e5e7eb;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .cons-calc .btn {
@@ -795,7 +817,8 @@
 @media print {
   .cons-calc .banner { background: white; color: black; }
   .cons-calc .toolbar-wrap,
-  .cons-calc .scenario-section,
+  .cons-calc .scenario-actions,
+  .cons-calc .scenario-storage-note,
   .cons-calc .sort-bar,
   .cons-calc .add-item-bar,
   .cons-calc .btn,

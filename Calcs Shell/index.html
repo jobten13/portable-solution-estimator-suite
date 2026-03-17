@@ -101,6 +101,7 @@
                   <textarea id="load-scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
                 </div>
               </div>
+              <p class="scenario-saved-line" id="load-load-basic-saved-display" aria-live="polite"></p>
             </section>
             <div class="sort-bar">
               <label for="load-sort-equipment">Sort equipment:</label>
@@ -314,6 +315,7 @@
                   <textarea id="load-pro-scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
                 </div>
               </div>
+              <p class="scenario-saved-line" id="load-pro-saved-display" aria-live="polite"></p>
             </section>
             <div class="sort-bar">
               <label for="load-pro-sort-equipment">Sort equipment:</label>
@@ -550,6 +552,7 @@
                   <textarea id="water-scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
                 </div>
               </div>
+              <p class="scenario-saved-line" id="water-saved-display" aria-live="polite"></p>
               <input type="file" id="water-file-input" accept=".json" style="display: none;">
               <div id="water-button-feedback" class="button-feedback"></div>
             </section>
@@ -567,7 +570,7 @@
               </div>
               <div class="params-grid">
                 <div class="param-group">
-                  <label for="water-days">Expected Length of Deployment (Days):</label>
+                  <label for="water-days">Deployment Length (Days):</label>
                   <input type="number" id="water-days" min="0" placeholder="0">
                 </div>
                 <div class="param-group">
@@ -699,6 +702,7 @@
                   <li>Delivery and pickup intervals are based on container capacity and daily demand.</li>
                 </ul>
               </div>
+              <div id="water-buffer-badge-container"></div>
               <div class="results-grid">
                 <div class="result-card">
                   <h4>Potable water</h4>
@@ -798,6 +802,7 @@
                   <textarea id="cons-scenario-notes" rows="3" placeholder="Optional notes"></textarea>
                 </div>
               </div>
+              <p class="scenario-saved-line" id="cons-saved-display" aria-live="polite"></p>
               <input type="file" id="cons-import-file-input" accept=".json" style="display: none;">
               <div id="cons-button-feedback" class="button-feedback"></div>
             </section>
@@ -815,7 +820,7 @@
               </div>
               <div class="params-grid">
                 <div class="param-group">
-                  <label for="cons-days">Expected Length of Deployment (Days):</label>
+                  <label for="cons-days">Deployment Length (Days):</label>
                   <input type="number" id="cons-days" min="0" placeholder="0">
                 </div>
                 <div class="param-group">
@@ -949,6 +954,7 @@
                   <textarea id="meds-scenario-notes" rows="3" placeholder="Optional notes"></textarea>
                 </div>
               </div>
+              <p class="scenario-saved-line" id="meds-saved-display" aria-live="polite"></p>
               <input type="file" id="meds-import-file-input" accept=".json" style="display: none;">
               <div id="meds-button-feedback" class="button-feedback"></div>
             </section>
@@ -966,7 +972,7 @@
               </div>
               <div class="params-grid">
                 <div class="param-group">
-                  <label for="meds-days">Expected Length of Deployment (Days):</label>
+                  <label for="meds-days">Deployment Length (Days):</label>
                   <input type="number" id="meds-days" min="0" placeholder="0">
                 </div>
                 <div class="param-group">

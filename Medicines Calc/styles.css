@@ -195,13 +195,13 @@
   font-size: 0.85em;
 }
 
-/* Scenarios panel */
+/* Scenarios panel – distinct colored outline like Deployment Parameters */
 .meds-calc .scenario-section {
   margin-bottom: 20px;
-  background: #f8f9fa;
+  background: #ecfdf5;
   padding: 16px 20px;
   border-radius: 8px;
-  border: 1px solid #e9ecef;
+  border: 2px solid #059669;
 }
 
 .meds-calc .scenario-section-title {
@@ -239,6 +239,12 @@
   font-size: 0.8rem;
   color: #374151;
   font-weight: 600;
+}
+
+.meds-calc .scenario-saved-line {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: #374151;
 }
 
 .meds-calc .scenario-meta input[type="text"],
@@ -436,6 +442,18 @@
 .meds-calc .help-popover ul { margin: 0; padding-left: 1.2em; }
 .meds-calc .help-popover li { margin-bottom: 6px; }
 .meds-calc .help-popover li:last-child { margin-bottom: 0; }
+
+.meds-calc .buffer-badge {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 12px;
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
 
 .meds-calc .sort-bar {
   display: flex;
@@ -706,7 +724,8 @@
   .meds-calc .btn,
   .meds-calc .toolbar,
   .meds-calc .toolbar-wrap,
-  .meds-calc .scenario-section,
+  .meds-calc .scenario-actions,
+  .meds-calc .scenario-storage-note,
   .meds-calc .sort-bar,
   .meds-calc .add-item-bar,
   .meds-calc .search-box,

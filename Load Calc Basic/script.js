@@ -310,7 +310,7 @@
   }
 
   function updateAutosaveTimestampDisplay(tsIsoString) {
-    const el = document.getElementById('load-basic-last-saved');
+    const el = document.getElementById(PREFIX + 'load-basic-last-saved');
     if (!el) return;
     if (!tsIsoString || typeof tsIsoString !== 'string') {
       el.textContent = '';
@@ -320,6 +320,21 @@
       const date = new Date(tsIsoString);
       el.textContent = isNaN(date.getTime()) ? '' : 'Last autosaved: ' + date.toLocaleString();
     } catch (e) {
+      el.textContent = '';
+    }
+  }
+
+  function updateSavedDisplay(isoTimestampOrNull) {
+    const el = document.getElementById(PREFIX + 'load-basic-saved-display');
+    if (!el) return;
+    if (isoTimestampOrNull) {
+      try {
+        const d = new Date(isoTimestampOrNull);
+        el.textContent = 'Saved: ' + (d.toLocaleString && d.toLocaleString());
+      } catch (e) {
+        el.textContent = '';
+      }
+    } else {
       el.textContent = '';
     }
   }
@@ -518,20 +533,33 @@
     calculateLoad();
   }
 
+  function getRowKw(row) {
+    const fromData = parseFloat(row.dataset.kwValue);
+    if (!Number.isNaN(fromData)) return fromData;
+    const kwCell = row.cells[2];
+    if (kwCell) {
+      const fromCell = parseFloat(kwCell.textContent);
+      if (!Number.isNaN(fromCell)) return fromCell;
+    }
+    return 0;
+  }
+
   function calculateLoad() {
     let totalKw = 0;
     let filteredKw = 0;
-    $$('.equipment-row').forEach(row => {
-      const qtyIn = row.querySelector('.qty-input');
-      const totalEl = row.querySelector('.item-total');
-      const qty = parseFloat(qtyIn && qtyIn.value) || 0;
-      const kw = parseFloat(row.dataset.kwValue) || 0;
-      const rowKw = qty * kw;
-      totalKw += rowKw;
-      if (!row.classList.contains('search-hidden')) {
-        filteredKw += rowKw;
-      }
-      if (totalEl) totalEl.textContent = rowKw.toFixed(2);
+    (ROOT.querySelectorAll('.equipment-table tbody') || []).forEach(tbody => {
+      (tbody.querySelectorAll('.equipment-row') || []).forEach(row => {
+        const qtyIn = row.querySelector('.qty-input');
+        const totalEl = row.querySelector('.item-total');
+        const qty = parseFloat(qtyIn && qtyIn.value) || 0;
+        const kw = getRowKw(row);
+        const rowKw = qty * kw;
+        totalKw += rowKw;
+        if (!row.classList.contains('search-hidden')) {
+          filteredKw += rowKw;
+        }
+        if (totalEl) totalEl.textContent = rowKw.toFixed(2);
+      });
     });
 
     const recommended = totalKw * CONSTANTS.SAFETY_FACTOR;
@@ -549,7 +577,9 @@
     updateZeroPlaceholder();
     checkCapacity(totalKw);
     calculateRuntime(totalKw);
-    applySort();
+    const active = document.activeElement;
+    const typingQty = active && active.classList && active.classList.contains('qty-input');
+    if (!typingQty) applySort();
     saveWorksheetState();
   }
 
@@ -777,7 +807,9 @@
       if (this.value === '0' || this.value === '0.0') {
         this.value = '';
       }
-      this.select();
+      /* Do not call select() here: applySort() restores focus after reordering,
+         which re-fires focus and would select the current value, so the next
+         keypress would replace it (e.g. "1" becomes "2" instead of "12"). */
     });
     input.addEventListener('blur', function() {
       if (this.value.trim() === '') {
@@ -808,6 +840,8 @@
     if (searchInput) searchInput.value = '';
     $$('.custom-item-row').forEach(row => row.remove());
     filterEquipmentSearch();
+    updateAutosaveTimestampDisplay('');
+    updateSavedDisplay(null);
     showToast('Full sheet reset complete', 'success', 2000);
   }
 
@@ -853,6 +887,8 @@
     populateScenarioSelect();
     const sel = $(id('scenario-select'));
     if (sel) sel.value = String(savedScenario.id);
+    updateAutosaveTimestampDisplay(savedScenario.savedAt);
+    updateSavedDisplay(savedScenario.savedAt);
     acknowledgeClick($(id('btn-save')), 'Saved!', 1500);
     showToast(`Scenario saved: ${displayName}`, 'success', 3000);
   }
@@ -874,6 +910,8 @@
     if (nameEl) nameEl.value = scenario.baseName || scenario.data.scenarioName || '';
     attachListeners();
     calculateLoad();
+    updateAutosaveTimestampDisplay(scenario.savedAt || '');
+    updateSavedDisplay(scenario.savedAt || null);
     acknowledgeClick($(id('btn-load')), 'Loaded!', 1500);
     showToast(`Scenario loaded: ${scenario.displayName}`, 'success', 2500);
   }
@@ -915,6 +953,8 @@
       return;
     }
     populateScenarioSelect();
+    updateAutosaveTimestampDisplay('');
+    updateSavedDisplay(null);
     showToast('All scenarios cleared', 'success', 2000);
   }
 
@@ -1216,15 +1256,16 @@
     if (!tbody) return;
     const tr = document.createElement('tr');
     tr.className = 'equipment-row custom-item-row';
-    tr.dataset.name = name;
-    tr.dataset.kwValue = kw.toFixed(2);
+    const kwStr = kw.toFixed(2);
     tr.innerHTML = `
       <td>${escapeHtml(name)}</td>
       <td><input type="number" min="0" step="1" value="${qtyVal !== 0 ? qtyVal : ''}" placeholder="0" class="qty qty-input"></td>
-      <td class="num">${kw.toFixed(2)}</td>
+      <td class="num">${kwStr}</td>
       <td class="num item-total">0.00</td>
       <td class="col-delete"><button type="button" class="btn btn-delete btn-delete-row">✕</button></td>
     `;
+    tr.setAttribute('data-name', name);
+    tr.setAttribute('data-kw-value', kwStr);
     tbody.appendChild(tr);
     if (nameIn) nameIn.value = '';
     if (kwIn) kwIn.value = '';
@@ -1315,10 +1356,6 @@
   }
 
   function attachListeners() {
-    $$('.category-head').forEach(h => {
-      h.removeEventListener('click', onCategoryToggle);
-      h.addEventListener('click', onCategoryToggle);
-    });
     $$('[data-reset-target]').forEach(btn => {
       btn.removeEventListener('click', onResetCategory);
       btn.addEventListener('click', onResetCategory);
@@ -1442,6 +1479,16 @@
   }
 
   function init() {
+    if (!document._loadBasicCategoryToggleBound) {
+      document._loadBasicCategoryToggleBound = true;
+      document.addEventListener('click', function (e) {
+        const head = e.target.closest('.category-head');
+        if (!head || !ROOT.contains(head)) return;
+        if (e.target.closest('.category-actions')) return;
+        const cat = e.target.closest('.category');
+        if (cat) cat.classList.toggle('collapsed');
+      });
+    }
     buildCategories();
     populateScenarioSelect();
     loadWorksheetState();

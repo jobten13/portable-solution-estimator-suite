@@ -17,10 +17,10 @@
 
     <div class="toolbar-wrap">
       <div class="toolbar">
-        <button type="button" id="btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+        <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
         <span id="water-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
-        <button type="button" class="btn btn-print" id="print-btn" title="Print the current view.">Print</button>
-        <button type="button" class="btn btn-clear" id="reset-btn" title="Reset all inputs, unit, and modes to baseline values.">Reset to Defaults</button>
+        <button type="button" class="btn btn-print" id="water-print-btn" title="Print the current view.">Print</button>
+        <button type="button" class="btn btn-clear" id="water-reset-btn" title="Reset all inputs, unit, and modes to baseline values.">Reset to Defaults</button>
       </div>
     </div>
 
@@ -40,50 +40,51 @@
         </ul>
         </div>
         <div class="scenario-actions">
-          <button type="button" class="btn btn-save" id="save-btn" title="Save current inputs, unit, and modes to this browser.">Save Scenario</button>
+          <button type="button" class="btn btn-save" id="water-save-btn" title="Save current inputs, unit, and modes to this browser.">Save Scenario</button>
           <div class="load-scenario-group">
-            <select id="scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
+            <select id="water-scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
               <option value="">— Select scenario to load —</option>
             </select>
-            <button type="button" class="btn btn-load" id="load-btn" title="Load the scenario selected in the dropdown.">Load Scenario</button>
-            <button type="button" class="btn btn-delete" id="delete-btn" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
-            <button type="button" class="btn btn-clear" id="clear-btn" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
+            <button type="button" class="btn btn-load" id="water-load-btn" title="Load the scenario selected in the dropdown.">Load Scenario</button>
+            <button type="button" class="btn btn-delete" id="water-delete-btn" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
+            <button type="button" class="btn btn-clear" id="water-clear-btn" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
           </div>
-          <button type="button" class="btn btn-secondary" id="import-btn" title="Restore scenario from an exported JSON file.">Import from file</button>
-          <button type="button" class="btn btn-secondary" id="export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+          <button type="button" class="btn btn-secondary" id="water-import-btn" title="Restore scenario from an exported JSON file.">Import from file</button>
+          <button type="button" class="btn btn-secondary" id="water-export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
         </div>
-        <div id="export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+        <div id="water-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
           <div class="export-format-panel">
             <p class="export-format-title">Export format</p>
             <div class="export-format-options">
               <label class="export-format-option">
-                <input type="radio" name="export-format" value="JSON" checked>
+                <input type="radio" name="water-export-format" value="JSON" checked>
                 <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
               </label>
               <label class="export-format-option">
-                <input type="radio" name="export-format" value="CSV">
+                <input type="radio" name="water-export-format" value="CSV">
                 <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
               </label>
             </div>
             <div class="export-format-actions">
-              <button type="button" id="export-format-cancel" class="btn btn-secondary">Cancel</button>
-              <button type="button" id="export-format-confirm" class="btn btn-save">Export</button>
+              <button type="button" id="water-export-format-cancel" class="btn btn-secondary">Cancel</button>
+              <button type="button" id="water-export-format-confirm" class="btn btn-save">Export</button>
             </div>
           </div>
         </div>
         <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
         <div class="scenario-meta">
           <div class="field">
-            <label for="scenario-name">Scenario name</label>
-            <input type="text" id="scenario-name" placeholder="e.g. Field Hospital Bravo – 2 OR + 4 ICU beds">
+            <label for="water-scenario-name">Scenario name</label>
+            <input type="text" id="water-scenario-name" placeholder="e.g. Field Hospital Bravo – 2 OR + 4 ICU beds">
           </div>
           <div class="field field-notes">
-            <label for="scenario-notes">Notes / assumptions</label>
-            <textarea id="scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
+            <label for="water-scenario-notes">Notes / assumptions</label>
+            <textarea id="water-scenario-notes" placeholder="Key assumptions, operating mode, diversity factors, or special constraints." rows="3"></textarea>
           </div>
         </div>
-        <input type="file" id="file-input" accept=".json" style="display: none;">
-        <div id="button-feedback" class="button-feedback"></div>
+        <p class="scenario-saved-line" id="water-saved-display" aria-live="polite"></p>
+        <input type="file" id="water-file-input" accept=".json" style="display: none;">
+        <div id="water-button-feedback" class="button-feedback"></div>
       </section>
 
       <section class="section highlight-section">
@@ -100,16 +101,16 @@
         </div>
         <div class="params-grid">
           <div class="param-group">
-            <label for="days">Expected Length of Deployment (Days):</label>
-            <input type="number" id="days" min="0" placeholder="0">
+            <label for="water-days">Deployment Length (Days):</label>
+            <input type="number" id="water-days" min="0" placeholder="0">
           </div>
           <div class="param-group">
-            <label for="beds">Expected Number of Beds:</label>
-            <input type="number" id="beds" min="0" placeholder="0">
+            <label for="water-beds">Expected Number of Beds:</label>
+            <input type="number" id="water-beds" min="0" placeholder="0">
           </div>
           <div class="param-group">
-            <label for="buffer">Buffer Percentage (%):</label>
-            <input type="number" id="buffer" min="0" max="100" step="0.1" placeholder="0">
+            <label for="water-buffer">Buffer Percentage (%):</label>
+            <input type="number" id="water-buffer" min="0" max="100" step="0.1" placeholder="0">
             <small class="param-hint">Add percentage buffer to water quantities (e.g. 10 for 10%)</small>
           </div>
         </div>
@@ -136,17 +137,17 @@
         <p class="section-note">Estimate potable demand and wastewater output per bed per day using field-planning references (MSF/WHO/Sphere).</p>
         <div class="params-grid water-rates-grid">
           <div class="param-group">
-            <label for="potable-rate">Potable water (<span class="water-unit">L</span>/bed/day):</label>
-            <input type="number" id="potable-rate" min="0" step="0.1" placeholder="0">
+            <label for="water-potable-rate">Potable water (<span class="water-unit">L</span>/bed/day):</label>
+            <input type="number" id="water-potable-rate" min="0" step="0.1" placeholder="0">
           </div>
           <div class="param-group">
-            <label for="wastewater-rate">Wastewater output (<span class="water-unit">L</span>/bed/day):</label>
-            <input type="number" id="wastewater-rate" min="0" step="0.1" placeholder="0">
-            <button type="button" class="breakdown-toggle" id="breakdown-toggle" title="Show estimated breakdown">ℹ️ Show breakdown</button>
+            <label for="water-wastewater-rate">Wastewater output (<span class="water-unit">L</span>/bed/day):</label>
+            <input type="number" id="water-wastewater-rate" min="0" step="0.1" placeholder="0">
+            <button type="button" class="breakdown-toggle" id="water-breakdown-toggle" title="Show estimated breakdown">ℹ️ Show breakdown</button>
           </div>
         </div>
-        <div id="breakdown-display" class="breakdown-display" style="display: none;">
-          <p class="breakdown-text"><strong>Estimated breakdown:</strong> <span id="breakdown-gray">—</span> gray water (~77%), <span id="breakdown-black">—</span> black water (~23%)</p>
+        <div id="water-breakdown-display" class="breakdown-display" style="display: none;">
+          <p class="breakdown-text"><strong>Estimated breakdown:</strong> <span id="water-breakdown-gray">—</span> gray water (~77%), <span id="water-breakdown-black">—</span> black water (~23%)</p>
           <p class="breakdown-note">Breakdown is an estimate. Actual ratios vary by facility design and operations.</p>
         </div>
         <p class="param-hint" style="margin-top: 8px;">Reference sources: MSF, WHO, and Sphere emergency WASH guidance. This calculator uses planning defaults of 22 Gal (80 L)/bed/day potable and 18 Gal (65 L)/bed/day wastewater. Adjust for your context.</p>
@@ -170,23 +171,23 @@
           <div class="bladder-card bladder-potable">
             <h4>Potable water</h4>
             <div class="param-group">
-              <label for="potable-count">Number of containers:</label>
-              <input type="number" id="potable-count" min="0" placeholder="0">
+              <label for="water-potable-count">Number of containers:</label>
+              <input type="number" id="water-potable-count" min="0" placeholder="0">
             </div>
             <div class="param-group">
-              <label for="potable-capacity">Capacity per container (<span class="bladder-capacity-unit">L</span>):</label>
-              <input type="number" id="potable-capacity" min="0" placeholder="0">
+              <label for="water-potable-capacity">Capacity per container (<span class="bladder-capacity-unit">L</span>):</label>
+              <input type="number" id="water-potable-capacity" min="0" placeholder="0">
             </div>
           </div>
           <div class="bladder-card bladder-wastewater">
             <h4>Wastewater</h4>
             <div class="param-group">
-              <label for="wastewater-count">Number of containers:</label>
-              <input type="number" id="wastewater-count" min="0" placeholder="0">
+              <label for="water-wastewater-count">Number of containers:</label>
+              <input type="number" id="water-wastewater-count" min="0" placeholder="0">
             </div>
             <div class="param-group">
-              <label for="wastewater-capacity">Capacity per container (<span class="bladder-capacity-unit">L</span>):</label>
-              <input type="number" id="wastewater-capacity" min="0" placeholder="0">
+              <label for="water-wastewater-capacity">Capacity per container (<span class="bladder-capacity-unit">L</span>):</label>
+              <input type="number" id="water-wastewater-capacity" min="0" placeholder="0">
             </div>
           </div>
         </div>
@@ -209,7 +210,7 @@
         <div class="params-grid">
           <div class="param-group">
             <label>Potable water supply:</label>
-            <select id="potable-supply-mode">
+            <select id="water-potable-supply-mode">
               <option value="self">Self-supplied (deliveries to containers)</option>
               <option value="mains">Mains / base water supply connected</option>
               <option value="hybrid">Hybrid (mains primary, containers as backup)</option>
@@ -217,16 +218,16 @@
           </div>
           <div class="param-group">
             <label>Wastewater disposal:</label>
-            <select id="wastewater-disposal-mode">
+            <select id="water-wastewater-disposal-mode">
               <option value="containers">Container collection (pickups needed)</option>
               <option value="mains">Mains / sewer connected (no pickups)</option>
             </select>
           </div>
         </div>
-        <div id="mains-flow-section" class="params-grid" style="display:none; margin-top:16px;">
+        <div id="water-mains-flow-section" class="params-grid" style="display:none; margin-top:16px;">
           <div class="param-group">
-            <label for="mains-flow-rate">Mains flow rate (<span class="water-unit">G</span>/hour):</label>
-            <input type="number" id="mains-flow-rate" min="0" step="1" placeholder="0">
+            <label for="water-mains-flow-rate">Mains flow rate (<span class="water-unit">G</span>/hour):</label>
+            <input type="number" id="water-mains-flow-rate" min="0" step="1" placeholder="0">
             <small class="param-hint">Confirm with site survey or supply authority. Typical field supply: 100–500 Gal/hr (380–1,900 L/hr).</small>
           </div>
         </div>
@@ -243,28 +244,29 @@
             <li>Delivery and pickup intervals are based on container capacity and daily demand; plan for safety margin and logistics.</li>
           </ul>
         </div>
+        <div id="water-buffer-badge-container"></div>
         <div class="results-grid">
           <div class="result-card">
             <h4>Potable water</h4>
-            <div class="result-row"><span>Total demand (deployment):</span> <strong id="out-potable-total">—</strong> <span class="result-unit">L</span></div>
-            <div class="result-row"><span>Per day:</span> <strong id="out-potable-per-day">—</strong> <span class="result-unit">L</span>/day</div>
-            <div class="result-row delivery-row" id="potable-delivery-row"><span>Water deliveries:</span> <strong id="out-potable-deliveries">—</strong></div>
-            <div class="result-row delivery-row" id="potable-mains-row" style="display:none;"><span>Mains supply status:</span> <strong id="out-mains-status">—</strong></div>
-            <div class="result-row" id="potable-buffer-row" style="display:none;"><span>Recommended emergency stored water (48 hours):</span> <strong id="out-potable-buffer">—</strong> <span class="result-unit">L</span></div>
+            <div class="result-row"><span>Total demand (deployment):</span> <strong id="water-out-potable-total">—</strong> <span class="result-unit">L</span></div>
+            <div class="result-row"><span>Per day:</span> <strong id="water-out-potable-per-day">—</strong> <span class="result-unit">L</span>/day</div>
+            <div class="result-row delivery-row" id="water-potable-delivery-row"><span>Water deliveries:</span> <strong id="water-out-potable-deliveries">—</strong></div>
+            <div class="result-row delivery-row" id="water-potable-mains-row" style="display:none;"><span>Mains supply status:</span> <strong id="water-out-mains-status">—</strong></div>
+            <div class="result-row" id="water-potable-buffer-row" style="display:none;"><span>Recommended emergency stored water (48 hours):</span> <strong id="water-out-potable-buffer">—</strong> <span class="result-unit">L</span></div>
           </div>
           <div class="result-card">
             <h4>Wastewater</h4>
-            <div class="result-row"><span>Total output (deployment):</span> <strong id="out-wastewater-total">—</strong> <span class="result-unit">L</span></div>
-            <div class="result-row"><span>Per day:</span> <strong id="out-wastewater-per-day">—</strong> <span class="result-unit">L</span>/day</div>
-            <div class="result-row delivery-row" id="wastewater-pickup-row"><span>Pickups needed:</span> <strong id="out-wastewater-pickups">—</strong></div>
-            <div class="result-row delivery-row" id="wastewater-mains-row" style="display:none;"><span>Wastewater disposal:</span> <strong id="out-wastewater-mains">Discharged to mains — no pickups required</strong></div>
+            <div class="result-row"><span>Total output (deployment):</span> <strong id="water-out-wastewater-total">—</strong> <span class="result-unit">L</span></div>
+            <div class="result-row"><span>Per day:</span> <strong id="water-out-wastewater-per-day">—</strong> <span class="result-unit">L</span>/day</div>
+            <div class="result-row delivery-row" id="water-wastewater-pickup-row"><span>Pickups needed:</span> <strong id="water-out-wastewater-pickups">—</strong></div>
+            <div class="result-row delivery-row" id="water-wastewater-mains-row" style="display:none;"><span>Wastewater disposal:</span> <strong id="out-wastewater-mains">Discharged to mains — no pickups required</strong></div>
           </div>
         </div>
-        <div class="schedule-note" id="schedule-note"></div>
+        <div class="schedule-note" id="water-schedule-note"></div>
       </section>
     </div>
     <footer class="disclaimer">
-      <span class="version-label" id="version-info">Version 1.0.0</span>
+      <span class="version-label" id="water-version-info">Version 1.0.0</span>
     </footer>
   </div>
 
