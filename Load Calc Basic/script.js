@@ -1174,9 +1174,9 @@
   }
 
   function onExportToFile() {
-    const dialog = document.getElementById('load-export-format-dialog');
+    const dialog = document.getElementById(PREFIX + 'export-format-dialog');
     if (dialog) {
-      const jsonRadio = document.querySelector('#load-export-format-dialog input[name="load-export-format"][value="JSON"]');
+      const jsonRadio = document.querySelector('#' + PREFIX + 'export-format-dialog input[name="' + PREFIX + 'export-format"][value="JSON"]');
       if (jsonRadio) jsonRadio.checked = true;
       dialog.hidden = false;
       dialog.setAttribute('aria-hidden', 'false');
@@ -1198,17 +1198,11 @@
   }
 
   function closeExportFormatDialog() {
-    const dialog = document.getElementById('load-export-format-dialog');
+    const dialog = document.getElementById(PREFIX + 'export-format-dialog');
     if (dialog) {
       dialog.hidden = true;
       dialog.setAttribute('aria-hidden', 'true');
     }
-  }
-
-  function onCategoryToggle(e) {
-    if (e.target.closest('.category-actions')) return;
-    const cat = e.target.closest('.category');
-    if (cat) cat.classList.toggle('collapsed');
   }
 
   function onResetCategory(e) {
@@ -1276,15 +1270,16 @@
   }
 
   function setupHelpPopovers() {
+    const helpPopoverIdPrefix = PREFIX + 'help-popover-';
     let helpHoverHideTimeout = null;
     function getPopoverForBtn(btn) {
       const id = btn.getAttribute('data-help');
-      return id ? document.getElementById('help-popover-' + id) : null;
+      return id ? document.getElementById(helpPopoverIdPrefix + id) : null;
     }
     function closeAllHelpPopovers(unpin) {
-      if (unpin) document.querySelectorAll('.help-popover').forEach(p => p.classList.remove('pinned'));
-      document.querySelectorAll('.help-popover').forEach(p => { p.hidden = true; });
-      document.querySelectorAll('.help-icon').forEach(b => b.setAttribute('aria-expanded', 'false'));
+      if (unpin) $$('.help-popover').forEach(p => p.classList.remove('pinned'));
+      $$('.help-popover').forEach(p => { p.hidden = true; });
+      $$('.help-icon').forEach(b => b.setAttribute('aria-expanded', 'false'));
     }
     function scheduleHoverHide(pop, btn) {
       if (helpHoverHideTimeout) clearTimeout(helpHoverHideTimeout);
@@ -1302,7 +1297,7 @@
         helpHoverHideTimeout = null;
       }
     }
-    document.querySelectorAll('.help-icon').forEach(btn => {
+    $$('.help-icon').forEach(btn => {
       const pop = getPopoverForBtn(btn);
       if (!pop) return;
       btn.addEventListener('mouseenter', () => {
@@ -1314,26 +1309,35 @@
         if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, btn);
       });
       btn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         cancelHoverHide();
         const wasPinned = pop.classList.contains('pinned');
         closeAllHelpPopovers(true);
         if (!wasPinned) {
-          pop.classList.add('pinned');
-          pop.hidden = false;
-          btn.setAttribute('aria-expanded', 'true');
+          const popToShow = pop;
+          const btnToUpdate = btn;
+          setTimeout(() => {
+            popToShow.classList.add('pinned');
+            popToShow.hidden = false;
+            btnToUpdate.setAttribute('aria-expanded', 'true');
+          }, 0);
         }
       });
     });
-    document.querySelectorAll('.help-popover').forEach(pop => {
+    $$('.help-popover').forEach(pop => {
       pop.addEventListener('mouseenter', cancelHoverHide);
       pop.addEventListener('mouseleave', () => {
-        const helpId = (pop.id || '').replace('help-popover-', '');
-        const b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
+        const helpId = (pop.id || '').replace(helpPopoverIdPrefix, '');
+        const b = helpId ? $(`.help-icon[data-help="${helpId}"]`) : null;
         if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
       });
     });
-    document.addEventListener('click', () => closeAllHelpPopovers(true));
+    document.addEventListener('click', (e) => {
+      if (!ROOT.contains(e.target)) return;
+      if (e.target.closest('.help-icon') || e.target.closest('.help-popover')) return;
+      closeAllHelpPopovers(true);
+    });
   }
 
   function onQtyFocus(e) {
@@ -1401,8 +1405,8 @@
     const btnClearAutosave = $(id('btn-clear-autosave'));
     const fileInput = $(id('scenario-file-input'));
     if (btnPrint) { btnPrint.removeEventListener('click', onPrint); btnPrint.addEventListener('click', onPrint); }
-    const guideOverlay = document.getElementById('load-guide-modal-overlay');
-    const guideBody = document.getElementById('load-guide-modal-body');
+    const guideOverlay = document.getElementById(PREFIX + 'guide-modal-overlay');
+    const guideBody = document.getElementById(PREFIX + 'guide-modal-body');
     function openGuide() {
       if (!guideOverlay || !guideBody) return;
       if (guideBody.innerHTML === '') {
@@ -1421,12 +1425,12 @@
       guideOverlay.hidden = false;
       guideOverlay.setAttribute('aria-hidden', 'false');
     }
-    const btnGuide = document.getElementById('load-guide-btn');
+    const btnGuide = document.getElementById(PREFIX + 'guide-btn');
     if (btnGuide) { btnGuide.removeEventListener('click', openGuide); btnGuide.addEventListener('click', openGuide); }
     function closeGuide() {
       if (guideOverlay) { guideOverlay.hidden = true; guideOverlay.setAttribute('aria-hidden', 'true'); }
     }
-    const guideClose = document.getElementById('load-guide-modal-close');
+    const guideClose = document.getElementById(PREFIX + 'guide-modal-close');
     if (guideClose) { guideClose.removeEventListener('click', closeGuide); guideClose.addEventListener('click', closeGuide); }
     function closeGuideOnOverlayClick(e) {
       if (e.target === guideOverlay) { guideOverlay.hidden = true; guideOverlay.setAttribute('aria-hidden', 'true'); }
@@ -1443,11 +1447,11 @@
     if (btnClearScen) { btnClearScen.removeEventListener('click', onClearAllScenarios); btnClearScen.addEventListener('click', onClearAllScenarios); }
     if (btnImport) { btnImport.removeEventListener('click', onImportFromFile); btnImport.addEventListener('click', onImportFromFile); }
     if (btnExport) { btnExport.removeEventListener('click', onExportToFile); btnExport.addEventListener('click', onExportToFile); }
-    const exportFormatDialog = document.getElementById('load-export-format-dialog');
-    const exportFormatConfirm = document.getElementById('load-export-format-confirm');
-    const exportFormatCancel = document.getElementById('load-export-format-cancel');
+    const exportFormatDialog = document.getElementById(PREFIX + 'export-format-dialog');
+    const exportFormatConfirm = document.getElementById(PREFIX + 'export-format-confirm');
+    const exportFormatCancel = document.getElementById(PREFIX + 'export-format-cancel');
     function onExportFormatConfirm() {
-      const selected = document.querySelector('#load-export-format-dialog input[name="load-export-format"]:checked');
+      const selected = document.querySelector('#' + PREFIX + 'export-format-dialog input[name="' + PREFIX + 'export-format"]:checked');
       const fmt = selected ? selected.value : 'JSON';
       performExportWithFormat(fmt);
       closeExportFormatDialog();

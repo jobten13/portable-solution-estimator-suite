@@ -1252,15 +1252,18 @@
     });
 
     (function initHelpPopovers() {
+      const ROOT = document.getElementById('panel-load-pro') || document.documentElement;
+      const PREFIX = document.getElementById('panel-load-pro') ? 'load-pro-' : '';
+      const helpPopoverIdPrefix = PREFIX + 'help-popover-';
       let helpHoverHideTimeout = null;
       function getPopoverForBtn(btn) {
         const id = btn.getAttribute('data-help');
-        return id ? document.getElementById('help-popover-' + id) : null;
+        return id ? document.getElementById(helpPopoverIdPrefix + id) : null;
       }
       function closeAllHelpPopovers(unpin) {
-        if (unpin) document.querySelectorAll('.help-popover').forEach(p => p.classList.remove('pinned'));
-        document.querySelectorAll('.help-popover').forEach(p => { p.hidden = true; });
-        document.querySelectorAll('.help-icon').forEach(b => b.setAttribute('aria-expanded', 'false'));
+        if (unpin) $$('.help-popover', ROOT).forEach(p => p.classList.remove('pinned'));
+        $$('.help-popover', ROOT).forEach(p => { p.hidden = true; });
+        $$('.help-icon', ROOT).forEach(b => b.setAttribute('aria-expanded', 'false'));
       }
       function scheduleHoverHide(pop, btn) {
         if (helpHoverHideTimeout) clearTimeout(helpHoverHideTimeout);
@@ -1272,28 +1275,41 @@
       function cancelHoverHide() {
         if (helpHoverHideTimeout) { clearTimeout(helpHoverHideTimeout); helpHoverHideTimeout = null; }
       }
-      document.querySelectorAll('.help-icon').forEach(btn => {
+      $$('.help-icon', ROOT).forEach(btn => {
         const pop = getPopoverForBtn(btn);
         if (!pop) return;
         btn.addEventListener('mouseenter', () => { cancelHoverHide(); pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); });
         btn.addEventListener('mouseleave', () => { if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, btn); });
         btn.addEventListener('click', (e) => {
+          e.preventDefault();
           e.stopPropagation();
           cancelHoverHide();
           const wasPinned = pop.classList.contains('pinned');
           closeAllHelpPopovers(true);
-          if (!wasPinned) { pop.classList.add('pinned'); pop.hidden = false; btn.setAttribute('aria-expanded', 'true'); }
+          if (!wasPinned) {
+            const popToShow = pop;
+            const btnToUpdate = btn;
+            setTimeout(() => {
+              popToShow.classList.add('pinned');
+              popToShow.hidden = false;
+              btnToUpdate.setAttribute('aria-expanded', 'true');
+            }, 0);
+          }
         });
       });
-      document.querySelectorAll('.help-popover').forEach(pop => {
+      $$('.help-popover', ROOT).forEach(pop => {
         pop.addEventListener('mouseenter', cancelHoverHide);
         pop.addEventListener('mouseleave', () => {
-          const helpId = (pop.id || '').replace('help-popover-', '');
-          const b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
+          const helpId = (pop.id || '').replace(helpPopoverIdPrefix, '');
+          const b = helpId ? $('.help-icon[data-help="' + helpId + '"]', ROOT) : null;
           if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
         });
       });
-      document.addEventListener('click', () => closeAllHelpPopovers(true));
+      document.addEventListener('click', (e) => {
+        if (!ROOT.contains(e.target)) return;
+        if (e.target.closest('.help-icon') || e.target.closest('.help-popover')) return;
+        closeAllHelpPopovers(true);
+      });
     })();
 
     recalc();

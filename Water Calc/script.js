@@ -899,17 +899,19 @@
       g('water-breakdown-toggle').addEventListener('click', toggleBreakdown);
     }
 
-    // Section-level help: hover for quick glance; click to pin open
+    // Section-level help: hover for quick glance; click to pin open (scoped to Water panel in Shell)
+    const helpROOT = document.getElementById('panel-water') || document.documentElement;
+    const helpPopoverIdPrefix = document.getElementById('panel-water') ? 'water-help-popover-' : 'help-popover-';
     let helpHoverHideTimeout = null;
     function getPopoverForBtn(btn) {
       const id = btn.getAttribute('data-help');
       if (!id) return null;
-      return document.getElementById('water-help-popover-' + id) || document.getElementById('help-popover-' + id) || null;
+      return document.getElementById(helpPopoverIdPrefix + id) || null;
     }
     function closeAllHelpPopovers(unpin) {
-      if (unpin) document.querySelectorAll('.help-popover').forEach(pop => { pop.classList.remove('pinned'); });
-      document.querySelectorAll('.help-popover').forEach(pop => { pop.hidden = true; });
-      document.querySelectorAll('.help-icon').forEach(b => { b.setAttribute('aria-expanded', 'false'); });
+      if (unpin) helpROOT.querySelectorAll('.help-popover').forEach(pop => { pop.classList.remove('pinned'); });
+      helpROOT.querySelectorAll('.help-popover').forEach(pop => { pop.hidden = true; });
+      helpROOT.querySelectorAll('.help-icon').forEach(b => { b.setAttribute('aria-expanded', 'false'); });
     }
     function scheduleHoverHide(pop, btn) {
       if (helpHoverHideTimeout) clearTimeout(helpHoverHideTimeout);
@@ -924,7 +926,7 @@
     function cancelHoverHide() {
       if (helpHoverHideTimeout) { clearTimeout(helpHoverHideTimeout); helpHoverHideTimeout = null; }
     }
-    document.querySelectorAll('.help-icon').forEach(btn => {
+    helpROOT.querySelectorAll('.help-icon').forEach(btn => {
       const pop = getPopoverForBtn(btn);
       if (!pop) return;
       btn.addEventListener('mouseenter', () => {
@@ -950,16 +952,18 @@
         }
       });
     });
-    document.querySelectorAll('.help-popover').forEach(pop => {
+    helpROOT.querySelectorAll('.help-popover').forEach(pop => {
       pop.addEventListener('mouseenter', cancelHoverHide);
       pop.addEventListener('mouseleave', () => {
-        const helpId = (pop.id || '').replace(/^(water-)?help-popover-/, '');
-        const b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
+        const helpId = (pop.id || '').replace(helpPopoverIdPrefix, '');
+        const b = helpId ? helpROOT.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
         if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
       });
     });
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.help-icon, .help-popover')) closeAllHelpPopovers(true);
+      if (!helpROOT.contains(e.target)) return;
+      if (e.target.closest('.help-icon') || e.target.closest('.help-popover')) return;
+      closeAllHelpPopovers(true);
     });
 
     if (g('water-btn-clear-autosave')) g('water-btn-clear-autosave').addEventListener('click', clearAutosavedState);

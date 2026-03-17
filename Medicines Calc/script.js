@@ -135,22 +135,24 @@
   }
 
   function setupHelpPopovers() {
-    const helpButtons = Array.from(document.querySelectorAll('.help-icon[data-help]'));
+    var ROOT = document.getElementById('panel-medications') || document.documentElement;
+    var helpPopoverIdPrefix = document.getElementById('panel-medications') ? 'meds-help-popover-' : 'help-popover-';
+    var helpButtons = Array.from(ROOT.querySelectorAll('.help-icon[data-help]'));
     if (!helpButtons.length) return;
 
     var helpHoverHideTimeout = null;
 
     function getPopoverForBtn(btn) {
-      const key = btn.getAttribute('data-help');
-      return key ? document.getElementById('meds-help-popover-' + key) : null;
+      var key = btn.getAttribute('data-help');
+      return key ? document.getElementById(helpPopoverIdPrefix + key) : null;
     }
 
     function closeAllHelpPopovers(unpin) {
       if (unpin) {
-        document.querySelectorAll('.help-popover').forEach(function (pop) { pop.classList.remove('pinned'); });
+        ROOT.querySelectorAll('.help-popover').forEach(function (pop) { pop.classList.remove('pinned'); });
       }
-      document.querySelectorAll('.help-popover').forEach(function (pop) { pop.hidden = true; });
-      document.querySelectorAll('.help-icon').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); b.removeAttribute('aria-describedby'); });
+      ROOT.querySelectorAll('.help-popover').forEach(function (pop) { pop.hidden = true; });
+      ROOT.querySelectorAll('.help-icon').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); b.removeAttribute('aria-describedby'); });
     }
 
     function scheduleHoverHide(pop, btn) {
@@ -189,25 +191,31 @@
         var wasPinned = pop.classList.contains('pinned');
         closeAllHelpPopovers(true);
         if (!wasPinned) {
-          pop.classList.add('pinned');
-          pop.hidden = false;
-          btn.setAttribute('aria-expanded', 'true');
-          if (pop.id) btn.setAttribute('aria-describedby', pop.id);
+          var popToShow = pop;
+          var btnToUpdate = btn;
+          setTimeout(function () {
+            popToShow.classList.add('pinned');
+            popToShow.hidden = false;
+            btnToUpdate.setAttribute('aria-expanded', 'true');
+            if (popToShow.id) btnToUpdate.setAttribute('aria-describedby', popToShow.id);
+          }, 0);
         }
       });
     });
 
-    document.querySelectorAll('.help-popover').forEach(function (pop) {
+    ROOT.querySelectorAll('.help-popover').forEach(function (pop) {
       pop.addEventListener('mouseenter', cancelHoverHide);
       pop.addEventListener('mouseleave', function () {
-        var helpId = (pop.id || '').replace('meds-help-popover-', '');
-        var b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
+        var helpId = (pop.id || '').replace(helpPopoverIdPrefix, '');
+        var b = helpId ? ROOT.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
         if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
       });
     });
 
     document.addEventListener('click', function (e) {
-      if (!e.target.closest('.help-icon, .help-popover')) closeAllHelpPopovers(true);
+      if (!ROOT.contains(e.target)) return;
+      if (e.target.closest('.help-icon') || e.target.closest('.help-popover')) return;
+      closeAllHelpPopovers(true);
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') closeAllHelpPopovers(true);

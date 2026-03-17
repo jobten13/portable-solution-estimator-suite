@@ -229,16 +229,18 @@
     }
 
     (function initHelpPopovers() {
+      const helpROOT = document.getElementById('panel-consumables') || document.documentElement;
+      const helpPopoverIdPrefix = document.getElementById('panel-consumables') ? 'cons-help-popover-' : 'help-popover-';
       let helpHoverHideTimeout = null;
       function getPopoverForBtn(btn) {
         const id = btn.getAttribute('data-help');
         if (!id) return null;
-        return document.getElementById('cons-help-popover-' + id) || document.getElementById('help-popover-' + id) || null;
+        return document.getElementById(helpPopoverIdPrefix + id) || null;
       }
       function closeAllHelpPopovers(unpin) {
-        if (unpin) document.querySelectorAll('.help-popover').forEach(p => p.classList.remove('pinned'));
-        document.querySelectorAll('.help-popover').forEach(p => { p.hidden = true; });
-        document.querySelectorAll('.help-icon').forEach(b => { b.setAttribute('aria-expanded', 'false'); b.removeAttribute('aria-describedby'); });
+        if (unpin) helpROOT.querySelectorAll('.help-popover').forEach(p => p.classList.remove('pinned'));
+        helpROOT.querySelectorAll('.help-popover').forEach(p => { p.hidden = true; });
+        helpROOT.querySelectorAll('.help-icon').forEach(b => { b.setAttribute('aria-expanded', 'false'); b.removeAttribute('aria-describedby'); });
       }
       function scheduleHoverHide(pop, btn) {
         if (helpHoverHideTimeout) clearTimeout(helpHoverHideTimeout);
@@ -250,10 +252,9 @@
       function cancelHoverHide() {
         if (helpHoverHideTimeout) { clearTimeout(helpHoverHideTimeout); helpHoverHideTimeout = null; }
       }
-      document.querySelectorAll('.help-icon').forEach(btn => {
+      helpROOT.querySelectorAll('.help-icon').forEach(btn => {
         const pop = getPopoverForBtn(btn);
         if (!pop) return;
-        const helpId = btn.getAttribute('data-help');
         btn.addEventListener('mouseenter', () => {
           cancelHoverHide();
           pop.hidden = false;
@@ -279,16 +280,18 @@
           }
         });
       });
-      document.querySelectorAll('.help-popover').forEach(pop => {
+      helpROOT.querySelectorAll('.help-popover').forEach(pop => {
         pop.addEventListener('mouseenter', cancelHoverHide);
         pop.addEventListener('mouseleave', () => {
-          const helpId = (pop.id || '').replace(/^(cons-)?help-popover-/, '');
-          const b = helpId ? document.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
+          const helpId = (pop.id || '').replace(helpPopoverIdPrefix, '');
+          const b = helpId ? helpROOT.querySelector('.help-icon[data-help="' + helpId + '"]') : null;
           if (!pop.classList.contains('pinned')) scheduleHoverHide(pop, b);
         });
       });
       document.addEventListener('click', (e) => {
-        if (!e.target.closest('.help-icon, .help-popover')) closeAllHelpPopovers(true);
+        if (!helpROOT.contains(e.target)) return;
+        if (e.target.closest('.help-icon') || e.target.closest('.help-popover')) return;
+        closeAllHelpPopovers(true);
       });
     })();
 
@@ -770,7 +773,6 @@
   }
 
   function performExportWithFormat(fmt) {
-    console.log('performExportWithFormat called with fmt:', fmt);
     const format = (fmt && String(fmt).toUpperCase()) || 'JSON';
     const scenario = buildExportScenario();
     if (format === 'CSV') {
