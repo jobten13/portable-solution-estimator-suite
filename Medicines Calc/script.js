@@ -653,59 +653,18 @@
       showFeedback('No data to print. Please load a list first.', 'info');
       return;
     }
-
-    showFeedback('Opening print preview...', 'info');
-
-    const daysEl = g('meds-days');
-    const bedsEl = g('meds-beds');
-    const bufferEl = g('meds-buffer');
-    const days = daysEl ? daysEl.value : '';
-    const beds = bedsEl ? bedsEl.value : '';
-    const buffer = bufferEl ? bufferEl.value : '';
-
-    const printRateHeader = getRateColumnLabel(currentListType);
-    let summaryHtml = '<div class="table-wrapper"><table class="data-table"><thead><tr>';
-    summaryHtml += '<th>Item Description</th>';
-    summaryHtml += '<th class="col-rate-header" aria-live="polite">' + printRateHeader + '</th>';
-    summaryHtml += '<th>Total quantity</th>';
-    summaryHtml += '</tr></thead><tbody>';
-
-    const summaryData = allConsumables.map(item => {
-      const rate = Number(item.usagePerDayPerBed);
-      const safeRate = Number.isFinite(rate) && rate >= 0 ? rate : 0;
-      const qty = calculateItemQuantity(safeRate);
-      return { name: item.name, usagePerDayPerBed: safeRate, totalQuantity: qty };
-    });
-    summaryData.sort((a, b) => b.totalQuantity - a.totalQuantity);
-
-    for (const d of summaryData) {
-      summaryHtml += '<tr>';
-      summaryHtml += `<td>${escapeHtml(d.name)}</td>`;
-      summaryHtml += `<td class="number-cell">${d.usagePerDayPerBed.toFixed(3)}</td>`;
-      summaryHtml += `<td class="number-cell">${Math.ceil(d.totalQuantity)}</td>`;
-      summaryHtml += '</tr>';
-    }
-    summaryHtml += '</tbody></table></div>';
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      showFeedback('Popup blocked. Please allow popups for this site and try again.', 'error');
+    if (filteredConsumables.length === 0) {
+      showFeedback('No rows match the current filters. Adjust filters or search to print.', 'info');
       return;
     }
-    let fullHtml = '<!DOCTYPE html><html><head><title>Medications Supply List</title>';
-    fullHtml += '<style>body{font-family:Arial,sans-serif;padding:20px;} table{width:100%;border-collapse:collapse;} th{background:#2563eb;color:white;padding:12px;text-align:left;} td{padding:10px;border-bottom:1px solid #ddd;} .number-cell{text-align:center;font-family:monospace;}</style></head><body>';
-    fullHtml += '<h1>Medications Supply List</h1>';
-    fullHtml += `<div class="params"><strong>Deployment Length (Days):</strong> ${escapeHtml(String(days))}<br><strong>Expected Number of Beds:</strong> ${escapeHtml(String(beds))}<br><strong>Buffer Percentage:</strong> ${escapeHtml(String(buffer))}%</div>`;
-    fullHtml += summaryHtml;
-    fullHtml += `<p style="margin-top:30px;font-size:0.9em;color:#666;">Generated on ${new Date().toLocaleString()}</p></body></html>`;
 
-    printWindow.document.write(fullHtml);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      showFeedback('Print preview opened successfully!', 'success');
-    }, 250);
+    showFeedback('Opening print preview...', 'info');
+    const afterPrint = function () {
+      window.removeEventListener('afterprint', afterPrint);
+      showFeedback('Print complete.', 'success');
+    };
+    window.addEventListener('afterprint', afterPrint);
+    window.print();
   }
 
   function saveScenario() {

@@ -339,6 +339,40 @@
     }
   }
 
+  // --- Worksheet autosave (debounced + interval, no auto-restore on open) ---
+  const AUTOSAVE_INTERVAL_MS = 60 * 1000;
+  const DEBOUNCED_AUTOSAVE_MS = 3 * 1000;
+  let autosaveTimerId = null;
+  let debouncedAutosaveTimeout = null;
+  let loadAutosaveDirty = false;
+
+  function notifyWorksheetChanged() {
+    loadAutosaveDirty = true;
+    scheduleDebouncedAutosave();
+  }
+
+  function scheduleDebouncedAutosave() {
+    if (!loadAutosaveDirty) return;
+    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
+    debouncedAutosaveTimeout = setTimeout(() => {
+      debouncedAutosaveTimeout = null;
+      saveWorksheetState();
+    }, DEBOUNCED_AUTOSAVE_MS);
+  }
+
+  function startAutosaveTimer() {
+    if (autosaveTimerId != null) return;
+    try {
+      autosaveTimerId = setInterval(() => {
+        if (loadAutosaveDirty) saveWorksheetState();
+      }, AUTOSAVE_INTERVAL_MS);
+    } catch (e) { /* ignore */ }
+  }
+
+  function tryAutosaveOnBlur() {
+    if (loadAutosaveDirty) saveWorksheetState();
+  }
+
   function getCurrentWorksheetData() {
     const nameEl = $(id('scenario-name'));
     const notesEl = $(id('scenario-notes'));
@@ -367,6 +401,7 @@
       const now = new Date().toISOString();
       localStorage.setItem(LAST_SAVED_KEY, now);
       updateAutosaveTimestampDisplay(now);
+      loadAutosaveDirty = false;
     } catch (e) { /* ignore */ }
   }
 
@@ -381,24 +416,35 @@
             parsed.scenarioName = '';
           }
           applyScenarioData(parsed);
-          attachListeners();
           calculateLoad();
+          loadAutosaveDirty = false;
+          let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
+          if (!lastSaved) {
+            lastSaved = new Date().toISOString();
+            try { localStorage.setItem(LAST_SAVED_KEY, lastSaved); } catch (err) {}
+          }
+          updateAutosaveTimestampDisplay(lastSaved);
+          return true;
         }
       }
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
-    } catch (e) { /* ignore */ }
+      return false;
+    } catch (e) {
+      updateAutosaveTimestampDisplay('');
+      return false;
+    }
   }
 
-  function clearAutosavedState() {
-    if (!confirm('Clear autosaved worksheet state from this browser? This will not delete named saved scenarios.')) return;
-    try {
-      localStorage.removeItem(WORKSHEET_STORAGE_KEY);
-      localStorage.removeItem(LAST_SAVED_KEY);
-      updateAutosaveTimestampDisplay('');
-      showToast('Autosaved worksheet state cleared', 'success', 2500);
-    } catch (e) {
-      showToast('Failed to clear autosaved worksheet state', 'error', 3000);
+  function restoreAutosavedState() {
+    if (!localStorage.getItem(WORKSHEET_STORAGE_KEY)) {
+      showToast('No autosaved worksheet state to restore.', 'info', 2500);
+      return;
     }
+    if (!loadWorksheetState()) {
+      showToast('Could not restore autosave.', 'error', 2500);
+      return;
+    }
+    showToast('Restored last autosave.', 'success', 2500);
   }
 
   function showToast(message, type = 'info', duration = 3000) {
@@ -580,7 +626,6 @@
     const active = document.activeElement;
     const typingQty = active && active.classList && active.classList.contains('qty-input');
     if (!typingQty) applySort();
-    saveWorksheetState();
   }
 
   function getRowSortName(row) {
@@ -1351,12 +1396,16 @@
     // Keep empty (placeholder shows) - calculations handle empty as 0
     validateAndShowQty(inp);
     calculateLoad();
+    notifyWorksheetChanged();
+    tryAutosaveOnBlur();
   }
 
   function onGenFuelBlur(e) {
     const name = e.target.id || '';
     if (SIDEBAR_RULES[name]) validateAndShowSidebar(name);
     calculateLoad();
+    notifyWorksheetChanged();
+    tryAutosaveOnBlur();
   }
 
   function attachListeners() {
@@ -1378,7 +1427,10 @@
       inp.removeEventListener('input', calculateLoad);
       inp.addEventListener('focus', onQtyFocus);
       inp.addEventListener('blur', onQtyBlur);
-      inp.addEventListener('input', calculateLoad);
+      inp.addEventListener('input', () => {
+        calculateLoad();
+        notifyWorksheetChanged();
+      });
       setupPlaceholderBehavior(inp);
     });
     const gen = $(id('gen-capacity'));
@@ -1386,7 +1438,10 @@
     [gen, fuel].forEach(inp => {
       if (!inp) return;
       inp.removeEventListener('input', calculateLoad);
-      inp.addEventListener('input', calculateLoad);
+      inp.addEventListener('input', () => {
+        calculateLoad();
+        notifyWorksheetChanged();
+      });
       inp.removeEventListener('focus', onQtyFocus);
       inp.removeEventListener('blur', onGenFuelBlur);
       inp.addEventListener('focus', onQtyFocus);
@@ -1471,7 +1526,10 @@
       exportFormatDialog.removeEventListener('click', closeExportOnOverlayClick);
       exportFormatDialog.addEventListener('click', closeExportOnOverlayClick);
     }
-    if (btnClearAutosave) { btnClearAutosave.removeEventListener('click', clearAutosavedState); btnClearAutosave.addEventListener('click', clearAutosavedState); }
+    if (btnClearAutosave) {
+      btnClearAutosave.removeEventListener('click', restoreAutosavedState);
+      btnClearAutosave.addEventListener('click', restoreAutosavedState);
+    }
     if (fileInput) { fileInput.removeEventListener('change', onScenarioFileSelected); fileInput.addEventListener('change', onScenarioFileSelected); }
     const sortSel = $(id('sort-equipment'));
     if (sortSel) { sortSel.removeEventListener('change', onSortChange); sortSel.addEventListener('change', onSortChange); }
@@ -1495,7 +1553,10 @@
     }
     buildCategories();
     populateScenarioSelect();
-    loadWorksheetState();
+    // Do not auto-restore worksheet on open; always start fresh but show timestamp if present.
+    try {
+      updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
+    } catch (e) {}
     try {
       const saved = localStorage.getItem(SORT_STORAGE_KEY);
       if (saved && ['name-asc', 'name-desc', 'kw-desc', 'kw-asc'].includes(saved)) {
@@ -1506,6 +1567,7 @@
     } catch (e) {}
     setupHelpPopovers();
     attachListeners();
+    startAutosaveTimer();
     applySort();
     calculateLoad();
   }

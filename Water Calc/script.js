@@ -239,6 +239,7 @@
     }
     updateUnitLabels();
     updateBreakdown();
+    notifyWorksheetChanged();
     recalc();
   }
 
@@ -403,7 +404,6 @@
       note.style.display = 'block';
     }
     updateBreakdown();
-    saveWorksheetState();
   }
 
   function setText(id, text) {
@@ -437,7 +437,7 @@
     }
     try {
       const date = new Date(tsIsoString);
-      el.textContent = isNaN(date.getTime()) ? '' : 'Last autosaved: ' + date.toLocaleString();
+      el.textContent = isNaN(date.getTime()) ? '' : 'Worksheet autosaved: ' + date.toLocaleString();
     } catch (e) {
       el.textContent = '';
     }
@@ -466,13 +466,55 @@
     }, duration);
   }
 
+  const AUTOSAVE_INTERVAL_MS = 60 * 1000;
+  const DEBOUNCED_AUTOSAVE_MS = 3 * 1000;
+  let autosaveTimerId = null;
+  let debouncedAutosaveTimeout = null;
+  /** Only true after user edits; avoids overwriting prior autosave on open (defaults + initial recalc). */
+  let waterAutosaveDirty = false;
+
+  function notifyWorksheetChanged() {
+    markScenarioListStaleIfNeeded();
+    waterAutosaveDirty = true;
+    scheduleDebouncedAutosave();
+  }
+
+  function scheduleDebouncedAutosave() {
+    if (!waterAutosaveDirty) return;
+    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
+    debouncedAutosaveTimeout = setTimeout(() => {
+      debouncedAutosaveTimeout = null;
+      saveWorksheetState();
+    }, DEBOUNCED_AUTOSAVE_MS);
+  }
+
+  function startAutosaveTimer() {
+    if (autosaveTimerId != null) return;
+    try {
+      autosaveTimerId = setInterval(() => {
+        if (waterAutosaveDirty) saveWorksheetState();
+      }, AUTOSAVE_INTERVAL_MS);
+    } catch (e) { /* ignore */ }
+  }
+
   function saveWorksheetState() {
     try {
       localStorage.setItem(WATER_AUTOSAVE_KEY, JSON.stringify(getState()));
       const now = new Date().toISOString();
       localStorage.setItem(LAST_SAVED_KEY, now);
       updateAutosaveTimestampDisplay(now);
-    } catch (e) { /* ignore */ }
+      waterAutosaveDirty = false;
+      return true;
+    } catch (e) {
+      console.warn('Water autosave failed:', e);
+      showToast('Could not autosave (storage may be full or blocked).', 'error', 4000);
+      return false;
+    }
+  }
+
+  /** After editing a field, blur saves immediately so reload doesn’t lose work before debounce. */
+  function tryAutosaveOnBlur() {
+    if (waterAutosaveDirty) saveWorksheetState();
   }
 
   function loadWorksheetState() {
@@ -503,16 +545,20 @@
     }
   }
 
-  function clearAutosavedState() {
-    if (!confirm('Clear autosaved worksheet state from this browser? This will not delete named saved scenarios.')) return;
-    try {
-      localStorage.removeItem(WATER_AUTOSAVE_KEY);
-      localStorage.removeItem(LAST_SAVED_KEY);
-      updateAutosaveTimestampDisplay('');
-      showToast('Autosaved worksheet state cleared', 'success', 2500);
-    } catch (e) {
-      showToast('Failed to clear autosaved worksheet state', 'error', 3000);
+  function restoreAutosavedState() {
+    if (!localStorage.getItem(WATER_AUTOSAVE_KEY)) {
+      showToast('No autosaved worksheet state to restore.', 'info', 2500);
+      return;
     }
+    if (!loadWorksheetState()) {
+      showToast('Could not restore autosave.', 'error', 2500);
+      return;
+    }
+    recalc();
+    waterAutosaveDirty = true;
+    saveWorksheetState();
+    setScenarioListLine({ kind: 'restored_autosave' });
+    showToast('Restored last autosave.', 'success', 2500);
   }
 
   function updateScenarioDropdown() {
@@ -545,20 +591,61 @@
     if (clearBtn) clearBtn.disabled = disabled;
   }
 
-  function updateSavedDisplay(isoTimestampOrNull) {
-    const el = g('saved-display');
-    if (!el) return;
-    if (isoTimestampOrNull) {
-      try {
-        const d = new Date(isoTimestampOrNull);
-        el.textContent = 'Saved: ' + (d.toLocaleString && d.toLocaleString());
-      } catch (e) {
-        el.textContent = '';
-      }
-    } else {
-      el.textContent = '';
+  /** Bottom line = scenario list / import only (not worksheet autosave — that’s the toolbar). */
+  let scenarioListLine = { kind: 'none', name: '', ts: '' };
+
+  function formatScenarioTs(iso) {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      return isNaN(d.getTime()) ? '' : d.toLocaleString();
+    } catch (e) {
+      return '';
     }
   }
+
+  function renderScenarioListLine() {
+    const el = g('saved-display');
+    if (!el) return;
+    const { kind, name, ts } = scenarioListLine;
+    if (kind === 'none') {
+      el.textContent = '';
+      return;
+    }
+    if (kind === 'editing') {
+      el.textContent = 'Worksheet edited — not yet saved to the scenario list. Unsaved work is in toolbar (worksheet autosave).';
+      return;
+    }
+    const n = (name || '').trim();
+    const t = formatScenarioTs(ts);
+    if (kind === 'list_saved') {
+      el.textContent = n ? `Scenario list: “${n}” added/updated · ${t}` : `Scenario list: saved · ${t}`;
+    } else if (kind === 'list_loaded') {
+      el.textContent = n ? `Loaded from list: “${n}” · stored in list ${t}` : `Loaded from scenario list · ${t}`;
+    } else if (kind === 'imported') {
+      el.textContent = t ? `Imported from file · export time ${t}` : 'Imported from file.';
+    } else if (kind === 'restored_autosave') {
+      el.textContent = 'Restored from worksheet autosave (separate from the named scenario list).';
+    }
+  }
+
+  function setScenarioListLine(opts) {
+    scenarioListLine = {
+      kind: opts.kind || 'none',
+      name: opts.name != null ? opts.name : '',
+      ts: opts.ts != null ? opts.ts : ''
+    };
+    renderScenarioListLine();
+  }
+
+  function markScenarioListStaleIfNeeded() {
+    const k = scenarioListLine.kind;
+    if (k === 'list_saved' || k === 'list_loaded' || k === 'imported' || k === 'restored_autosave') {
+      scenarioListLine = { kind: 'editing', name: '', ts: '' };
+      renderScenarioListLine();
+    }
+  }
+
 
   function saveScenario() {
     // Validate all inputs before saving
@@ -604,7 +691,8 @@
       return;
     }
     updateScenarioDropdown();
-    updateSavedDisplay(scenario.timestamp || null);
+    setScenarioListLine({ kind: 'list_saved', name: scenario.name, ts: scenario.timestamp });
+    saveWorksheetState();
     showFeedback(`Scenario "${scenario.name}" saved.`, 'success');
   }
 
@@ -623,8 +711,13 @@
     }
     applyState(scenario.state);
     if (g('water-scenario-name')) g('water-scenario-name').value = scenario.name || (scenario.state && scenario.state.scenarioName) || '';
-    updateSavedDisplay(scenario.timestamp || null);
+    setScenarioListLine({
+      kind: 'list_loaded',
+      name: scenario.name || '',
+      ts: scenario.timestamp || null
+    });
     recalc();
+    saveWorksheetState();
     showFeedback(`Scenario "${scenario.name || ''}" loaded.`, 'success');
   }
 
@@ -664,7 +757,7 @@
       return;
     }
     updateScenarioDropdown();
-    updateSavedDisplay(null);
+    setScenarioListLine({ kind: 'none' });
     showFeedback('All scenarios cleared.', 'success');
   }
 
@@ -762,8 +855,13 @@
         if (state.days != null || state.beds != null) {
           if (!state.scenarioName && data.name) state.scenarioName = data.name;
           applyState(state);
-          updateSavedDisplay(data.timestamp || null);
+          setScenarioListLine({
+            kind: 'imported',
+            name: state.scenarioName || data.name || '',
+            ts: data.timestamp || null
+          });
           recalc();
+          saveWorksheetState();
           showFeedback('Scenario imported and applied.', 'success');
         } else {
           showFeedback('File does not contain a valid scenario.', 'info');
@@ -793,6 +891,8 @@
       applyState(WATER_DEFAULTS);
     }
     recalc();
+    saveWorksheetState();
+    setScenarioListLine({ kind: 'none' });
     showFeedback('Reset to defaults.', 'success');
   }
 
@@ -864,7 +964,10 @@
     Object.keys(VALIDATION_RULES).forEach(id => {
       const el = g(id);
       if (el) {
-        el.addEventListener('blur', () => validateAndShow(id));
+        el.addEventListener('blur', () => {
+          validateAndShow(id);
+          tryAutosaveOnBlur();
+        });
         el.addEventListener('input', () => {
           // Clear error on input, but don't validate until blur
           if (el.classList.contains('input-error')) {
@@ -880,7 +983,10 @@
       const el = g(id);
       if (el) {
         setupPlaceholderBehavior(el);
-        el.addEventListener('input', recalc);
+        el.addEventListener('input', () => {
+          notifyWorksheetChanged();
+          recalc();
+        });
         if (id === 'water-mains-flow-rate') el.addEventListener('blur', () => validateAndShow('water-mains-flow-rate'));
       }
     });
@@ -889,6 +995,7 @@
       const el = g(id);
       if (el) {
         el.addEventListener('input', () => {
+          notifyWorksheetChanged();
           updateBaseLiterValues();
           recalc();
         });
@@ -966,7 +1073,7 @@
       closeAllHelpPopovers(true);
     });
 
-    if (g('water-btn-clear-autosave')) g('water-btn-clear-autosave').addEventListener('click', clearAutosavedState);
+    if (g('water-btn-clear-autosave')) g('water-btn-clear-autosave').addEventListener('click', restoreAutosavedState);
     if (g('water-print-btn')) g('water-print-btn').addEventListener('click', printReport);
     if (g('water-reset-btn')) g('water-reset-btn').addEventListener('click', resetToDefaults);
     if (g('water-save-btn')) g('water-save-btn').addEventListener('click', saveScenario);
@@ -1005,20 +1112,38 @@
 
     ['water-potable-supply-mode', 'water-wastewater-disposal-mode'].forEach(id => {
       const el = g(id);
-      if (el) el.addEventListener('change', () => { updateSupplyModeUI(); recalc(); });
+      if (el) el.addEventListener('change', () => {
+        notifyWorksheetChanged();
+        updateSupplyModeUI();
+        recalc();
+      });
     });
 
-    if (!loadWorksheetState()) {
-      if (typeof WATER_DEFAULTS !== 'undefined') {
-        applyState(WATER_DEFAULTS);
-      } else {
-        const potableEl = g('water-potable-rate');
-        const wastewaterEl = g('water-wastewater-rate');
-        if (potableEl && !isGallons()) baseLiterValues.potable = getNum(potableEl, baseLiterValues.potable);
-        if (wastewaterEl && !isGallons()) baseLiterValues.wastewater = getNum(wastewaterEl, baseLiterValues.wastewater);
-      }
-      updateAutosaveTimestampDisplay('');
+    const scenarioNameEl = g('water-scenario-name');
+    const scenarioNotesEl = g('water-scenario-notes');
+    if (scenarioNameEl) {
+      scenarioNameEl.addEventListener('input', notifyWorksheetChanged);
+      scenarioNameEl.addEventListener('blur', tryAutosaveOnBlur);
     }
+    if (scenarioNotesEl) {
+      scenarioNotesEl.addEventListener('input', notifyWorksheetChanged);
+      scenarioNotesEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+
+    startAutosaveTimer();
+    waterAutosaveDirty = false;
+    setScenarioListLine({ kind: 'none' });
+    if (typeof WATER_DEFAULTS !== 'undefined') {
+      applyState(WATER_DEFAULTS);
+    } else {
+      const potableEl = g('water-potable-rate');
+      const wastewaterEl = g('water-wastewater-rate');
+      if (potableEl && !isGallons()) baseLiterValues.potable = getNum(potableEl, baseLiterValues.potable);
+      if (wastewaterEl && !isGallons()) baseLiterValues.wastewater = getNum(wastewaterEl, baseLiterValues.wastewater);
+    }
+    try {
+      updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
+    } catch (e) { /* ignore */ }
     updateUnitLabels();
     updateSupplyModeUI();
     updateScenarioDropdown();

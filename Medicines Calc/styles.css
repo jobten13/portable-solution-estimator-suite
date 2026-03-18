@@ -729,6 +729,33 @@
 }
 
 @media print {
+  .meds-calc .banner { background: white; color: black; }
+  .meds-calc .banner-title,
+  .meds-calc .banner-subtitle { color: black; }
+  .meds-calc .container {
+    overflow: visible;
+    box-shadow: none;
+    max-width: none;
+  }
+  .meds-calc .table-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none;
+  }
+  .meds-calc .data-table thead {
+    position: static;
+    display: table-header-group;
+    background: #fff !important;
+  }
+  .meds-calc .data-table th {
+    background: #fff !important;
+    color: #111 !important;
+    border-bottom: 2px solid #374151;
+  }
+  .meds-calc .data-table th:nth-child(4),
+  .meds-calc .data-table td:nth-child(4) {
+    display: none !important;
+  }
   .meds-calc .btn,
   .meds-calc .toolbar,
   .meds-calc .toolbar-wrap,
@@ -737,11 +764,41 @@
   .meds-calc .sort-bar,
   .meds-calc .add-item-bar,
   .meds-calc .search-box,
+  .meds-calc .items-info,
+  .meds-calc .button-feedback,
+  .meds-calc .scenario-select,
   .meds-calc .help-icon,
   .meds-calc .help-popover,
   .meds-calc .disclaimer,
-  .meds-calc .export-format-dialog { display: none !important; }
-  .meds-calc .banner { background: white; color: black; }
+  .meds-calc .toast-container,
+  .meds-calc .export-format-dialog {
+    display: none !important;
+  }
+  .meds-calc .scenario-section,
+  .meds-calc .highlight-section,
+  .meds-calc .requirements-section {
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  .meds-calc .scenario-section { display: block !important; }
+  .meds-calc .buffer-badge {
+    background: #fff !important;
+    color: #111 !important;
+    border: 1px solid #374151 !important;
+  }
+  .meds-calc .highlight-cell {
+    background: #fff !important;
+    font-weight: 600;
+  }
+  .meds-calc .scenario-meta input[type="text"],
+  .meds-calc .scenario-meta textarea,
+  .meds-calc .param-group input {
+    border: 1px solid #9ca3af !important;
+    background: #fff !important;
+    border-radius: 6px;
+    padding: 6px 8px;
+    box-sizing: border-box;
+  }
 }
 
 @media (max-width: 700px) {

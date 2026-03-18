@@ -838,6 +838,42 @@
   .cons-calc .data-table thead {
     position: static;
     display: table-header-group;
+    background: #fff !important;
+  }
+  .cons-calc .data-table th {
+    background: #fff !important;
+    color: #111 !important;
+    border-bottom: 2px solid #374151;
+  }
+  .cons-calc .data-table th:nth-child(4),
+  .cons-calc .data-table td:nth-child(4) {
+    display: none !important;
+  }
+  /* No fill shading in section cards (toner); keep colored outlines only. */
+  .cons-calc .scenario-section,
+  .cons-calc .highlight-section,
+  .cons-calc .requirements-section {
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  .cons-calc .scenario-section { display: block !important; }
+  .cons-calc .buffer-badge {
+    background: #fff !important;
+    color: #111 !important;
+    border: 1px solid #374151 !important;
+  }
+  .cons-calc .highlight-cell {
+    background: #fff !important;
+    font-weight: 600;
+  }
+  .cons-calc .scenario-meta input[type="text"],
+  .cons-calc .scenario-meta textarea,
+  .cons-calc .param-group input {
+    border: 1px solid #9ca3af !important;
+    background: #fff !important;
+    border-radius: 6px;
+    padding: 6px 8px;
+    box-sizing: border-box;
   }
   .cons-calc .toolbar-wrap,
   .cons-calc .scenario-actions,

@@ -841,20 +841,14 @@
       showFeedback('No data to print. Please load the Ward or ICU list first.', 'info');
       return;
     }
+    if (filteredConsumables.length === 0) {
+      showFeedback('No rows match the current filters. Adjust filters or search to print.', 'info');
+      return;
+    }
 
     showFeedback('Opening print preview...', 'info');
-
-    const sel = g('sort-equipment');
-    const savedSort = (sel && sel.value) || currentSortKey;
-    if (sel) sel.value = 'qty-desc';
-    currentSortKey = 'qty-desc';
-    filterItems();
-
-    const afterPrint = () => {
+    const afterPrint = function () {
       window.removeEventListener('afterprint', afterPrint);
-      if (sel) sel.value = savedSort;
-      currentSortKey = savedSort;
-      filterItems();
       showFeedback('Print complete.', 'success');
     };
     window.addEventListener('afterprint', afterPrint);
