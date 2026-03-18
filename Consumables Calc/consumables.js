@@ -9,6 +9,13 @@
   const STORAGE_BUFFER = 'cons-fieldHospitalBuffer';
   const STORAGE_CONSUMABLES = 'cons-fieldHospitalConsumables';
   const STORAGE_FILENAME = 'cons-fieldHospitalFileName';
+  const STORAGE_DAYS = 'cons-fieldHospitalDays';
+  const STORAGE_BEDS = 'cons-fieldHospitalBeds';
+  const STORAGE_SCENARIO_NAME = 'cons-fieldHospitalScenarioName';
+  const STORAGE_SCENARIO_NOTES = 'cons-fieldHospitalScenarioNotes';
+  const STORAGE_SEARCH = 'cons-fieldHospitalSearch';
+  const STORAGE_MIN_QTY_FILTER = 'cons-fieldHospitalMinQtyFilter';
+  const STORAGE_NONZERO_ONLY = 'cons-fieldHospitalNonzeroOnly';
   const SORT_STORAGE_KEY = 'cons-fieldHospitalSort';
 
   function g(id) {
@@ -139,7 +146,7 @@
   }
 
   function setupEventListeners() {
-    if (g('clear-autosave-btn')) g('clear-autosave-btn').addEventListener('click', clearAutosavedState);
+    if (g('clear-autosave-btn')) g('clear-autosave-btn').addEventListener('click', restoreAutosavedState);
     if (g('clear-items-btn')) g('clear-items-btn').addEventListener('click', clearAllItems);
     if (g('ward-list-btn')) g('ward-list-btn').addEventListener('click', loadWardList);
     if (g('icu-list-btn')) g('icu-list-btn').addEventListener('click', loadICUList);
@@ -149,8 +156,8 @@
       setupPlaceholderBehavior(daysEl);
       daysEl.addEventListener('input', function () {
         deploymentDays = sanitizeDays(parseFloat(this.value));
-        saveData();
         calculateAndDisplay();
+        scheduleDebouncedAutosave();
       });
       daysEl.addEventListener('blur', () => validateAndShow('days'));
     }
@@ -159,8 +166,8 @@
       setupPlaceholderBehavior(bedsEl);
       bedsEl.addEventListener('input', function () {
         deploymentBeds = sanitizeBeds(parseFloat(this.value));
-        saveData();
         calculateAndDisplay();
+        scheduleDebouncedAutosave();
       });
       bedsEl.addEventListener('blur', () => validateAndShow('beds'));
     }
@@ -169,8 +176,8 @@
       setupPlaceholderBehavior(bufferEl);
       bufferEl.addEventListener('input', function () {
         bufferPercentage = sanitizeBuffer(parseFloat(this.value));
-        saveData();
         calculateAndDisplay();
+        scheduleDebouncedAutosave();
       });
       bufferEl.addEventListener('blur', () => validateAndShow('buffer'));
     }
@@ -1087,6 +1094,28 @@
     }
   }
 
+  const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000;
+  const DEBOUNCED_AUTOSAVE_MS = 10 * 1000;
+  let autosaveTimerId = null;
+  let debouncedAutosaveTimeout = null;
+
+  function scheduleDebouncedAutosave() {
+    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
+    debouncedAutosaveTimeout = setTimeout(function () {
+      debouncedAutosaveTimeout = null;
+      saveData();
+    }, DEBOUNCED_AUTOSAVE_MS);
+  }
+
+  function startAutosaveTimer() {
+    if (autosaveTimerId != null) return;
+    try {
+      autosaveTimerId = setInterval(() => {
+        saveData();
+      }, AUTOSAVE_INTERVAL_MS);
+    } catch (e) { /* ignore */ }
+  }
+
   function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 3000;
@@ -1113,6 +1142,18 @@
   function saveData() {
     try {
       localStorage.setItem(STORAGE_BUFFER, bufferPercentage);
+      localStorage.setItem(STORAGE_DAYS, String(deploymentDays));
+      localStorage.setItem(STORAGE_BEDS, String(deploymentBeds));
+      const nameEl = g('scenario-name');
+      const notesEl = g('scenario-notes');
+      localStorage.setItem(STORAGE_SCENARIO_NAME, (nameEl && nameEl.value) ? nameEl.value : '');
+      localStorage.setItem(STORAGE_SCENARIO_NOTES, (notesEl && notesEl.value) ? notesEl.value : '');
+      const searchEl = g('search');
+      const minQtyEl = g('min-qty-filter');
+      const nonzeroEl = g('nonzero-only-filter');
+      localStorage.setItem(STORAGE_SEARCH, (searchEl && searchEl.value) ? searchEl.value : '');
+      localStorage.setItem(STORAGE_MIN_QTY_FILTER, (minQtyEl && minQtyEl.value) ? minQtyEl.value : '');
+      localStorage.setItem(STORAGE_NONZERO_ONLY, (nonzeroEl && nonzeroEl.checked) ? '1' : '0');
       if (allConsumables.length > 0) {
         localStorage.setItem(STORAGE_CONSUMABLES, JSON.stringify(allConsumables));
       } else {
@@ -1133,17 +1174,45 @@
 
   function loadSavedData() {
     const savedBuffer = localStorage.getItem(STORAGE_BUFFER);
+    const savedDays = localStorage.getItem(STORAGE_DAYS);
+    const savedBeds = localStorage.getItem(STORAGE_BEDS);
     const savedConsumables = localStorage.getItem(STORAGE_CONSUMABLES);
     const savedFileName = localStorage.getItem(STORAGE_FILENAME);
+    const savedScenarioName = localStorage.getItem(STORAGE_SCENARIO_NAME);
+    const savedScenarioNotes = localStorage.getItem(STORAGE_SCENARIO_NOTES);
+    const savedSearch = localStorage.getItem(STORAGE_SEARCH);
+    const savedMinQtyFilter = localStorage.getItem(STORAGE_MIN_QTY_FILTER);
+    const savedNonzeroOnly = localStorage.getItem(STORAGE_NONZERO_ONLY);
 
     const de = g('days');
     const be = g('beds');
     const bu = g('buffer');
+    const nameEl = g('scenario-name');
+    const notesEl = g('scenario-notes');
+    const searchEl = g('search');
+    const minQtyEl = g('min-qty-filter');
+    const nonzeroEl = g('nonzero-only-filter');
 
-    deploymentDays = 0;
-    deploymentBeds = 0;
-    if (de) de.value = '';
-    if (be) be.value = '';
+    if (nameEl) nameEl.value = (savedScenarioName != null) ? savedScenarioName : '';
+    if (notesEl) notesEl.value = (savedScenarioNotes != null) ? savedScenarioNotes : '';
+    if (searchEl) searchEl.value = (savedSearch != null) ? savedSearch : '';
+    if (minQtyEl) minQtyEl.value = (savedMinQtyFilter != null) ? savedMinQtyFilter : '';
+    if (nonzeroEl) nonzeroEl.checked = savedNonzeroOnly === '1';
+
+    if (savedDays !== null) {
+      deploymentDays = sanitizeDays(parseFloat(savedDays));
+      if (de) de.value = deploymentDays !== 0 ? String(deploymentDays) : '';
+    } else {
+      deploymentDays = 0;
+      if (de) de.value = '';
+    }
+    if (savedBeds !== null) {
+      deploymentBeds = sanitizeBeds(parseFloat(savedBeds));
+      if (be) be.value = deploymentBeds !== 0 ? String(deploymentBeds) : '';
+    } else {
+      deploymentBeds = 0;
+      if (be) be.value = '';
+    }
     if (savedBuffer !== null) {
       bufferPercentage = sanitizeBuffer(parseFloat(savedBuffer));
       if (bu) bu.value = bufferPercentage !== 0 ? String(bufferPercentage) : '';
@@ -1193,18 +1262,13 @@
     updateAutosaveTimestampDisplay(lastSaved);
   }
 
-  function clearAutosavedState() {
-    if (!confirm('Clear autosaved worksheet state from this browser? This will not delete named saved scenarios.')) return;
-    try {
-      localStorage.removeItem(STORAGE_BUFFER);
-      localStorage.removeItem(STORAGE_CONSUMABLES);
-      localStorage.removeItem(STORAGE_FILENAME);
-      localStorage.removeItem(LAST_SAVED_KEY);
-      updateAutosaveTimestampDisplay('');
-      showToast('Autosaved worksheet state cleared', 'success', 2500);
-    } catch (e) {
-      showToast('Failed to clear autosaved worksheet state', 'error', 3000);
+  function restoreAutosavedState() {
+    if (!localStorage.getItem(LAST_SAVED_KEY)) {
+      showToast('No autosaved worksheet state to restore.', 'info', 2500);
+      return;
     }
+    loadSavedData();
+    showToast('Restored last autosave.', 'success', 2500);
   }
 
   function escapeHtml(text) {
@@ -1343,7 +1407,10 @@
       if (sortSel) sortSel.value = 'name-asc';
     }
     setupEventListeners();
-    loadSavedData();
+    startAutosaveTimer();
+    try {
+      updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
+    } catch (e) { /* ignore */ }
     updateAddItemRatePlaceholder();
     updateInventoryHelpRateLabel();
   }

@@ -194,8 +194,16 @@
 .cons-calc .section {
   margin-bottom: 20px;
 }
-.cons-calc .section:not(.scenario-section):not(.highlight-section) {
+.cons-calc .section:not(.scenario-section):not(.highlight-section):not(.requirements-section) {
   padding: 0;
+}
+
+.cons-calc .requirements-section {
+  background: #fffbeb;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 2px solid #d97706;
+  box-sizing: border-box;
 }
 
 .cons-calc .section:last-of-type {
@@ -816,6 +824,21 @@
 
 @media print {
   .cons-calc .banner { background: white; color: black; }
+  .cons-calc .calc-app {
+    overflow: visible;
+    box-shadow: none;
+    max-width: none;
+  }
+  /* Let the full item list flow across pages (no 500px scroll box in print). */
+  .cons-calc .table-wrapper {
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none;
+  }
+  .cons-calc .data-table thead {
+    position: static;
+    display: table-header-group;
+  }
   .cons-calc .toolbar-wrap,
   .cons-calc .scenario-actions,
   .cons-calc .scenario-storage-note,

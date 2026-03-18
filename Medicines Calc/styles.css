@@ -61,6 +61,14 @@
   border: 2px solid #0ea5e9;
 }
 
+.meds-calc .requirements-section {
+  background: #fffbeb;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 2px solid #d97706;
+  box-sizing: border-box;
+}
+
 .meds-calc .btn-clear-items {
   background: #ef4444;
   color: white;
