@@ -300,9 +300,13 @@
 
   function onEquipmentBlur(e) {
     validateAndShowEquipment(e.target);
+    notifyWorksheetChanged();
   }
 
-  function onRecalc() { recalc(); }
+  function onRecalc() {
+    recalc();
+    notifyWorksheetChanged();
+  }
 
   function filterEquipmentSearch() {
     const searchEl = $('#load-pro-search-equipment');
@@ -563,7 +567,6 @@
     $('#load-pro-approximate-runtime').textContent = formatNum(runtime, 1);
 
     updateCapacityStatus(kvaMargin, peakKva, availableKva);
-    saveWorksheetState();
   }
 
   function updateCapacityStatus(kvaMargin, peakKva, availableKva) {
@@ -641,10 +644,40 @@
     $$('.equipment-row.custom').forEach(row => row.remove());
 
     (data.rows || []).forEach(item => {
-      const existing = $$('.equipment-row').find(row => {
-        const first = row.querySelector('td:first-child');
-        return first && first.textContent.trim() === item.name;
-      });
+      let existing = null;
+      // Basic-style restore: find the row *within* the category to avoid name collisions.
+      if (item.catId) {
+        const catEl = document.getElementById(item.catId);
+        if (catEl) {
+          const rowsInCat = Array.from(catEl.querySelectorAll('.equipment-row'));
+          existing = rowsInCat.find(row => {
+            const first = row.querySelector('td:first-child');
+            if (!first) return false;
+            if (first.textContent.trim() !== item.name) return false;
+
+            // Extra disambiguation: if names collide within the same category,
+            // match on kw and PF too (qty-only edits keep these identical).
+            const kwIn = row.querySelector('.kw-input');
+            const pfIn = row.querySelector('.pf-input');
+            const rowKw = kwIn ? parseFloat(kwIn.value) : NaN;
+            const rowPf = pfIn ? parseFloat(pfIn.value) : NaN;
+            const itemKw = parseFloat(item.kw);
+            const itemPf = parseFloat(item.pf);
+
+            const kwOk = Number.isFinite(rowKw) && Number.isFinite(itemKw) ? Math.abs(rowKw - itemKw) < 1e-9 : true;
+            const pfOk = Number.isFinite(rowPf) && Number.isFinite(itemPf) ? Math.abs(rowPf - itemPf) < 1e-9 : true;
+
+            return kwOk && pfOk;
+          }) || null;
+        }
+      }
+      if (!existing) {
+        // Fallback: match by name only (used if catId is missing).
+        existing = $$('.equipment-row').find(row => {
+          const first = row.querySelector('td:first-child');
+          return first && first.textContent.trim() === item.name;
+        }) || null;
+      }
       if (existing) {
         const q = existing.querySelector('.qty-input');
         const k = existing.querySelector('.kw-input');
@@ -691,6 +724,40 @@
     }
   }
 
+  // --- Worksheet autosave (debounced + interval, no auto-restore on open) ---
+  const AUTOSAVE_INTERVAL_MS = 60 * 1000;
+  const DEBOUNCED_AUTOSAVE_MS = 3 * 1000;
+  let autosaveTimerId = null;
+  let debouncedAutosaveTimeout = null;
+  let loadProAutosaveDirty = false;
+
+  function notifyWorksheetChanged() {
+    loadProAutosaveDirty = true;
+    scheduleDebouncedAutosave();
+  }
+
+  function scheduleDebouncedAutosave() {
+    if (!loadProAutosaveDirty) return;
+    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
+    debouncedAutosaveTimeout = setTimeout(() => {
+      debouncedAutosaveTimeout = null;
+      saveWorksheetState();
+    }, DEBOUNCED_AUTOSAVE_MS);
+  }
+
+  function startAutosaveTimer() {
+    if (autosaveTimerId != null) return;
+    try {
+      autosaveTimerId = setInterval(() => {
+        if (loadProAutosaveDirty) saveWorksheetState();
+      }, AUTOSAVE_INTERVAL_MS);
+    } catch (e) { /* ignore */ }
+  }
+
+  function tryAutosaveOnBlur() {
+    if (loadProAutosaveDirty) saveWorksheetState();
+  }
+
   function showToast(message, type = 'info', duration = 3000) {
     let container = document.getElementById('toast-container');
     if (!container) {
@@ -718,15 +785,84 @@
       const now = new Date().toISOString();
       localStorage.setItem(LAST_SAVED_KEY, now);
       updateAutosaveTimestampDisplay(now);
+      loadProAutosaveDirty = false;
     } catch (e) { /* ignore */ }
   }
 
   function loadWorksheetState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) applyScenarioData(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const savedRows = Array.isArray(parsed && parsed.rows) ? parsed.rows : [];
+        const savedNonZeroRows = savedRows.filter(r => {
+          const v = parseFloat(r && r.qty);
+          return Number.isFinite(v) && v !== 0;
+        }).map(r => ({
+          catId: r && r.catId ? String(r.catId) : '',
+          name: r && r.name ? String(r.name) : '',
+          qty: r && r.qty != null ? String(r.qty) : ''
+        }));
+        const savedNonZeroQtyCount = savedNonZeroRows.length;
+
+        applyScenarioData(parsed);
+        recalc();
+        loadProAutosaveDirty = false;
+        let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
+        if (!lastSaved) {
+          lastSaved = new Date().toISOString();
+          try { localStorage.setItem(LAST_SAVED_KEY, lastSaved); } catch (err) {}
+        }
+        updateAutosaveTimestampDisplay(lastSaved);
+
+        const restoredNonEmptyQtyCount = $$('.equipment-row .qty-input')
+          .filter(inp => inp && String(inp.value || '').trim() !== '' && parseFloat(inp.value) !== 0).length;
+        const domNonZeroRows = [];
+        let domNonZeroCustom = 0;
+        let domNonZeroBuiltIn = 0;
+        let firstDomNonZeroRowEl = null;
+        $$('.equipment-row').forEach(row => {
+          const qtyIn = row.querySelector('.qty-input');
+          if (!qtyIn) return;
+          const qty = parseFloat(qtyIn.value);
+          if (!Number.isFinite(qty) || qty === 0) return;
+          if (!firstDomNonZeroRowEl) firstDomNonZeroRowEl = row;
+          const cat = row.closest('.category');
+          const catId = cat ? cat.id : '';
+          const nameCell = row.querySelector('td:first-child');
+          const name = nameCell ? nameCell.textContent.trim() : '';
+          domNonZeroRows.push({ catId, name, qty: String(qtyIn.value) });
+          if (row.classList.contains('custom')) domNonZeroCustom++;
+          else domNonZeroBuiltIn++;
+        });
+
+        const savedFirst = savedNonZeroRows[0]
+          ? `${savedNonZeroRows[0].catId}:${savedNonZeroRows[0].name}:${savedNonZeroRows[0].qty}`
+          : 'none';
+        const domFirst = domNonZeroRows[0]
+          ? `${domNonZeroRows[0].catId}:${domNonZeroRows[0].name}:${domNonZeroRows[0].qty}`
+          : 'none';
+
+        // Toast/debug sometimes isn't visible in Shell; use button acknowledgement instead.
+        const dbg = `Restore debug savedNonZero=${savedNonZeroQtyCount}[${savedFirst}] domNonZero=${domNonZeroRows.length}[${domFirst}] domCustomNonZero=${domNonZeroCustom} domBuiltInNonZero=${domNonZeroBuiltIn}`;
+        const domFirstHidden = firstDomNonZeroRowEl ? firstDomNonZeroRowEl.classList.contains('search-hidden') : false;
+        const domFirstCategoryCollapsed = firstDomNonZeroRowEl
+          ? (() => {
+              const cat = firstDomNonZeroRowEl.closest('.category');
+              return cat ? cat.classList.contains('collapsed') : false;
+            })()
+          : false;
+        const dbg2 = `Restore debug ${dbg} domFirstHidden=${domFirstHidden} domFirstCategoryCollapsed=${domFirstCategoryCollapsed}`;
+        acknowledge('load-pro-btn-clear-autosave', dbg2);
+        acknowledge('btn-clear-autosave', dbg2);
+        return true;
+      }
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
-    } catch (e) { /* ignore */ }
+      return false;
+    } catch (e) {
+      updateAutosaveTimestampDisplay('');
+      return false;
+    }
   }
 
   function getSavedScenarios() {
@@ -907,6 +1043,8 @@
     updateScenarioDropdown();
     updateAutosaveTimestampDisplay(scenario.timestamp);
     updateSavedDisplay(scenario.timestamp);
+    notifyWorksheetChanged();
+    saveWorksheetState();
     acknowledge('load-pro-save-scenario-btn', 'Saved!');
   }
 
@@ -926,6 +1064,8 @@
     applyScenarioData(scenario.data);
     updateAutosaveTimestampDisplay(scenario.timestamp || '');
     updateSavedDisplay(scenario.timestamp || null);
+    notifyWorksheetChanged();
+    saveWorksheetState();
     acknowledge('load-pro-load-scenario-btn', 'Loaded!');
   }
 
@@ -975,6 +1115,8 @@
           throw new Error('Invalid file');
         }
         applyScenarioData(cleaned);
+        notifyWorksheetChanged();
+        saveWorksheetState();
         if (issues.length > 0) {
           downloadImportIssueReport(sourceFileName, issues);
           acknowledge('load-pro-import-file-btn', `Imported (${issues.length} issue${issues.length === 1 ? '' : 's'})`);
@@ -1101,6 +1243,8 @@
     filterEquipmentSearch();
     updateSavedDisplay(null);
     recalc();
+    notifyWorksheetChanged();
+    tryAutosaveOnBlur();
   }
 
   function resetCategory(catId) {
@@ -1109,23 +1253,34 @@
     cat.querySelectorAll('.qty-input').forEach(inp => { inp.value = ''; });
     cat.querySelectorAll('.equipment-row.custom').forEach(row => row.remove());
     recalc();
+    notifyWorksheetChanged();
+    tryAutosaveOnBlur();
   }
 
-  function clearAutosavedState() {
-    if (!confirm('Clear autosaved worksheet state from this browser? This will not delete named saved scenarios.')) return;
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(LAST_SAVED_KEY);
-      updateAutosaveTimestampDisplay('');
-      showToast('Autosaved worksheet state cleared', 'success', 2500);
-    } catch (e) {
-      showToast('Failed to clear autosaved worksheet state', 'error', 3000);
+  function restoreAutosavedState() {
+    if (!localStorage.getItem(STORAGE_KEY)) {
+      acknowledge('load-pro-btn-clear-autosave', 'No autosave');
+      acknowledge('btn-clear-autosave', 'No autosave');
+      showToast('No autosaved worksheet state to restore.', 'info', 2500);
+      return;
     }
+    if (!loadWorksheetState()) {
+      acknowledge('load-pro-btn-clear-autosave', 'Restore failed');
+      acknowledge('btn-clear-autosave', 'Restore failed');
+      showToast('Could not restore autosave.', 'error', 2500);
+      return;
+    }
+    acknowledge('load-pro-btn-clear-autosave', 'Restored');
+    acknowledge('btn-clear-autosave', 'Restored');
+    showToast('Restored last autosave.', 'success', 2500);
   }
 
   function init() {
     buildCategories();
-    loadWorksheetState();
+    // Do not auto-restore worksheet on open; always start fresh but show timestamp if present.
+    try {
+      updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
+    } catch (e) {}
     applySort();
 
     const kvaEl = $('#load-pro-available-kva');
@@ -1134,10 +1289,22 @@
     [kvaEl, fuelEl, rateEl].forEach(el => {
       if (el) {
         setupPlaceholderBehavior(el);
-        el.addEventListener('input', recalc);
-        if (el === kvaEl) el.addEventListener('blur', () => validateAndShowSidebar('load-pro-available-kva'));
-        if (el === fuelEl) el.addEventListener('blur', () => validateAndShowSidebar('load-pro-fuel-capacity'));
-        if (el === rateEl) el.addEventListener('blur', () => validateAndShowSidebar('load-pro-fuel-rate-per-kw'));
+        el.addEventListener('input', () => {
+          recalc();
+          notifyWorksheetChanged();
+        });
+        if (el === kvaEl) el.addEventListener('blur', () => {
+          validateAndShowSidebar('load-pro-available-kva');
+          tryAutosaveOnBlur();
+        });
+        if (el === fuelEl) el.addEventListener('blur', () => {
+          validateAndShowSidebar('load-pro-fuel-capacity');
+          tryAutosaveOnBlur();
+        });
+        if (el === rateEl) el.addEventListener('blur', () => {
+          validateAndShowSidebar('load-pro-fuel-rate-per-kw');
+          tryAutosaveOnBlur();
+        });
       }
     });
     $('#load-pro-reset-btn').addEventListener('click', resetAllQuantities);
@@ -1211,7 +1378,7 @@
         if (e.target === exportFormatDialog) closeExportFormatDialog();
       });
     }
-    $('#load-pro-btn-clear-autosave').addEventListener('click', clearAutosavedState);
+    $('#load-pro-btn-clear-autosave').addEventListener('click', restoreAutosavedState);
     $('#load-pro-load-scenario-file').addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (file) loadScenarioFromFile(file);
@@ -1236,6 +1403,8 @@
 
     const searchEl = $('#load-pro-search-equipment');
     if (searchEl) searchEl.addEventListener('input', filterEquipmentSearch);
+
+    startAutosaveTimer();
 
     $$('[data-reset-target]').forEach(btn => {
       btn.addEventListener('click', () => resetCategory(btn.getAttribute('data-reset-target')));

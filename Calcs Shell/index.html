@@ -34,7 +34,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="load-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <button type="button" id="load-btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
               <span id="load-load-basic-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" id="load-btn-print" class="btn btn-print" title="Print the current view.">Print</button>
               <button type="button" id="load-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
@@ -54,7 +54,7 @@
                   <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores a scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
                   <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-                  <li><strong>Autosave controls</strong> are in the top toolbar: use <strong>Clear Autosaved State</strong> to remove recovery data without deleting named scenarios.</li>
+                  <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery data for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh; use Restore before editing if you need the previous session.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
@@ -248,7 +248,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="load-pro-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <button type="button" id="load-pro-btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
               <span id="load-pro-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" id="load-pro-print-summary-btn" class="btn btn-print" title="Print the current view.">Print</button>
               <button type="button" id="load-pro-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
@@ -269,7 +269,7 @@
                   <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
                   <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-                  <li><strong>Autosave controls</strong> are in the top toolbar: use <strong>Clear Autosaved State</strong> to remove recovery data without deleting named scenarios.</li>
+                  <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery data for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh; use Restore before editing if you need the previous session.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
@@ -488,7 +488,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+              <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
               <span id="water-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="water-print-btn" title="Print the current view.">Print</button>
               <button type="button" class="btn btn-clear" id="water-reset-btn" title="Reset all inputs, unit, and modes to baseline values.">Reset to Defaults</button>
@@ -506,7 +506,8 @@
                   <li>Use a clear scenario name and notes so others can quickly understand assumptions.</li>
                   <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
                   <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-                  <li><strong>Autosave controls</strong> are in the top toolbar: use <strong>Clear Autosaved State</strong> to remove recovery data without deleting named scenarios.</li>
+                  <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh. Restore before editing if you need the previous session.</li>
+                  <li>The line under scenario name is for the <strong>named scenario list</strong> only — different from worksheet autosave.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
