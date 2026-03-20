@@ -159,11 +159,20 @@
 
 /* Scenario section – green box aligned with Medicines/Consumables */
 .load-basic-calc .scenario-section {
-  margin: 0 0 20px;
-  padding: 16px 20px;
+  margin: 0 0 16px;
+  padding: 12px 16px;
   background: #ecfdf5;
   border-radius: 8px;
   border: 2px solid #059669;
+}
+
+/* Tighter vertical rhythm inside Scenarios only (screen + print) */
+.load-basic-calc .scenario-section .section-heading-row {
+  margin-bottom: 6px;
+}
+
+.load-basic-calc .scenario-section .scenario-section-title {
+  margin: 0 0 8px 0;
 }
 
 .load-basic-calc .scenario-section-title {
@@ -201,9 +210,9 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
 .load-basic-calc .load-scenario-group {
@@ -230,36 +239,40 @@
 .load-basic-calc .scenario-storage-note {
   font-size: 0.8em;
   color: #6b7280;
-  margin: 0 0 12px;
+  margin: 0 0 8px;
   font-style: italic;
 }
 
 .load-basic-calc .scenario-meta {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .load-basic-calc .scenario-meta .field-notes { grid-column: 1 / -1; }
 
 .load-basic-calc .scenario-meta .field {
-  padding: 8px 10px;
-  margin: -8px -10px;
+  padding: 6px 8px;
+  margin: -6px -8px;
   border-radius: 6px;
 }
 
 .load-basic-calc .scenario-meta .field label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   font-size: 0.8rem;
   color: #374151;
   font-weight: 600;
 }
 
 .load-basic-calc .scenario-saved-line {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   font-size: 0.9rem;
   color: #374151;
+}
+
+.print-timestamp {
+  display: none;
 }
 
 .load-basic-calc .section-heading-row {
@@ -404,6 +417,12 @@
 .load-basic-calc .field textarea {
   min-height: 60px;
   resize: vertical;
+}
+
+/* Scenarios notes: slightly shorter default than other textareas; user can still resize */
+.load-basic-calc .scenario-meta .field textarea {
+  min-height: 52px;
+  line-height: 1.35;
 }
 
 .load-basic-calc input:hover,
@@ -788,9 +807,49 @@
 @media print {
   @page { size: letter; margin: 0; }
   .load-basic-calc .app { box-shadow: none; }
-  .load-basic-calc .banner { background: white; color: black; }
+  .load-basic-calc .banner {
+    background: white;
+    color: black;
+    padding: 8px 12px;
+    text-align: center;
+  }
   .load-basic-calc .banner-title,
   .load-basic-calc .banner-subtitle { color: black; }
+  .load-basic-calc .banner-title {
+    font-size: 1.35rem;
+    margin: 0 0 2px;
+  }
+  .load-basic-calc .banner-subtitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    opacity: 1;
+  }
+  /* Less padding above Scenarios on print */
+  .load-basic-calc .content-wrap {
+    padding: 10px 12px 14px;
+  }
+  /* Standalone: .app without .load-basic-calc wrapper */
+  .app .banner {
+    background: white;
+    color: black;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .app .banner-title,
+  .app .banner-subtitle { color: black; }
+  .app .banner-title {
+    font-size: 1.35rem;
+    margin: 0 0 2px;
+  }
+  .app .banner-subtitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    opacity: 1;
+  }
+  .app .content-wrap {
+    padding: 10px 12px 14px;
+  }
+  .print-timestamp { display: block !important; }
   .load-basic-calc .toolbar-wrap,
   .load-basic-calc .scenario-actions,
   .load-basic-calc .scenario-storage-note,
@@ -805,8 +864,144 @@
   .load-basic-calc .equipment-list-heading,
   .load-basic-calc .guide-modal-overlay,
   .load-basic-calc .export-format-dialog { display: none !important; }
-  .load-basic-calc .scenario-section { display: block !important; }
-  .load-basic-calc .main-grid { padding: 0; }
+  .load-basic-calc .scenario-section {
+    display: block !important;
+    /* Do not force a page break after Scenarios; let cards flow on the same page when space allows */
+    page-break-after: auto;
+    break-after: auto;
+  }
+  /* Print: stack summary/capacity/fuel cards above equipment (screen keeps 2-col grid). */
+  .load-basic-calc .main-grid {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 0;
+    margin-top: 0;
+    grid-template-columns: unset;
+  }
+  .load-basic-calc .main-grid .sidebar {
+    order: -1;
+    width: 100%;
+    max-width: 100%;
+    /* Avoiding the whole sidebar caused a forced break after Scenarios when the block was taller than the remaining page. */
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  /* Keep each sidebar heading with the card that follows (help popover is hidden in print). */
+  .load-basic-calc .sidebar .section-heading-row {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  /* Prefer not to split individual cards; still allows breaks between card groups */
+  .load-basic-calc .sidebar .card {
+    page-break-before: avoid;
+    break-before: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .load-basic-calc .main-grid .categories-wrap {
+    order: 1;
+  }
+  .load-basic-calc .sidebar > .section-heading-row:first-child h2 {
+    margin-top: 0;
+  }
+  /* Standalone root is .app (no .load-basic-calc); match print layout */
+  .app .main-grid {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 0;
+    margin-top: 0;
+    grid-template-columns: unset;
+  }
+  .app .main-grid .sidebar {
+    order: -1;
+    width: 100%;
+    max-width: 100%;
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  .app .sidebar .section-heading-row {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .app .sidebar .card {
+    page-break-before: avoid;
+    break-before: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .app .main-grid .categories-wrap {
+    order: 1;
+  }
+  .app .sidebar > .section-heading-row:first-child h2 {
+    margin-top: 0;
+  }
+
+  /* Print-only compression: sidebar cards + scenario notes (full text, no clipping) */
+  .load-basic-calc .sidebar,
+  .app .sidebar {
+    font-size: 0.88rem;
+  }
+  .load-basic-calc .sidebar .section-heading-row h2,
+  .app .sidebar .section-heading-row h2 {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+  .load-basic-calc .sidebar .card,
+  .app .sidebar .card {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    box-shadow: none;
+  }
+  .load-basic-calc .sidebar .fuel-card,
+  .app .sidebar .fuel-card {
+    margin-top: 8px;
+  }
+  .load-basic-calc .sidebar .card .row,
+  .app .sidebar .card .row {
+    font-size: 0.82rem;
+    margin-bottom: 4px;
+  }
+  .load-basic-calc .sidebar .card .value-lg,
+  .app .sidebar .card .value-lg {
+    font-size: 1.05rem;
+  }
+  .load-basic-calc .sidebar .capacity-head,
+  .app .sidebar .capacity-head {
+    margin-bottom: 4px;
+  }
+  .load-basic-calc .sidebar .capacity-fields,
+  .app .sidebar .capacity-fields {
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .load-basic-calc .sidebar .note,
+  .app .sidebar .note {
+    font-size: 0.7rem;
+    line-height: 1.25;
+    margin-top: 4px;
+  }
+  .load-basic-calc .sidebar .status-pill,
+  .app .sidebar .status-pill {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+  }
+  .load-basic-calc .scenario-meta,
+  .app .scenario-meta {
+    gap: 8px;
+  }
+  .load-basic-calc .scenario-meta .field textarea,
+  .app .scenario-meta .field textarea {
+    font-size: 0.85rem !important;
+    line-height: 1.35 !important;
+  }
+
   .load-basic-calc .category-body { display: block !important; }
   .load-basic-calc .category.collapsed .category-body { display: block !important; }
   .load-basic-calc input,

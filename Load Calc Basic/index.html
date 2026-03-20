@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="app-version" content="1.0.0">
+  <meta name="suite-version" content="">
   <title>Load Calc Basic</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="version-control.js"></script>
+  <script src="../version-control.js"></script>
 </head>
 <body>
   <div class="app">
@@ -86,6 +87,7 @@
         </div>
       </div>
       <p class="scenario-saved-line" id="load-basic-saved-display" aria-live="polite"></p>
+      <p class="scenario-saved-line print-timestamp" id="load-basic-print-timestamp" aria-live="polite"></p>
     </section>
 
     <div class="sort-bar">
@@ -216,7 +218,7 @@
 
     <footer class="footer disclaimer">
       Disclaimer: This tool is a simplified estimator based on fixed typical values and industry standards (0.8 PF). Actual site conditions, motor starting currents (kVA surge), and equipment specifications MUST be verified by a qualified electrical engineer. Not for final design without expert review.
-      <span class="version-label" id="version-info">Version 1.0.0</span>
+      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.0.0</span>
     </footer>
 
     <div id="guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">

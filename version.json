@@ -1,7 +1,16 @@
 {
-  "version": "1.0.9",
-  "lastUpdated": "2026-02-11T00:00:00.000Z",
+  "suiteName": "Field Hospital Calculator Suite",
+  "version": "1.1.0",
+  "lastUpdated": "2026-03-13T00:00:00.000Z",
   "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-03-13T00:00:00.000Z",
+      "changes": [
+        "Suite versioning: single version.json + version-control.js at Calcs Final root; Shell footer and standalone calcs show Suite v#.#.# for field testing traceability",
+        "Per-calculator app versions remain in each footer where applicable"
+      ]
+    },
     {
       "version": "1.0.9",
       "date": "2026-02-11T00:00:00.000Z",

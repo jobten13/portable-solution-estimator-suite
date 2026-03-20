@@ -843,7 +843,13 @@
         window.onafterprint = null;
       };
     }
+    updatePrintTimestamp();
     window.print();
+  }
+
+  function updatePrintTimestamp() {
+    const tsEl = document.getElementById(PREFIX + 'load-basic-print-timestamp');
+    if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
   }
 
   function setupPlaceholderBehavior(input) {
@@ -1567,6 +1573,11 @@
     } catch (e) {}
     setupHelpPopovers();
     attachListeners();
+    // Ensure the timestamp line is populated right before the print snapshot is generated.
+    if (!document._loadBasicBeforePrintBound) {
+      document._loadBasicBeforePrintBound = true;
+      window.addEventListener('beforeprint', updatePrintTimestamp);
+    }
     startAutosaveTimer();
     applySort();
     calculateLoad();

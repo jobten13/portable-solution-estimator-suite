@@ -2,7 +2,7 @@
 
 Single app shell for the five calculators: Consumables, Medicines, Water, Load Basic, Load Pro (tab order left to right).
 
-**This README and `version.json` are updated as we move through the integration process.** When a calc is integrated or a notable change is made, both files are updated. Latest restore point: **RestorePoints/2026-02-11** (suite v1.0.9).
+**This README and the suite `version.json` (one level up, in **Calcs Final**) are updated as we move through the integration process.** When a calc is integrated or a notable change is made, update the changelog there. Suite version is shown in the shell footer (e.g. `Field Hospital Calculator Suite · v1.1.0`).
 
 ---
 
@@ -23,8 +23,8 @@ Single app shell for the five calculators: Consumables, Medicines, Water, Load B
 - **index.html** – Shell layout: header, nav tabs, five panels, footer, shell toast.
 - **shell.js** – Panel switching; URL hash sync (`#consumables`, `#medicines`, `#water`, `#load-basic`, `#load-pro`); default panel Consumables; `window.ShellAPI = { showToast }`.
 - **shell.css** – Shell-only styles (header, nav, panels, footer, toast). Includes shared `.btn-ucd` (UC Davis blue/gold) for Consumables and Medicines. Calc styles are loaded separately and scoped per panel.
-- **version.json** – Suite version and changelog (see [Version control](#version-control)).
-- **version-control.js** – Loads `version.json` and sets the footer text to “Version X.Y.Z”.
+- **`../version.json`** (Calcs Final root) – Suite version and changelog (see [Version control](#version-control)).
+- **`../version-control.js`** – Loads `version.json` and sets `#shell-version` and `[data-suite-version]` spans.
 
 ## How to run
 
@@ -32,13 +32,14 @@ Open **index.html** in a browser from the folder that contains both **Calcs Shel
 
 ## Version control
 
-- **Display:** The suite version is shown in the shell footer (e.g. “Version 1.0.9”). It is read from **version.json** when the page loads.
-- **version.json** holds:
-  - `version` – current version string (e.g. `"1.0.9"`).
+- **Display:** The suite name and version are shown in the shell footer (e.g. `Field Hospital Calculator Suite · v1.1.0`). Standalone calculator pages show `Suite v1.1.0 · Version x.y.z` in the calc footer.
+- **`Calcs Final/version.json`** holds:
+  - `suiteName` – product name string.
+  - `version` – current suite version string (e.g. `"1.1.0"`).
   - `lastUpdated` – ISO date of last change.
   - `changelog` – array of `{ version, date, changes }` entries.
-- To bump the version: edit **version.json** (update `version` and `lastUpdated`, and add a new `changelog` entry). No build step is required.
-- For project-wide versioning and scripts (e.g. create-version.ps1), see **README-VERSIONING.md** in the project root.
+- To bump the version: edit **`../version.json`** from this folder (i.e. `Calcs Final/version.json`). No build step is required.
+- For project-wide versioning notes, see **README-VERSIONING.md** in this folder if present.
 
 ## Integration
 

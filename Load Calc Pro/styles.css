@@ -244,6 +244,10 @@
   color: #374151;
 }
 
+.print-timestamp {
+  display: none;
+}
+
 .load-pro-calc input:hover, .load-pro-calc textarea:hover, .load-pro-calc select:hover {
   outline: 2px solid rgba(59,130,246,0.4);
   outline-offset: -2px;
@@ -711,16 +715,160 @@
 /* Print */
 @media print {
   .load-pro-calc .calc-app { box-shadow: none; padding: 0; }
-  .load-pro-calc .banner { background: white; color: black; }
-  .load-pro-calc .banner-title, .load-pro-calc .banner-subtitle { color: black; }
-  .load-pro-calc .toolbar-wrap, .load-pro-calc .toolbar, .load-pro-calc .scenario-actions, .load-pro-calc .scenario-storage-note, .load-pro-calc .sort-bar, .load-pro-calc .search-wrap, .load-pro-calc .disclaimer, .load-pro-calc .note, .load-pro-calc .category-actions, .load-pro-calc .col-delete, .load-pro-calc .custom-form, .load-pro-calc .btn-icon, .load-pro-calc .help-icon, .load-pro-calc .help-popover, .load-pro-calc .guide-modal-overlay, .load-pro-calc .export-format-dialog { display: none !important; }
-  .load-pro-calc .scenario-section { display: block !important; }
-  .load-pro-calc .main-grid { grid-template-columns: 1fr 280px; gap: 20px; }
-  .load-pro-calc .equipment-table input[type="number"] { border: none; font-weight: bold; padding: 0; }
-  .load-pro-calc .sidebar { 
-    page-break-inside: avoid !important; 
-    break-inside: avoid !important; 
+  .load-pro-calc .banner {
+    background: white;
+    color: black;
+    padding: 8px 12px;
+    text-align: center;
   }
+  .load-pro-calc .banner-title, .load-pro-calc .banner-subtitle { color: black; }
+  .load-pro-calc .banner-title {
+    font-size: 1.35rem;
+    margin: 0 0 2px;
+  }
+  .load-pro-calc .banner-subtitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    opacity: 1;
+  }
+  .load-pro-calc .content-wrap {
+    padding: 10px 12px 14px;
+  }
+  /* Standalone root is .calc-app (no .load-pro-calc wrapper). */
+  .calc-app .banner {
+    background: white;
+    color: black;
+    padding: 8px 12px;
+    text-align: center;
+  }
+  .calc-app .banner-title, .calc-app .banner-subtitle { color: black; }
+  .calc-app .banner-title {
+    font-size: 1.35rem;
+    margin: 0 0 2px;
+  }
+  .calc-app .banner-subtitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    opacity: 1;
+  }
+  .calc-app .content-wrap {
+    padding: 10px 12px 14px;
+  }
+  .print-timestamp { display: block !important; }
+  .load-pro-calc .toolbar-wrap, .load-pro-calc .toolbar, .load-pro-calc .scenario-actions, .load-pro-calc .scenario-storage-note, .load-pro-calc .sort-bar, .load-pro-calc .search-wrap, .load-pro-calc .disclaimer, .load-pro-calc .note, .load-pro-calc .category-actions, .load-pro-calc .col-delete, .load-pro-calc .custom-form, .load-pro-calc .btn-icon, .load-pro-calc .help-icon, .load-pro-calc .help-popover, .load-pro-calc .guide-modal-overlay, .load-pro-calc .export-format-dialog { display: none !important; }
+  /* Slightly condense Scenarios on print (no content truncation). */
+  .load-pro-calc .scenario-section {
+    display: block !important;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+  }
+  .load-pro-calc .scenario-section .section-heading-row {
+    margin-bottom: 6px;
+  }
+  .load-pro-calc .scenario-section .scenario-section-title {
+    margin: 0 0 8px 0;
+  }
+  .load-pro-calc .scenario-meta {
+    gap: 8px;
+  }
+  .load-pro-calc .scenario-meta .field {
+    padding: 6px 8px;
+    margin: -6px -8px;
+  }
+  .load-pro-calc .scenario-meta .field label {
+    margin-bottom: 3px;
+  }
+  .load-pro-calc .scenario-meta .field textarea {
+    min-height: 52px;
+    line-height: 1.35;
+  }
+  .load-pro-calc .scenario-saved-line {
+    margin: 6px 0 0;
+  }
+  /* Standalone root is .calc-app (no .load-pro-calc wrapper). */
+  .calc-app .scenario-section {
+    padding: 12px 16px;
+    margin-bottom: 14px;
+  }
+  .calc-app .scenario-section .section-heading-row {
+    margin-bottom: 6px;
+  }
+  .calc-app .scenario-section .scenario-section-title {
+    margin: 0 0 8px 0;
+  }
+  .calc-app .scenario-meta {
+    gap: 8px;
+  }
+  .calc-app .scenario-meta .field {
+    padding: 6px 8px;
+    margin: -6px -8px;
+  }
+  .calc-app .scenario-meta .field label {
+    margin-bottom: 3px;
+  }
+  .calc-app .scenario-meta .field textarea {
+    min-height: 52px;
+    line-height: 1.35;
+  }
+  .calc-app .scenario-saved-line {
+    margin: 6px 0 0;
+  }
+  /* Print: stack sidebar (summary / capacity / runtime cards) above equipment table */
+  .load-pro-calc .main-grid {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-top: 0;
+    grid-template-columns: unset;
+  }
+  .load-pro-calc .main-grid .sidebar {
+    order: -1;
+    width: 100%;
+    max-width: 100%;
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  .load-pro-calc .main-grid .categories-column {
+    order: 1;
+  }
+  /* Keep each sidebar heading with the card that follows (help popover hidden in print). */
+  .load-pro-calc .sidebar .section-heading-row {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .load-pro-calc .sidebar .card {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  /* Standalone root is .calc-app (no .load-pro-calc wrapper) */
+  .calc-app .main-grid {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-top: 0;
+    grid-template-columns: unset;
+  }
+  .calc-app .main-grid .sidebar {
+    order: -1;
+    width: 100%;
+    max-width: 100%;
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  .calc-app .main-grid .categories-column {
+    order: 1;
+  }
+  .calc-app .sidebar .section-heading-row {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .calc-app .sidebar .card {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+  .load-pro-calc .equipment-table input[type="number"] { border: none; font-weight: bold; padding: 0; }
   .load-pro-calc .card, .load-pro-calc .summary-card, .load-pro-calc .capacity-card, .load-pro-calc .runtime-card { 
     margin-top: 0; 
     margin-bottom: 8px;

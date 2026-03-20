@@ -14,8 +14,12 @@
   const IMPORT_SCHEMA_VERSION = 1;
   let currentSortKey = 'name-asc';
 
-  const $ = (sel, root) => (root || document).querySelector(sel);
-  const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+  // Important: in Calcs Shell, multiple calc panels exist in the same DOM.
+  // Both Load Basic and Load Pro use shared ids like `cat-standard` and shared row classnames like
+  // `.equipment-row`, so we must scope DOM operations to the Pro panel.
+  const PRO_ROOT = document.getElementById('panel-load-pro') || document;
+  const $ = (sel, root) => (root || PRO_ROOT).querySelector(sel);
+  const $$ = (sel, root) => Array.from((root || PRO_ROOT).querySelectorAll(sel));
 
   function escapeHtml(s) {
     const div = document.createElement('div');
@@ -264,7 +268,7 @@
       col.appendChild(section);
     }
     $$('.qty-input').forEach(inp => { inp.value = ''; });
-    attachRowHandlers(document);
+    attachRowHandlers(PRO_ROOT);
     initCustomForms();
   }
 
@@ -372,12 +376,25 @@
         if (key === 'name-desc') return getRowSortName(b).localeCompare(getRowSortName(a));
         const kwA = getRowSortKw(a);
         const kwB = getRowSortKw(b);
-        if (key === 'kw-desc') return kwB - kwA;
-        if (key === 'kw-asc') return kwA - kwB;
+        const nameTie = getRowSortName(a).localeCompare(getRowSortName(b)); // A -> Z as tie-breaker
+        if (key === 'kw-desc') {
+          const diff = kwB - kwA;
+          return diff !== 0 ? diff : nameTie;
+        }
+        if (key === 'kw-asc') {
+          const diff = kwA - kwB;
+          return diff !== 0 ? diff : nameTie;
+        }
         const kvaPeakA = getRowSortKvaPeak(a);
         const kvaPeakB = getRowSortKvaPeak(b);
-        if (key === 'kva-peak-desc') return kvaPeakB - kvaPeakA;
-        if (key === 'kva-peak-asc') return kvaPeakA - kvaPeakB;
+        if (key === 'kva-peak-desc') {
+          const diff = kvaPeakB - kvaPeakA;
+          return diff !== 0 ? diff : nameTie;
+        }
+        if (key === 'kva-peak-asc') {
+          const diff = kvaPeakA - kvaPeakB;
+          return diff !== 0 ? diff : nameTie;
+        }
         return 0;
       });
       rows.forEach(r => tbody.appendChild(r));
@@ -647,7 +664,7 @@
       let existing = null;
       // Basic-style restore: find the row *within* the category to avoid name collisions.
       if (item.catId) {
-        const catEl = document.getElementById(item.catId);
+        const catEl = PRO_ROOT.querySelector('#' + item.catId);
         if (catEl) {
           const rowsInCat = Array.from(catEl.querySelectorAll('.equipment-row'));
           existing = rowsInCat.find(row => {
@@ -805,8 +822,19 @@
         }));
         const savedNonZeroQtyCount = savedNonZeroRows.length;
 
+        // Rebuild baseline table first to avoid any stale DOM state from sorting/search/custom rows
+        // interfering with restored qty rendering.
+        // This is intentionally done inside the restore path only (not on open).
+        buildCategories();
+        // Re-attach per-category Reset Qty buttons because buildCategories() recreates the DOM.
+        $$('[data-reset-target]').forEach(btn => {
+          btn.addEventListener('click', () => resetCategory(btn.getAttribute('data-reset-target')));
+        });
+
         applyScenarioData(parsed);
         recalc();
+      // Ensure restored rows are ordered according to the user's selected sort.
+      applySort();
         loadProAutosaveDirty = false;
         let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
         if (!lastSaved) {
@@ -843,18 +871,8 @@
           ? `${domNonZeroRows[0].catId}:${domNonZeroRows[0].name}:${domNonZeroRows[0].qty}`
           : 'none';
 
-        // Toast/debug sometimes isn't visible in Shell; use button acknowledgement instead.
-        const dbg = `Restore debug savedNonZero=${savedNonZeroQtyCount}[${savedFirst}] domNonZero=${domNonZeroRows.length}[${domFirst}] domCustomNonZero=${domNonZeroCustom} domBuiltInNonZero=${domNonZeroBuiltIn}`;
-        const domFirstHidden = firstDomNonZeroRowEl ? firstDomNonZeroRowEl.classList.contains('search-hidden') : false;
-        const domFirstCategoryCollapsed = firstDomNonZeroRowEl
-          ? (() => {
-              const cat = firstDomNonZeroRowEl.closest('.category');
-              return cat ? cat.classList.contains('collapsed') : false;
-            })()
-          : false;
-        const dbg2 = `Restore debug ${dbg} domFirstHidden=${domFirstHidden} domFirstCategoryCollapsed=${domFirstCategoryCollapsed}`;
-        acknowledge('load-pro-btn-clear-autosave', dbg2);
-        acknowledge('btn-clear-autosave', dbg2);
+        // Restore sanity check counters are computed for debugging purposes only.
+        // We intentionally do not surface them to the UI.
         return true;
       }
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
@@ -1282,6 +1300,14 @@
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
     } catch (e) {}
     applySort();
+    // Ensure the timestamp line is populated right before the print snapshot is generated.
+    if (!document._loadProBeforePrintBound) {
+      document._loadProBeforePrintBound = true;
+      window.addEventListener('beforeprint', () => {
+        const tsEl = $('#load-pro-print-timestamp');
+        if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
+      });
+    }
 
     const kvaEl = $('#load-pro-available-kva');
     const fuelEl = $('#load-pro-fuel-capacity');
@@ -1310,10 +1336,27 @@
     $('#load-pro-reset-btn').addEventListener('click', resetAllQuantities);
     $('#load-pro-clear-sheet-btn').addEventListener('click', clearSheet);
     $('#load-pro-save-scenario-btn').addEventListener('click', saveScenario);
-    $('#load-pro-print-summary-btn').addEventListener('click', () => {
-      acknowledge('load-pro-print-summary-btn', 'Printing...');
+    function doLoadProPrint() {
+      const tsEl = $('#load-pro-print-timestamp');
+      if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
       window.print();
-    });
+    }
+    // Standalone: `print-summary-btn`
+    const printBtnStandalone = $('#print-summary-btn');
+    if (printBtnStandalone) {
+      printBtnStandalone.addEventListener('click', () => {
+        acknowledge('print-summary-btn', 'Printing...');
+        doLoadProPrint();
+      });
+    }
+    // Shell panel: `load-pro-print-summary-btn`
+    const printBtnShell = $('#load-pro-print-summary-btn');
+    if (printBtnShell) {
+      printBtnShell.addEventListener('click', () => {
+        acknowledge('load-pro-print-summary-btn', 'Printing...');
+        doLoadProPrint();
+      });
+    }
     const guideOverlay = $('#load-pro-guide-modal-overlay');
     const guideBody = $('#load-pro-guide-modal-body');
     function renderGuideMd(html) {
