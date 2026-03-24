@@ -88,6 +88,27 @@
   let currentSortKey = 'name-asc';
   let customItemCounter = 1;
 
+  const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000;
+  const DEBOUNCED_AUTOSAVE_MS = 3 * 1000;
+  let autosaveTimerId = null;
+  let debouncedAutosaveTimeout = null;
+  /** True after worksheet edits until a successful saveData() (matches Load Calc Basic autosave model). */
+  let medsAutosaveDirty = false;
+
+  function notifyWorksheetChanged() {
+    medsAutosaveDirty = true;
+    scheduleDebouncedAutosave();
+  }
+
+  function scheduleDebouncedAutosave() {
+    if (!medsAutosaveDirty) return;
+    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
+    debouncedAutosaveTimeout = setTimeout(function () {
+      debouncedAutosaveTimeout = null;
+      saveData();
+    }, DEBOUNCED_AUTOSAVE_MS);
+  }
+
   function listTypeFromFileName(fileName) {
     if (!fileName) return null;
     if (fileName === 'UCD Ward Meds') return 'ward';
@@ -241,7 +262,7 @@
       daysEl.addEventListener('input', function () {
         deploymentDays = parseFloat(this.value) || 0;
         calculateAndDisplay();
-        scheduleDebouncedAutosave();
+        notifyWorksheetChanged();
       });
       daysEl.addEventListener('blur', () => validateAndShow('days'));
     }
@@ -251,7 +272,7 @@
       bedsEl.addEventListener('input', function () {
         deploymentBeds = parseFloat(this.value) || 0;
         calculateAndDisplay();
-        scheduleDebouncedAutosave();
+        notifyWorksheetChanged();
       });
       bedsEl.addEventListener('blur', () => validateAndShow('beds'));
     }
@@ -261,13 +282,44 @@
       bufferEl.addEventListener('input', function () {
         bufferPercentage = parseFloat(this.value) || 0;
         calculateAndDisplay();
-        scheduleDebouncedAutosave();
+        notifyWorksheetChanged();
       });
       bufferEl.addEventListener('blur', () => validateAndShow('buffer'));
     }
-    if (g('meds-search')) g('meds-search').addEventListener('input', filterItems);
-    if (g('meds-min-qty-filter')) g('meds-min-qty-filter').addEventListener('input', filterItems);
-    if (g('meds-nonzero-only-filter')) g('meds-nonzero-only-filter').addEventListener('change', filterItems);
+    const scenarioNameEl = g('meds-scenario-name');
+    const scenarioNotesEl = g('meds-scenario-notes');
+    if (scenarioNameEl) {
+      scenarioNameEl.addEventListener('input', notifyWorksheetChanged);
+      scenarioNameEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (scenarioNotesEl) {
+      scenarioNotesEl.addEventListener('input', notifyWorksheetChanged);
+      scenarioNotesEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (g('meds-search')) {
+      const searchEl = g('meds-search');
+      searchEl.addEventListener('input', function () {
+        notifyWorksheetChanged();
+        filterItems();
+      });
+      searchEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (g('meds-min-qty-filter')) {
+      const minEl = g('meds-min-qty-filter');
+      function onMinQtyFilterChange() {
+        notifyWorksheetChanged();
+        filterItems();
+      }
+      minEl.addEventListener('input', onMinQtyFilterChange);
+      minEl.addEventListener('change', onMinQtyFilterChange);
+      minEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (g('meds-nonzero-only-filter')) {
+      g('meds-nonzero-only-filter').addEventListener('change', function () {
+        notifyWorksheetChanged();
+        filterItems();
+      });
+    }
     if (g('meds-add-item-btn')) g('meds-add-item-btn').addEventListener('click', addCustomItem);
     if (g('meds-new-item-name')) {
       g('meds-new-item-name').addEventListener('keydown', (e) => {
@@ -1092,24 +1144,11 @@
     }
   }
 
-  const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000;
-  const DEBOUNCED_AUTOSAVE_MS = 10 * 1000;
-  let autosaveTimerId = null;
-  let debouncedAutosaveTimeout = null;
-
-  function scheduleDebouncedAutosave() {
-    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
-    debouncedAutosaveTimeout = setTimeout(function () {
-      debouncedAutosaveTimeout = null;
-      saveData();
-    }, DEBOUNCED_AUTOSAVE_MS);
-  }
-
   function startAutosaveTimer() {
     if (autosaveTimerId != null) return;
     try {
       autosaveTimerId = setInterval(function () {
-        saveData();
+        if (medsAutosaveDirty) saveData();
       }, AUTOSAVE_INTERVAL_MS);
     } catch (e) { /* ignore */ }
   }
@@ -1165,9 +1204,14 @@
       const now = new Date().toISOString();
       localStorage.setItem(LAST_SAVED_KEY, now);
       updateAutosaveTimestampDisplay(now);
+      medsAutosaveDirty = false;
     } catch (e) {
       console.error('Failed to save data to storage:', e);
     }
+  }
+
+  function tryAutosaveOnBlur() {
+    if (medsAutosaveDirty) saveData();
   }
 
   function loadSavedData() {
@@ -1250,6 +1294,7 @@
       } catch (e) { /* ignore */ }
     }
     updateAutosaveTimestampDisplay(lastSaved);
+    medsAutosaveDirty = false;
   }
 
   function restoreAutosavedState() {
@@ -1420,6 +1465,7 @@
     } catch (e) {}
 
     setupEventListeners();
+    medsAutosaveDirty = false;
     startAutosaveTimer();
     try {
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));

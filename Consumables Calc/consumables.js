@@ -97,6 +97,27 @@
     return clampNumber(toFiniteNumber(value), 0, VALIDATION_RULES.buffer.max);
   }
 
+  const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000;
+  const DEBOUNCED_AUTOSAVE_MS = 3 * 1000;
+  let autosaveTimerId = null;
+  let debouncedAutosaveTimeout = null;
+  /** True after worksheet edits until a successful saveData() (matches Load Calc Basic autosave model). */
+  let consAutosaveDirty = false;
+
+  function notifyWorksheetChanged() {
+    consAutosaveDirty = true;
+    scheduleDebouncedAutosave();
+  }
+
+  function scheduleDebouncedAutosave() {
+    if (!consAutosaveDirty) return;
+    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
+    debouncedAutosaveTimeout = setTimeout(function () {
+      debouncedAutosaveTimeout = null;
+      saveData();
+    }, DEBOUNCED_AUTOSAVE_MS);
+  }
+
   let allConsumables = [];
   let filteredConsumables = [];
   let deploymentDays = 0;
@@ -157,7 +178,7 @@
       daysEl.addEventListener('input', function () {
         deploymentDays = sanitizeDays(parseFloat(this.value));
         calculateAndDisplay();
-        scheduleDebouncedAutosave();
+        notifyWorksheetChanged();
       });
       daysEl.addEventListener('blur', () => validateAndShow('days'));
     }
@@ -167,7 +188,7 @@
       bedsEl.addEventListener('input', function () {
         deploymentBeds = sanitizeBeds(parseFloat(this.value));
         calculateAndDisplay();
-        scheduleDebouncedAutosave();
+        notifyWorksheetChanged();
       });
       bedsEl.addEventListener('blur', () => validateAndShow('beds'));
     }
@@ -177,13 +198,44 @@
       bufferEl.addEventListener('input', function () {
         bufferPercentage = sanitizeBuffer(parseFloat(this.value));
         calculateAndDisplay();
-        scheduleDebouncedAutosave();
+        notifyWorksheetChanged();
       });
       bufferEl.addEventListener('blur', () => validateAndShow('buffer'));
     }
-    if (g('search')) g('search').addEventListener('input', filterItems);
-    if (g('min-qty-filter')) g('min-qty-filter').addEventListener('input', filterItems);
-    if (g('nonzero-only-filter')) g('nonzero-only-filter').addEventListener('change', filterItems);
+    const scenarioNameEl = g('scenario-name');
+    const scenarioNotesEl = g('scenario-notes');
+    if (scenarioNameEl) {
+      scenarioNameEl.addEventListener('input', notifyWorksheetChanged);
+      scenarioNameEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (scenarioNotesEl) {
+      scenarioNotesEl.addEventListener('input', notifyWorksheetChanged);
+      scenarioNotesEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (g('search')) {
+      const searchEl = g('search');
+      searchEl.addEventListener('input', function () {
+        notifyWorksheetChanged();
+        filterItems();
+      });
+      searchEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (g('min-qty-filter')) {
+      const minEl = g('min-qty-filter');
+      function onMinQtyFilterChange() {
+        notifyWorksheetChanged();
+        filterItems();
+      }
+      minEl.addEventListener('input', onMinQtyFilterChange);
+      minEl.addEventListener('change', onMinQtyFilterChange);
+      minEl.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (g('nonzero-only-filter')) {
+      g('nonzero-only-filter').addEventListener('change', function () {
+        notifyWorksheetChanged();
+        filterItems();
+      });
+    }
     if (g('add-item-btn')) g('add-item-btn').addEventListener('click', addCustomItem);
     if (g('new-item-name')) {
       g('new-item-name').addEventListener('keydown', (e) => {
@@ -1088,24 +1140,11 @@
     }
   }
 
-  const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000;
-  const DEBOUNCED_AUTOSAVE_MS = 10 * 1000;
-  let autosaveTimerId = null;
-  let debouncedAutosaveTimeout = null;
-
-  function scheduleDebouncedAutosave() {
-    if (debouncedAutosaveTimeout) clearTimeout(debouncedAutosaveTimeout);
-    debouncedAutosaveTimeout = setTimeout(function () {
-      debouncedAutosaveTimeout = null;
-      saveData();
-    }, DEBOUNCED_AUTOSAVE_MS);
-  }
-
   function startAutosaveTimer() {
     if (autosaveTimerId != null) return;
     try {
       autosaveTimerId = setInterval(() => {
-        saveData();
+        if (consAutosaveDirty) saveData();
       }, AUTOSAVE_INTERVAL_MS);
     } catch (e) { /* ignore */ }
   }
@@ -1161,9 +1200,14 @@
       const now = new Date().toISOString();
       localStorage.setItem(LAST_SAVED_KEY, now);
       updateAutosaveTimestampDisplay(now);
+      consAutosaveDirty = false;
     } catch (e) {
       console.error('Failed to save data:', e);
     }
+  }
+
+  function tryAutosaveOnBlur() {
+    if (consAutosaveDirty) saveData();
   }
 
   function loadSavedData() {
@@ -1254,6 +1298,7 @@
       } catch (e) { /* ignore */ }
     }
     updateAutosaveTimestampDisplay(lastSaved);
+    consAutosaveDirty = false;
   }
 
   function restoreAutosavedState() {
@@ -1401,6 +1446,7 @@
       if (sortSel) sortSel.value = 'name-asc';
     }
     setupEventListeners();
+    consAutosaveDirty = false;
     startAutosaveTimer();
     try {
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
