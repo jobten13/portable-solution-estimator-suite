@@ -2,7 +2,7 @@
 
 Per **cursor-implementation-guide.md**. Do not begin a phase until the previous phase is verified.
 
-**Versioning:** Bump the shell version and add a changelog entry **on phase completion** or **whenever a new version is warranted** (see **README-VERSIONING.md**). Use `.\create-version.ps1 -VersionType minor -Changes "Phase N: ..."` or edit `version.json` manually. Minor = phase complete or significant milestone; patch = small fixes.
+**Versioning:** Bump the **suite** version in **`../version.json`** **on phase completion** or **whenever a new version is warranted** (see **[`../VERSIONING.md`](../VERSIONING.md)**). Use `.\create-version.ps1 -VersionType minor -Changes "Phase N: ..."` from this folder, or edit **`../version.json`** manually. Minor = phase complete or significant milestone; patch = small fixes.
 
 ---
 

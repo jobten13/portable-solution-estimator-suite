@@ -878,9 +878,27 @@
   .load-pro-calc .summary-row { margin-bottom: 4px; font-size: 0.85rem; }
   .load-pro-calc .summary-value.large { font-size: 1.1rem; }
   .load-pro-calc .capacity-fields { gap: 8px; }
-  .load-pro-calc .category { border: 1px solid #ccc; page-break-after: auto; }
-  .load-pro-calc #cat-standard { page-break-after: always !important; }
-  .load-pro-calc .fuel-runtime-heading { page-break-before: always !important; }
-  .load-pro-calc .runtime-card { page-break-inside: avoid !important; }
+  .load-pro-calc .category {
+    border: 1px solid #ccc;
+    page-break-after: auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .calc-app .category {
+    border: 1px solid #ccc;
+    page-break-after: auto;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .load-pro-calc .fuel-runtime-heading,
+  .calc-app .fuel-runtime-heading {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  .load-pro-calc .runtime-card,
+  .calc-app .runtime-card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
   .load-pro-calc .category.collapsed .category-body { display: block !important; }
 }

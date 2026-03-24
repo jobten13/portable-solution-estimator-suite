@@ -2,6 +2,10 @@
 
 Part of the **Field Hospital Calculator** suite. Estimates generator load (kW only) for field hospital and similar sites. Uses fixed kW per item; supports scenario name/notes, sort, search, and capacity checking against an available generator size. Simpler than Load Calc Pro (no kVA, PF, or peak starting logic).
 
+## Suite versioning
+
+**Suite** version is defined in **`../version.json`** — see **[`../VERSIONING.md`](../VERSIONING.md)** for how to bump releases and what testers report. **Do not** duplicate the suite version number in this README; the page footer shows **Suite v…** at runtime. This README describes **Load Calc Basic** only (including in-app user guide / tooltips).
+
 ---
 
 ## How to run

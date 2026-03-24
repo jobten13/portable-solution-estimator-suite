@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="app-version" content="1.0.0">
   <meta name="suite-version" content="">
-  <title>Field Hospital Calculator - Medications Supply List</title>
+  <title>Field Hospital Calculator - Pharmaceuticals Supply List</title>
   <link rel="stylesheet" href="styles.css">
   <script src="../version-control.js"></script>
 </head>
 <body class="meds-calc">
   <div class="container">
     <header class="banner">
-      <h1 class="banner-title">Medications Supply List</h1>
+      <h1 class="banner-title">Pharmaceuticals Supply List</h1>
       <p class="banner-subtitle">Field Hospital Calculator</p>
     </header>
     <div class="toolbar-wrap">
@@ -20,8 +20,8 @@
         <button type="button" id="btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
         <span id="medicines-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
         <button type="button" class="btn btn-print" id="print-btn" title="Print the current view.">Print</button>
-        <button type="button" class="btn btn-ucd" id="pharma-list-btn" title="Load the UCD Ward medications list.">UCD Ward Meds</button>
-        <button type="button" class="btn btn-ucd" id="pharma-secondary-list-btn" title="Load the UCD ICU medications list.">UCD ICU Meds</button>
+        <button type="button" class="btn btn-ucd" id="pharma-list-btn" title="Load the UCD Ward pharmaceuticals list.">UCD Ward Meds</button>
+        <button type="button" class="btn btn-ucd" id="pharma-secondary-list-btn" title="Load the UCD ICU pharmaceuticals list.">UCD ICU Meds</button>
         <button type="button" class="btn btn-clear-items" id="clear-items-btn" title="Clear list, scenario name/notes, and deployment inputs; reset to empty worksheet.">Reset Worksheet</button>
         <span id="file-status" class="status-text">No list loaded</span>
       </div>
@@ -35,13 +35,13 @@
         </div>
         <div class="help-popover" id="help-popover-scenarios" role="tooltip" hidden>
           <ul>
-            <li><strong>Save Scenario</strong> stores your current medications list and deployment inputs in this browser.</li>
+            <li><strong>Save Scenario</strong> stores your current pharmaceuticals list and deployment inputs in this browser.</li>
             <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
             <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
           </ul>
         </div>
         <div class="scenario-actions">
-          <button type="button" class="btn btn-save" id="save-btn" title="Save current medications list and deployment inputs to this browser.">Save Scenario</button>
+          <button type="button" class="btn btn-save" id="save-btn" title="Save current pharmaceuticals list and deployment inputs to this browser.">Save Scenario</button>
           <div class="load-scenario-group">
             <select id="scenario-select" class="scenario-select">
               <option value="">— Select scenario to load —</option>
@@ -108,10 +108,10 @@
         </div>
       </section>
 
-      <!-- Medicines Requirements -->
+      <!-- Pharmaceuticals Requirements -->
       <section class="section requirements-section">
         <div class="section-heading-row">
-          <h3>Medicines Requirements</h3>
+          <h3>Pharmaceuticals Requirements</h3>
           <button type="button" class="help-icon" aria-label="Help for this section" data-help="inventory">?</button>
         </div>
         <div class="help-popover" id="help-popover-inventory" role="tooltip" hidden>

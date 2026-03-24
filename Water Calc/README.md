@@ -2,6 +2,10 @@
 
 Part of the **Field Hospital Calculator** suite. Estimates potable water demand, wastewater output, and delivery/pickup schedules for a field hospital based on deployment length, bed count, and storage configuration.
 
+## Suite versioning
+
+**Suite** version is defined in **`../version.json`** — see **[`../VERSIONING.md`](../VERSIONING.md)** for how to bump releases and what testers report. **Do not** duplicate the suite version number in this README; the page footer shows **Suite v…** at runtime. This README describes **Water Requirements** only (including in-app user guide / tooltips).
+
 ---
 
 ## How to run

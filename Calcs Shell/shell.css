@@ -8,6 +8,19 @@
   box-sizing: border-box;
 }
 
+:root {
+  /*
+   * Shell pilot: active tab top/bottom inset + .main-content left stripe (Consumables + Pharmaceuticals).
+   * Consumables: violet — clear of in-sheet greens/sky/amber.
+   * Pharmaceuticals: vivid cyan — contrast vs violet; if revisiting, try in order:
+   *   #0891b2 (deeper cyan), #65a30d (lime), #0f172a (ink), #ea580c (orange), #9a3412 (copper),
+   *   #155e75 (dark cyan, earlier pick).
+   * If extending to other calcs, pick hues that skip scenario/deployment/requirement/UCD colors in each sheet.
+   */
+  --shell-accent-consumables: #6d28d9;
+  --shell-accent-pharmaceuticals: #06b6d4;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -54,7 +67,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
 }
 
 .shell-nav-btn:hover {
@@ -66,6 +79,28 @@ body {
   background: #fff;
   color: #1e3a5f;
   border-color: #fff;
+}
+
+/* Pilot: active tab top + bottom bars = same color as panel stripe (Consumables + Pharmaceuticals only) */
+.shell-nav-btn[data-panel="panel-consumables"].active {
+  box-shadow:
+    inset 0 3px 0 0 var(--shell-accent-consumables),
+    inset 0 -3px 0 0 var(--shell-accent-consumables);
+}
+
+.shell-nav-btn[data-panel="panel-medications"].active {
+  box-shadow:
+    inset 0 3px 0 0 var(--shell-accent-pharmaceuticals),
+    inset 0 -3px 0 0 var(--shell-accent-pharmaceuticals);
+}
+
+/* Pilot: content panel left stripe (scrolls with calc body; hidden in print) */
+#panel-consumables:not([hidden]) > .calc-app > .main-content {
+  border-left: 5px solid var(--shell-accent-consumables);
+}
+
+#panel-medications:not([hidden]) > .container > .main-content {
+  border-left: 5px solid var(--shell-accent-pharmaceuticals);
 }
 
 /* --- UCD buttons (Consumables + Medicines; single source) --- */
@@ -107,6 +142,7 @@ body {
 .calc-panel:not([hidden]) {
   display: block;
 }
+
 
 /* Placeholder when a calc is not yet loaded */
 .shell-panel-placeholder {
@@ -182,5 +218,10 @@ body {
   .calc-panel:not([hidden]) {
     display: block !important;
     max-width: 100%;
+  }
+
+  #panel-consumables:not([hidden]) > .calc-app > .main-content,
+  #panel-medications:not([hidden]) > .container > .main-content {
+    border-left: none !important;
   }
 }

@@ -1,6 +1,10 @@
-# Medications Supply List Calculator (Ward-ICU-Pharma)
+# Pharmaceuticals Supply List Calculator (Ward-ICU-Pharma)
 
-Part of the **Field Hospital Calculator** suite. Manages medications requirements for field hospital deployments: load the pre-built **UCD Medications List**, set deployment parameters (days, beds, buffer), add custom items, and save/load scenarios. Sort and search filter the list.
+Part of the **Field Hospital Calculator** suite. Manages pharmaceuticals requirements for field hospital deployments: load the pre-built **UCD Pharmaceuticals List**, set deployment parameters (days, beds, buffer), add custom items, and save/load scenarios. Sort and search filter the list.
+
+## Suite versioning
+
+**Suite** version is defined in **`../version.json`** — see **[`../VERSIONING.md`](../VERSIONING.md)** for how to bump releases and what testers report. **Do not** duplicate the suite version number in this README; the page footer shows **Suite v…** at runtime. This README describes **Pharmaceuticals** only (including in-app user guide / tooltips).
 
 ---
 
@@ -8,15 +12,15 @@ Part of the **Field Hospital Calculator** suite. Manages medications requirement
 
 Open `index.html` in a modern browser. No server required. Works offline.
 
-**Dependencies:** `script.js` (main logic), `consumables-lists.js` (UCD Medications list data), `styles.css`.
+**Dependencies:** `script.js` (main logic), `consumables-lists.js` (UCD Pharmaceuticals list data), `styles.css`.
 
 ---
 
 ## Functionality
 
 ### Data sources
-- **UCD Medications List** — Load the built-in medications list from `consumables-lists.js` (current source file: `New UCD Lists/Medicines_List_Consolidated-2.csv`, mapped from row 4 onward using Column B = item name and Column C = multiplier).
-- **Add Item** — Add a custom medication item with a per-day/per-bed rate directly in the calculator.
+- **UCD Pharmaceuticals List** — Load the built-in pharmaceuticals list from `consumables-lists.js` (current source file: `New UCD Lists/Medicines_List_Consolidated-2.csv`, mapped from row 4 onward using Column B = item name and Column C = multiplier).
+- **Add Item** — Add a custom pharmaceuticals item with a per-day/per-bed rate directly in the calculator.
 - **Clear All Items** — Remove all items and reset to empty state.
 
 ### Deployment parameters
@@ -24,7 +28,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 - **Expected Number of Beds** — Bed count (context for quantities).
 - **Buffer Percentage (%)** — Optional buffer (e.g. 10 for 10%) applied to quantities. Range 0–100.
 
-### Medicines requirements table
+### Pharmaceuticals requirements table
 - **Per row:** Item name and calculated quantity. Totals/summary reflect visible rows after search.
 - **Row deletion:** Any row can be deleted using the row-level **Delete** action for scenario-specific tailoring. Loading the UCD list restores the original baseline list.
 - **Sort** — Name A–Z/Z–A, Total quantity High to Low / Low to High (persisted in localStorage).
@@ -47,7 +51,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 
 ## UX/UI design
 
-- **Layout:** Banner → Toolbar (Print, UCD Medications List, Clear All Items, file status) → Scenarios → Deployment Parameters (highlight) → Medicines Requirements (sort, search, item count, table).
+- **Layout:** Banner → Toolbar (Print, UCD Pharmaceuticals List, Clear All Items, file status) → Scenarios → Deployment Parameters (highlight) → Pharmaceuticals Requirements (sort, search, item count, table).
 - **Suite alignment:** Same banner, scenario block, and button roles (Print blue, UCD list button, Save/Load green, Delete amber, Clear red, Secondary gray). Structure mirrors the Consumables calculator; IDs are pharma-specific (no `cons-` prefix).
 
 ---
@@ -58,15 +62,15 @@ Open `index.html` in a modern browser. No server required. Works offline.
 |------|--------|
 | `index.html` | Structure, toolbar, scenario UI, deployment params, sort/search, table container. |
 | `script.js` | Table build, recalc, validation, scenarios, search filter, sort, placeholder/focus behavior. |
-| `consumables-lists.js` | UCD Medications list data (item names and default quantities). |
+| `consumables-lists.js` | UCD Pharmaceuticals list data (item names and default quantities). |
 | `styles.css` | Layout, cards, table, validation and placeholder styles, print. |
-| `stress-test-robust.html` | Standalone robustness test harness for medicines quantity calculations and data invariants. |
+| `stress-test-robust.html` | Standalone robustness test harness for pharmaceuticals quantity calculations and data invariants. |
 
 ---
 
 ## Technical notes
 
-- **Storage:** Scenarios and sort preference use localStorage keys specific to the Medications calculator (pharma/medications), separate from the Consumables calculator.
+- **Storage:** Scenarios and sort preference use localStorage keys specific to the Pharmaceuticals calculator (pharma/medications), separate from the Consumables calculator.
 - **Search:** Rows without a name match get a hidden class; totals and item count reflect visible rows only.
 
 ---

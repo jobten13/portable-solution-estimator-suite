@@ -1,6 +1,10 @@
 # Consumables Supply List Calculator
 
-Part of the **Field Hospital Calculator** suite. **Standalone module:** this folder is self-contained and can be used independently (e.g. deployed alone, or given to a different team). It does not depend on the Medications/Medicines calc or any shared code. Manages consumables requirements for field hospital deployments: load pre-built UCD Ward or ICU lists, set deployment parameters (days, beds, buffer), and save/load scenarios. Sort and search filter the list.
+Part of the **Field Hospital Calculator** suite. **Standalone module:** this folder is self-contained and can be used independently (e.g. deployed alone, or given to a different team). It does not depend on the Pharmaceuticals calc or any shared code. Manages consumables requirements for field hospital deployments: load pre-built UCD Ward or ICU lists, set deployment parameters (days, beds, buffer), and save/load scenarios. Sort and search filter the list.
+
+## Suite versioning
+
+**Suite** version is defined in **`../version.json`** — see **[`../VERSIONING.md`](../VERSIONING.md)** for how to bump releases and what testers report. **Do not** duplicate the suite version number in this README; the page footer shows **Suite v…** at runtime. This README describes **Consumables** only (including in-app user guide / tooltips).
 
 ---
 

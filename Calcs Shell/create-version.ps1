@@ -1,6 +1,6 @@
-# Update Calcs Shell version.json (bump version + add changelog entry).
+# Update suite version.json at Calcs Final root (bump version + add changelog entry).
 # Usage: .\create-version.ps1 -VersionType "minor" -Changes "Phase 2: Load Calc Basic integrated", "ROOT scoping"
-# Run from Calcs Shell directory.
+# Run from Calcs Shell directory (script updates ..\version.json).
 
 param(
     [Parameter(Mandatory=$false)]
@@ -11,9 +11,9 @@ param(
     [string[]]$Changes = @("Version update")
 )
 
-$versionFile = "version.json"
+$versionFile = Join-Path $PSScriptRoot "..\version.json"
 if (-not (Test-Path $versionFile)) {
-    Write-Error "version.json not found. Run from Calcs Shell directory."
+    Write-Error "version.json not found at: $versionFile"
     exit 1
 }
 
