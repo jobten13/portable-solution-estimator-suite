@@ -35,7 +35,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="load-btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
+              <button type="button" id="load-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
               <span id="load-load-basic-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" id="load-btn-print" class="btn btn-print" title="Print the current view.">Print</button>
               <button type="button" id="load-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
@@ -51,11 +51,11 @@
               </div>
               <div class="help-popover" id="load-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
                   <li><strong>Save Scenario</strong> stores your current quantities, generator and fuel inputs, and notes in this browser.</li>
                   <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores a scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
-                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-                  <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery data for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh; use Restore before editing if you need the previous session.</li>
+                  <li><strong>Export</strong> downloads JSON (backup/re-import) or CSV (report); <strong>Import</strong> applies a JSON file — it is separate from the toolbar recovery slot.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
@@ -90,7 +90,7 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <input type="file" id="load-scenario-file-input" accept=".json" hidden>
               <div class="scenario-meta">
                 <div class="field">
@@ -250,7 +250,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="load-pro-btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
+              <button type="button" id="load-pro-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
               <span id="load-pro-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" id="load-pro-print-summary-btn" class="btn btn-print" title="Print the current view.">Print</button>
               <button type="button" id="load-pro-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
@@ -267,11 +267,11 @@
               </div>
               <div class="help-popover" id="load-pro-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
                   <li><strong>Save Scenario</strong> stores your current table values, generator inputs, and notes in this browser.</li>
                   <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
-                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-                  <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery data for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh; use Restore before editing if you need the previous session.</li>
+                  <li><strong>Export</strong> downloads JSON (backup/re-import) or CSV (report); <strong>Import</strong> applies a JSON file — it is separate from the toolbar recovery slot.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
@@ -306,7 +306,7 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="load-pro-scenario-name">Scenario name</label>
@@ -491,7 +491,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
+              <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
               <span id="water-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="water-print-btn" title="Print the current view.">Print</button>
               <button type="button" class="btn btn-clear" id="water-reset-btn" title="Reset all inputs, unit, and modes to baseline values.">Reset to Defaults</button>
@@ -505,11 +505,11 @@
               </div>
               <div class="help-popover" id="water-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
                   <li><strong>Save Scenario</strong> stores your current inputs, unit, and modes in this browser.</li>
                   <li>Use a clear scenario name and notes so others can quickly understand assumptions.</li>
                   <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
-                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-                  <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh. Restore before editing if you need the previous session.</li>
+                  <li><strong>Export</strong> downloads JSON (backup/re-import) or CSV (report); <strong>Import</strong> applies a JSON file — it is separate from the toolbar recovery slot.</li>
                   <li>The line under scenario name is for the <strong>named scenario list</strong> only — different from worksheet autosave.</li>
                 </ul>
               </div>
@@ -545,7 +545,7 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="water-scenario-name">Scenario name</label>
@@ -740,7 +740,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="cons-clear-autosave-btn" class="btn btn-delete" title="Restore the last autosaved worksheet state. Named saved scenarios are not changed.">Restore last autosave</button>
+              <button type="button" id="cons-clear-autosave-btn" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged.">Restore last autosave</button>
               <span id="cons-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="cons-print-btn">Print</button>
               <button type="button" class="btn btn-ucd" id="cons-ward-list-btn">UCD Ward List</button>
@@ -757,10 +757,11 @@
               </div>
               <div class="help-popover" id="cons-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
                   <li><strong>Save Scenario</strong> stores your current list, deployment inputs, and notes in this browser.</li>
                   <li>Use a clear scenario name and notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
-                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+                  <li><strong>Export</strong> downloads JSON (backup/re-import) or CSV (report); <strong>Import</strong> applies a JSON file — it is separate from the toolbar recovery slot.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
@@ -795,7 +796,7 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="cons-scenario-name">Scenario name</label>
@@ -893,7 +894,7 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="meds-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet state. Named saved scenarios are not changed.">Restore last autosave</button>
+              <button type="button" id="meds-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged.">Restore last autosave</button>
               <span id="meds-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="meds-print-btn" title="Print the current view.">Print</button>
               <button type="button" class="btn btn-ucd" id="meds-pharma-list-btn" title="Load the UCD Ward pharmaceuticals list.">UCD Ward Meds</button>
@@ -910,9 +911,11 @@
               </div>
               <div class="help-popover" id="meds-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
                   <li><strong>Save Scenario</strong> stores your current pharmaceuticals list and deployment inputs in this browser.</li>
+                  <li>Use a clear scenario name and notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
-                  <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
+                  <li><strong>Export</strong> downloads JSON (backup/re-import) or CSV (report); <strong>Import</strong> applies a JSON file — it is separate from the toolbar recovery slot.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
@@ -947,7 +950,7 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
+              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="meds-scenario-name">Scenario name</label>

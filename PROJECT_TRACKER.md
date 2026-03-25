@@ -9,6 +9,18 @@
 
 ---
 
+## Suite concepts — how work is preserved
+
+Operators (and builders) should not conflate these three paths:
+
+1. **Worksheet autosave** — A **recovery** slot in this browser (`localStorage`): the **current sheet** is written on a debounce/interval while you edit. **Restore last autosave** reloads that slot after refresh/crash. It is **not** a named entry in the scenario list; one slot per calc, overwritten as you work.
+2. **Save scenario** — **Named** snapshots stored in this browser (`localStorage`), listed in the scenario dropdown for load/compare planning inside the app.
+3. **Export** — **File** output (JSON for backup/re-import, CSV where offered). It is **not** stored in the browser as another scenario row; it is backup/share/offline handoff. Restore via **Import** (JSON).
+
+Wrong assumptions here (e.g. treating export like an automatic browser save) drive field mistakes — so reflecting this clearly in **tooltips / scenario help / README** is **operator clarity**, not mere visual polish.
+
+---
+
 ## Completed (latest 10 — newest first)
 
 Keep **at most 10** bullets here. When you record an 11th completion, move the **bottom** item to **Completed archive** (still **newest first** there). Not time-of-year based — purely “last 10” + archive.
@@ -19,6 +31,7 @@ Keep **at most 10** bullets here. When you record an 11th completion, move the *
 - [x] **Autosave parity (Consumables + Medicines)** — Dirty-gated saves, 3s debounce, 60s backup tick, blur flush for scenario text + filters. (`consumables.js`, `Medicines Calc/script.js` — e.g. commit `16ed255`.)
 - [x] **Shell pilot accents** — Consumables / Pharmaceuticals active-tab rails + left stripe (violet + cyan); print hides stripe. (`Calcs Shell/shell.css` — checkpoint `f8406c5` area.)
 - [x] **Crash-recovery autosave model (suite direction)** — Open fresh, **Restore last autosave**, timestamp line. *(Differs from older “5 min only” write-up in `NEXT_AUTOSAVE_REDESIGN.md`; implementation uses debounce + dirty + interval.)*
+- [x] **Operator copy: autosave vs scenario vs export** — Shell scenario notes, scenario help popovers (all five panels), **Restore last autosave** tooltips, and suite **README** aligned with **Suite concepts** (three preservation paths).
 
 ## Completed archive (older than the live 10 — newest first)
 

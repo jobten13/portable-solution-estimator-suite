@@ -15,6 +15,16 @@ This folder (**Calcs Final**) is the **suite root**: five calculators plus an op
 
 Each calculator folder has its own **README.md** (behavior, tooltips / user-guide source). Those describe **that app**, not the suite build number.
 
+### How work is preserved (operators)
+
+In every calculator (and in **Calcs Shell**), treat these as **three different paths**:
+
+1. **Worksheet autosave** (toolbar “Last autosaved” + **Restore last autosave**) — One **recovery** slot in this browser for the **current sheet** while you work. It is **not** a named row in the scenario dropdown.
+2. **Save / Load Scenario** — **Named** snapshots stored in this browser and listed in the scenario dropdown for planning inside the app.
+3. **Export / Import** — A **file** on disk (JSON for backup/re-import; CSV where offered as a human-readable report). Export does **not** by itself add a scenario to the browser list until you **Import** JSON or **Save Scenario**.
+
+Full handoff wording lives in **[PROJECT_TRACKER.md](PROJECT_TRACKER.md)** under **Suite concepts**.
+
 ### Suite vs app version
 
 - **Suite version** — Shown in the UI as **Suite v…** (loaded from **`version.json`** via **`version-control.js`**). Use this in test reports.

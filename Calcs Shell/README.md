@@ -30,6 +30,8 @@ Single app shell for the five calculators: Consumables, Pharmaceuticals, Water, 
 
 Open **index.html** in a browser from the folder that contains both **Calcs Shell** and **RestorePoints** (the project root), so relative paths to Load Calc Basic assets resolve. Use the nav to switch panels. The URL hash updates so you can bookmark or share a specific calc.
 
+**Operator note — three preservation paths:** Toolbar **Restore last autosave** (browser recovery slot for the current sheet), **Save / Load Scenario** (named list in this browser), and **Export / Import** (files on disk — export does not add a scenario row by itself). See **`../README.md`** and **`../PROJECT_TRACKER.md`** (*Suite concepts*).
+
 ## Version control
 
 - **Display:** The suite name and version are shown in the shell footer. Standalone calculator pages show **Suite v…** together with any per-app version label in the calc footer.
