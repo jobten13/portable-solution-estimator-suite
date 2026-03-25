@@ -1,5 +1,7 @@
 # Standalone parity tracker (Shell-first delivery)
 
+**Suite handoff / prioritized todos:** **`PROJECT_TRACKER.md`** (same folder as this file).
+
 **Strategy:** Ship and harden **Calcs Shell** first. This file records where **standalone** (`<Calc Folder>/index.html`) may diverge or break so we can restore **fully functional standalones** after Shell delivery.
 
 **How to use**

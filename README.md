@@ -10,6 +10,7 @@ This folder (**Calcs Final**) is the **suite root**: five calculators plus an op
 | **Run a calculator alone** | Open that subfolder’s **`index.html`** (e.g. `Load Calc Pro/index.html`). |
 | **Suite version (build ID)** | **`version.json`** — single source of truth. **Do not** copy the version string into every README; it will drift. |
 | **How to bump a release & what testers report** | **[VERSIONING.md](VERSIONING.md)** |
+| **Daily pickup: todos, next steps, what’s done** | **[PROJECT_TRACKER.md](PROJECT_TRACKER.md)** |
 | **Shell integration & panel IDs** | **[Calcs Shell/README.md](Calcs%20Shell/README.md)** |
 
 Each calculator folder has its own **README.md** (behavior, tooltips / user-guide source). Those describe **that app**, not the suite build number.

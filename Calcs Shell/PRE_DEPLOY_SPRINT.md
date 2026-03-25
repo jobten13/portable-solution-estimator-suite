@@ -1,9 +1,22 @@
 # Field Hospital Calculator Suite — Pre-Deployment Sprint
 
-**Suite version at start:** 1.0.9  
+**Status — historical archive**  
+This file is **reference-only** for the March 2026 pre-deploy sprint. It is **not** the live backlog or release checklist. Use **`../PROJECT_TRACKER.md`** for what to do next, and **`../version.json`** for the **actual** suite version and `lastUpdated` (the version steps written below were a **planned** sequence, not a guarantee of how the repo was tagged).
+
+**Handoff:** **`../PROJECT_TRACKER.md`**
+
+**Suite version at sprint start:** 1.0.9  
 **Target:** Field-ready distribution  
 **Timeline:** 2 days  
-**Date:** March 12, 2026
+**Sprint dated:** March 12, 2026  
+
+---
+
+## Version numbering (this doc vs the real suite)
+
+The blocks **After Today**, **After Tomorrow**, and **After Final Pass** assumed **staged bumps** (**1.0.10** → **1.1.0** → **1.1.1**) so each phase could ship independently. In practice work may have **combined phases** or **skipped** an intermediate number (for example jumping straight to **1.1.0** after the first fixes). **Do not take version labels in this markdown as authoritative** — always read **`../version.json`**.
+
+The **Version Summary** table at the end labels **what this sprint document meant** by each phase; it is **not** a current roadmap.
 
 ---
 
@@ -62,11 +75,13 @@ Add to the bottom of `shell.css`:
 
 Test by opening each calc, hitting Print, and verifying only the active calc renders.
 
-### After Today
+### After Today *(sprint plan — historical)*
 
-- ✅ Bump version → **1.0.10**
-- ✅ Update `version.json` `lastUpdated` to today's date
-- ✅ Create restore point `RestorePoints/2026-03-12-pre-deploy`
+*(Original intent after Fix 1–2; actual version bumps and restore points may differ — see **Version numbering** above.)*
+
+- Planned: bump version → **1.0.10**
+- Planned: update `version.json` `lastUpdated` to the cut date
+- Planned: create restore point `RestorePoints/2026-03-12-pre-deploy`
 
 ---
 
@@ -157,12 +172,14 @@ document.querySelector('.print-date').textContent =
   new Date().toLocaleDateString();
 ```
 
-### After Tomorrow
+### After Tomorrow *(sprint plan — historical)*
 
-- ✅ Bump version → **1.1.0**
-- ✅ Update `version.json` `lastUpdated`
-- ✅ Create restore point `RestorePoints/2026-03-13-field-ready`
-- ✅ Distribute
+*(Original intent after Fix 3–5; may have merged with earlier/later work in the real repo.)*
+
+- Planned: bump version → **1.1.0**
+- Planned: update `version.json` `lastUpdated`
+- Planned: create restore point `RestorePoints/2026-03-13-field-ready`
+- Planned: distribute
 
 ---
 
@@ -214,12 +231,14 @@ Then load all assets dynamically from that constant. Path changes become a one-l
 
 The 1.0.9 changelog entry is dated `2026-02-11` but was clearly written in March 2026. Correct the date before distribution to keep records clean and auditable.
 
-### After Final Pass
+### After Final Pass *(sprint plan — historical)*
 
-- ✅ Bump version → **1.1.1**
-- ✅ Update `version.json` `lastUpdated`
-- ✅ Final restore point `RestorePoints/2026-03-13-v1.1.1`
-- ✅ Distribute
+*(Original intent after Fix 6–8.)*
+
+- Planned: bump version → **1.1.1**
+- Planned: update `version.json` `lastUpdated`
+- Planned: final restore point `RestorePoints/2026-03-13-v1.1.1`
+- Planned: distribute
 
 ---
 
@@ -237,9 +256,20 @@ These are real improvements. None of them affect a field user in the next 48 hou
 
 ---
 
-## Distribution Checklist
+## Potential future steps (multi-tab, same calc)
 
-Before handing to field users, verify:
+*Opening the **same** calculator in **two** browser tabs shares one `localStorage` autosave namespace for that calc; last save wins. Different calcs in different tabs use different keys and do not overwrite each other’s worksheet autosave.*
+
+| Step | What | Notes |
+|------|------|--------|
+| **README / field brief note** | Add a short warning in **Calcs Shell `README.md`** (and/or trainer / field packet): use **one tab per calculator** when editing; avoid two tabs on the same calc; two tabs on **different** calcs is fine. | Zero code; highest value-to-effort. |
+| **Cross-tab toast** | In **`shell.js`**, listen for `window` **`storage`** events; when `event.key` matches the **visible panel’s** worksheet autosave keys (or a small allowlist per calc) and `event.newValue` changed from another document, call **`ShellAPI.showToast`** with a one-line message (e.g. *“This calculator was saved from another tab—refresh or use one tab to avoid overwriting.”*). | Does not merge edits; reduces surprise. Fires only for **other** tabs, not the tab that wrote. |
+
+---
+
+## Distribution Checklist *(historical field list)*
+
+Before handing to field users, verify (**expected versions here are from the sprint table — confirm against `../version.json`**):
 
 - [ ] Export works correctly in all five calcs (JSON and CSV)
 - [ ] Print renders cleanly in all five calcs — only the active panel, with scenario name and date
@@ -254,14 +284,18 @@ Before handing to field users, verify:
 
 ---
 
-## Version Summary
+## Version Summary *(sprint vocabulary only — historical)*
 
-| Version | Contents | When |
-|---------|----------|------|
-| **1.0.10** | Radio fix + print stylesheet | Today |
-| **1.1.0** | Destructive confirmations + unsaved warning + print ID | Tomorrow |
-| **1.1.1** | Error handling + path centralisation + metadata cleanup | Final pass |
+Phases as **named in this sprint document** (not necessarily matching every git tag):
+
+| Version label in sprint | Contents (per this doc) | Sprint phase name |
+|-------------------------|-------------------------|-------------------|
+| **1.0.10** | Radio fix + print stylesheet | “Today” |
+| **1.1.0** | Destructive confirmations + unsaved warning + print ID | “Tomorrow” |
+| **1.1.1** | Error handling + path centralisation + metadata cleanup | “Final pass” |
 | **1.2.0+** | ARIA, localStorage, deduplication | After return |
+
+**Live suite version:** see **`../version.json`**.
 
 ---
 

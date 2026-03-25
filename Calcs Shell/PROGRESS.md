@@ -1,5 +1,7 @@
 # Shell merge — progress checklist
 
+**Daily pickup / current backlog:** use **`../PROJECT_TRACKER.md`** (suite root). This file is the **original phase plan** and is often **out of date** vs the repo—verify before treating unchecked items as real work.
+
 Per **cursor-implementation-guide.md**. Do not begin a phase until the previous phase is verified.
 
 **Versioning:** Bump the **suite** version in **`../version.json`** **on phase completion** or **whenever a new version is warranted** (see **[`../VERSIONING.md`](../VERSIONING.md)**). Use `.\create-version.ps1 -VersionType minor -Changes "Phase N: ..."` from this folder, or edit **`../version.json`** manually. Minor = phase complete or significant milestone; patch = small fixes.
