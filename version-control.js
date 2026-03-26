@@ -1,6 +1,6 @@
 /**
  * Field Hospital Calculator Suite — suite version (single source: version.json next to this file).
- * Updates: meta[name="suite-version"], #shell-version, and any [data-suite-version].
+ * Updates: meta[name="suite-version"] and all [data-suite-version] (Calcs Shell panel footers + standalone calc pages).
  */
 (function () {
   'use strict';
@@ -20,14 +20,17 @@
     var meta = document.querySelector('meta[name="suite-version"]');
     if (meta) meta.setAttribute('content', v);
 
-    var shellEl = document.getElementById('shell-version');
-    if (shellEl) {
-      shellEl.textContent = suiteName + ' · v' + v;
-    }
-
     document.querySelectorAll('[data-suite-version]').forEach(function (el) {
       el.textContent = 'Suite v' + v;
       el.setAttribute('title', suiteName + ' — v' + v);
+    });
+  }
+
+  function applyVersionUnavailable() {
+    var tip =
+      'Embedded suite version shown (e.g. file://). Open via http://localhost to load version.json and confirm the build.';
+    document.querySelectorAll('[data-suite-version]').forEach(function (el) {
+      el.setAttribute('title', tip);
     });
   }
 
@@ -38,10 +41,14 @@
         return r.ok ? r.json() : null;
       })
       .then(function (data) {
-        if (data) applyVersion(data);
+        if (data) {
+          applyVersion(data);
+        } else {
+          applyVersionUnavailable();
+        }
       })
       .catch(function () {
-        /* offline / file:// may fail; keep static HTML */
+        applyVersionUnavailable();
       });
   }
 

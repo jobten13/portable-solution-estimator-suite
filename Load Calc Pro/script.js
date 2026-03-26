@@ -747,9 +747,24 @@
   let autosaveTimerId = null;
   let debouncedAutosaveTimeout = null;
   let loadProAutosaveDirty = false;
+  let scenarioLoadGuardDirty = false;
+
+  const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
+  const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
+
+  function confirmOverwriteIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+  }
+
+  function confirmImportIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+  }
 
   function notifyWorksheetChanged() {
     loadProAutosaveDirty = true;
+    scenarioLoadGuardDirty = true;
     scheduleDebouncedAutosave();
   }
 
@@ -803,7 +818,12 @@
       localStorage.setItem(LAST_SAVED_KEY, now);
       updateAutosaveTimestampDisplay(now);
       loadProAutosaveDirty = false;
-    } catch (e) { /* ignore */ }
+      return true;
+    } catch (e) {
+      console.warn('Load Pro autosave failed:', e);
+      showToast('Could not autosave (storage may be full or blocked).', 'error', 4000);
+      return false;
+    }
   }
 
   function loadWorksheetState() {
@@ -836,6 +856,7 @@
       // Ensure restored rows are ordered according to the user's selected sort.
       applySort();
         loadProAutosaveDirty = false;
+        scenarioLoadGuardDirty = false;
         let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
         if (!lastSaved) {
           lastSaved = new Date().toISOString();
@@ -1063,6 +1084,7 @@
     updateSavedDisplay(scenario.timestamp);
     notifyWorksheetChanged();
     saveWorksheetState();
+    scenarioLoadGuardDirty = false;
     acknowledge('load-pro-save-scenario-btn', 'Saved!');
   }
 
@@ -1079,11 +1101,12 @@
       acknowledge('load-pro-load-scenario-btn', 'Not found');
       return;
     }
+    if (!confirmOverwriteIfDirty()) return;
     applyScenarioData(scenario.data);
     updateAutosaveTimestampDisplay(scenario.timestamp || '');
     updateSavedDisplay(scenario.timestamp || null);
-    notifyWorksheetChanged();
     saveWorksheetState();
+    scenarioLoadGuardDirty = false;
     acknowledge('load-pro-load-scenario-btn', 'Loaded!');
   }
 
@@ -1132,9 +1155,10 @@
         if (!cleaned) {
           throw new Error('Invalid file');
         }
+        if (!confirmImportIfDirty()) return;
         applyScenarioData(cleaned);
-        notifyWorksheetChanged();
         saveWorksheetState();
+        scenarioLoadGuardDirty = false;
         if (issues.length > 0) {
           downloadImportIssueReport(sourceFileName, issues);
           acknowledge('load-pro-import-file-btn', `Imported (${issues.length} issue${issues.length === 1 ? '' : 's'})`);
@@ -1239,6 +1263,7 @@
     $$('.qty-input').forEach(inp => { inp.value = ''; });
     $$('.equipment-row.custom').forEach(row => row.remove());
     recalc();
+    scenarioLoadGuardDirty = false;
   }
 
   function clearSheet() {
@@ -1263,6 +1288,7 @@
     recalc();
     notifyWorksheetChanged();
     tryAutosaveOnBlur();
+    scenarioLoadGuardDirty = false;
   }
 
   function resetCategory(catId) {

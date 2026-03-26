@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="suite-version" content="">
+  <!-- Fallback must match version.json "version" when releasing; JS overwrites when fetch succeeds. -->
+  <meta name="suite-version" content="1.1.1">
   <title>Field Hospital Calculator Suite</title>
   <link rel="stylesheet" href="../Load Calc Basic/styles.css">
   <link rel="stylesheet" href="../Load Calc Pro/styles.css">
@@ -90,7 +91,6 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <input type="file" id="load-scenario-file-input" accept=".json" hidden>
               <div class="scenario-meta">
                 <div class="field">
@@ -229,7 +229,8 @@
           </div>
           <footer class="footer disclaimer">
             Disclaimer: This tool is a simplified estimator based on fixed typical values and industry standards (0.8 PF). Actual site conditions, motor starting currents (kVA surge), and equipment specifications MUST be verified by a qualified electrical engineer. Not for final design without expert review.
-            <span class="version-label" id="load-version-info">Version 1.0.0</span>
+            <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
           </footer>
           <div id="load-guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
             <div class="guide-modal-panel">
@@ -306,7 +307,6 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="load-pro-scenario-name">Scenario name</label>
@@ -469,7 +469,8 @@
             </div>
             <footer class="disclaimer">
               <p>Simplified estimator. Actual site conditions, motor starting currents (kVA surge), and equipment specifications must be verified by a qualified electrical engineer. Not for final design without expert review.</p>
-              <span class="version-label" id="load-pro-version-info">Version 1.1.0</span>
+              <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
+              <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
             </footer>
           </div>
           <div id="load-pro-guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
@@ -545,7 +546,6 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="water-scenario-name">Scenario name</label>
@@ -728,7 +728,8 @@
             </section>
           </div>
           <footer class="disclaimer">
-            <span class="version-label" id="water-version-info">Version 1.0.0</span>
+            <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
           </footer>
         </div>
       </div>
@@ -796,7 +797,6 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="cons-scenario-name">Scenario name</label>
@@ -882,7 +882,8 @@
           </div>
           <footer class="disclaimer">
             <p>Simplified estimator. Verify quantities and assumptions with qualified personnel before deployment.</p>
-            <span class="version-label" id="cons-version-info">Version 1.1.0</span>
+            <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
           </footer>
         </div>
       </div>
@@ -950,7 +951,6 @@
                   </div>
                 </div>
               </div>
-              <p class="scenario-storage-note"><strong>Three preservation paths:</strong> Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a scenario list row). <strong>Save Scenario</strong> — named snapshots in this browser. <strong>Export</strong> — JSON/CSV <em>file</em> for backup or share; use <strong>Import</strong> (JSON) to load a file — export alone does not add a row to the scenario list.</p>
               <div class="scenario-meta">
                 <div class="field">
                   <label for="meds-scenario-name">Scenario name</label>
@@ -1035,31 +1035,55 @@
           </div>
           <footer class="disclaimer">
             <p>This tool is a simplified estimator. Verify requirements with qualified personnel before deployment.</p>
-            <span class="version-label" id="meds-version-info">Version 1.0.0</span>
+            <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
           </footer>
         </div>
       </div>
     </main>
 
-    <footer class="shell-footer">
-      <span id="shell-version" class="shell-version">Field Hospital Suite</span>
-    </footer>
-
     <div id="shell-toast" class="shell-toast" role="status" aria-live="polite" hidden></div>
   </div>
 
-  <script src="shell.js"></script>
-  <script src="../Load Calc Basic/guide-content.js"></script>
-  <script src="../Load Calc Basic/equipment-data-basic.js"></script>
-  <script src="../Load Calc Basic/script.js"></script>
-  <script src="../Load Calc Pro/guide-content.js"></script>
-  <script src="../Load Calc Pro/equipment-data.js"></script>
-  <script src="../Load Calc Pro/script.js"></script>
-  <script src="../Water Calc/water-data.js"></script>
-  <script src="../Water Calc/script.js"></script>
-  <script src="../Consumables Calc/consumables-lists.js"></script>
-  <script src="../Consumables Calc/consumables.js"></script>
-  <script src="../Medicines Calc/medications-data.js"></script>
-  <script src="../Medicines Calc/script.js"></script>
+  <script>
+    (function () {
+      var shown = false;
+      var errHide = null;
+      window.reportShellScriptLoadError = function (src) {
+        if (shown) return;
+        shown = true;
+        var el = document.getElementById('shell-toast');
+        var name = src ? String(src).replace(/^.*[/\\]/, '') : 'unknown file';
+        var msg = 'A suite script failed to load (' + name + '). Calculators may be missing or broken until the file path is fixed.';
+        if (el) {
+          el.textContent = msg;
+          el.className = 'shell-toast shell-toast--error';
+          el.setAttribute('role', 'alert');
+          el.hidden = false;
+          if (errHide) clearTimeout(errHide);
+          errHide = setTimeout(function () {
+            el.hidden = true;
+            el.setAttribute('role', 'status');
+            errHide = null;
+          }, 12000);
+        } else {
+          alert(msg);
+        }
+      };
+    })();
+  </script>
+  <script src="shell.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Load Calc Basic/guide-content.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Load Calc Basic/equipment-data-basic.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Load Calc Basic/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Load Calc Pro/guide-content.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Load Calc Pro/equipment-data.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Load Calc Pro/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Water Calc/water-data.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Water Calc/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Consumables Calc/consumables-lists.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Consumables Calc/consumables.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Medicines Calc/medications-data.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="../Medicines Calc/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
 </body>
 </html>

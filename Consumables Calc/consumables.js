@@ -103,9 +103,25 @@
   let debouncedAutosaveTimeout = null;
   /** True after worksheet edits until a successful saveData() (matches Load Calc Basic autosave model). */
   let consAutosaveDirty = false;
+  /** Stays true across successful autosaves until load/import/restore/named save clears it (unsaved-edit guard). */
+  let scenarioLoadGuardDirty = false;
+
+  const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
+  const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
+
+  function confirmOverwriteIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+  }
+
+  function confirmImportIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+  }
 
   function notifyWorksheetChanged() {
     consAutosaveDirty = true;
+    scenarioLoadGuardDirty = true;
     scheduleDebouncedAutosave();
   }
 
@@ -689,6 +705,10 @@
         const issues = [];
         const data = JSON.parse(reader.result);
         if (data && (data.consumables || data.deploymentDays != null || data.deploymentBeds != null)) {
+          if (!confirmImportIfDirty()) {
+            if (ev.target) ev.target.value = '';
+            return;
+          }
           if (data.consumables && Array.isArray(data.consumables)) {
             allConsumables = sanitizeImportedConsumables(data.consumables, issues);
             currentListType = 'custom';
@@ -745,6 +765,7 @@
           filterItems();
           calculateAndDisplay();
           saveData();
+          scenarioLoadGuardDirty = false;
           if (issues.length > 0) {
             downloadImportIssueReport(sourceFileName, issues);
             showFeedback(`Imported with ${issues.length} data issue(s). Report downloaded for review/printing.`, 'error');
@@ -972,6 +993,7 @@
     }
     updateScenarioDropdown();
     updateSavedDisplay(scenario.timestamp || null);
+    scenarioLoadGuardDirty = false;
     showFeedback(`Scenario "${scenario.name}" saved successfully!`, 'success');
   }
 
@@ -1042,6 +1064,8 @@
       return;
     }
 
+    if (!confirmOverwriteIfDirty()) return;
+
     ['days', 'beds', 'buffer'].forEach(clearValidationError);
     if (scenario.consumables && Array.isArray(scenario.consumables)) {
       allConsumables = scenario.consumables;
@@ -1081,6 +1105,7 @@
     filterItems();
     calculateAndDisplay();
     saveData();
+    scenarioLoadGuardDirty = false;
     showFeedback(`Scenario "${scenario.name}" loaded successfully!`, 'success');
   }
 
@@ -1202,7 +1227,8 @@
       updateAutosaveTimestampDisplay(now);
       consAutosaveDirty = false;
     } catch (e) {
-      console.error('Failed to save data:', e);
+      console.warn('Consumables autosave failed:', e);
+      showToast('Could not autosave (storage may be full or blocked).', 'error', 4000);
     }
   }
 
@@ -1299,6 +1325,7 @@
     }
     updateAutosaveTimestampDisplay(lastSaved);
     consAutosaveDirty = false;
+    scenarioLoadGuardDirty = false;
   }
 
   function restoreAutosavedState() {
@@ -1376,6 +1403,7 @@
     filterItems();
     calculateAndDisplay();
     saveData();
+    scenarioLoadGuardDirty = false;
     showFeedback('All items cleared successfully!', 'success');
   }
 
@@ -1401,6 +1429,7 @@
     displayConsumables();
     updateItemsInfo();
     saveData();
+    scenarioLoadGuardDirty = false;
     showFeedback('Ward List loaded', 'success');
   }
 
@@ -1426,6 +1455,7 @@
     displayConsumables();
     updateItemsInfo();
     saveData();
+    scenarioLoadGuardDirty = false;
     showFeedback('ICU List loaded', 'success');
   }
 
@@ -1447,6 +1477,7 @@
     }
     setupEventListeners();
     consAutosaveDirty = false;
+    scenarioLoadGuardDirty = false;
     startAutosaveTimer();
     try {
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));

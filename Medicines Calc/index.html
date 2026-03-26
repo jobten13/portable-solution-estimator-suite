@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="app-version" content="1.0.0">
+  <meta name="app-version" content="1.0.1">
   <meta name="suite-version" content="">
   <title>Field Hospital Calculator - Pharmaceuticals Supply List</title>
   <link rel="stylesheet" href="styles.css">
@@ -17,13 +17,13 @@
     </header>
     <div class="toolbar-wrap">
       <div class="toolbar">
-        <button type="button" id="btn-clear-autosave" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+        <button type="button" id="meds-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
         <span id="medicines-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
-        <button type="button" class="btn btn-print" id="print-btn" title="Print the current view.">Print</button>
-        <button type="button" class="btn btn-ucd" id="pharma-list-btn" title="Load the UCD Ward pharmaceuticals list.">UCD Ward Meds</button>
-        <button type="button" class="btn btn-ucd" id="pharma-secondary-list-btn" title="Load the UCD ICU pharmaceuticals list.">UCD ICU Meds</button>
-        <button type="button" class="btn btn-clear-items" id="clear-items-btn" title="Clear list, scenario name/notes, and deployment inputs; reset to empty worksheet.">Reset Worksheet</button>
-        <span id="file-status" class="status-text">No list loaded</span>
+        <button type="button" class="btn btn-print" id="meds-print-btn" title="Print the current view.">Print</button>
+        <button type="button" class="btn btn-ucd" id="meds-pharma-list-btn" title="Load the UCD Ward pharmaceuticals list.">UCD Ward Meds</button>
+        <button type="button" class="btn btn-ucd" id="meds-pharma-secondary-list-btn" title="Load the UCD ICU pharmaceuticals list.">UCD ICU Meds</button>
+        <button type="button" class="btn btn-clear-items" id="meds-clear-items-btn" title="Clear list, scenario name/notes, and deployment inputs; reset to empty worksheet.">Reset Worksheet</button>
+        <span id="meds-file-status" class="status-text">No list loaded</span>
       </div>
     </div>
 
@@ -41,51 +41,50 @@
           </ul>
         </div>
         <div class="scenario-actions">
-          <button type="button" class="btn btn-save" id="save-btn" title="Save current pharmaceuticals list and deployment inputs to this browser.">Save Scenario</button>
+          <button type="button" class="btn btn-save" id="meds-save-btn" title="Save current pharmaceuticals list and deployment inputs to this browser.">Save Scenario</button>
           <div class="load-scenario-group">
-            <select id="scenario-select" class="scenario-select">
+            <select id="meds-scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
               <option value="">— Select scenario to load —</option>
             </select>
-            <button type="button" class="btn btn-load" id="load-btn" title="Load the scenario selected in the dropdown.">Load Scenario</button>
-            <button type="button" class="btn btn-delete" id="delete-btn" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
-            <button type="button" class="btn btn-clear" id="clear-btn" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
+            <button type="button" class="btn btn-load" id="meds-load-btn" title="Load the scenario selected in the dropdown.">Load Scenario</button>
+            <button type="button" class="btn btn-delete" id="meds-delete-btn" title="Delete the scenario selected in the dropdown.">Delete Scenario</button>
+            <button type="button" class="btn btn-clear" id="meds-clear-btn" title="Delete all saved scenarios. Cannot be undone.">Clear all Scenarios</button>
           </div>
-          <button type="button" class="btn btn-secondary" id="import-btn" title="Restore scenario from an exported JSON file.">Import from file</button>
-          <button type="button" class="btn btn-secondary" id="export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
+          <button type="button" class="btn btn-secondary" id="meds-import-btn" title="Restore scenario from an exported JSON file.">Import from file</button>
+          <button type="button" class="btn btn-secondary" id="meds-export-btn" title="Export scenario: choose JSON (backup/re-import) or CSV (human-readable report).">Export to file</button>
         </div>
-        <div id="export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
+        <div id="meds-export-format-dialog" class="export-format-dialog" hidden aria-hidden="true">
           <div class="export-format-panel">
             <p class="export-format-title">Export format</p>
             <div class="export-format-options">
               <label class="export-format-option">
-                <input type="radio" name="export-format" value="JSON" checked>
+                <input type="radio" name="meds-export-format" value="JSON" checked>
                 <span>JSON</span> <span class="export-format-hint">(backup / re-import)</span>
               </label>
               <label class="export-format-option">
-                <input type="radio" name="export-format" value="CSV">
+                <input type="radio" name="meds-export-format" value="CSV">
                 <span>CSV</span> <span class="export-format-hint">(human-readable report)</span>
               </label>
             </div>
             <div class="export-format-actions">
-              <button type="button" id="export-format-cancel" class="btn btn-secondary">Cancel</button>
-              <button type="button" id="export-format-confirm" class="btn btn-save">Export</button>
+              <button type="button" id="meds-export-format-cancel" class="btn btn-secondary">Cancel</button>
+              <button type="button" id="meds-export-format-confirm" class="btn btn-save">Export</button>
             </div>
           </div>
         </div>
-        <p class="scenario-storage-note">Scenarios are saved in this browser only. Use Export to back up or share.</p>
         <div class="scenario-meta">
           <div class="field">
-            <label for="scenario-name">Scenario name</label>
-            <input type="text" id="scenario-name" placeholder="e.g. 30-day, 40 beds">
+            <label for="meds-scenario-name">Scenario name</label>
+            <input type="text" id="meds-scenario-name" placeholder="e.g. 30-day, 40 beds">
           </div>
           <div class="field field-notes">
-            <label for="scenario-notes">Notes / assumptions</label>
-            <textarea id="scenario-notes" rows="3" placeholder="Optional notes"></textarea>
+            <label for="meds-scenario-notes">Notes / assumptions</label>
+            <textarea id="meds-scenario-notes" rows="3" placeholder="Optional notes"></textarea>
           </div>
         </div>
         <p class="scenario-saved-line" id="meds-saved-display" aria-live="polite"></p>
-        <input type="file" id="import-file-input" accept=".json" style="display: none;">
-        <div id="button-feedback" class="button-feedback"></div>
+        <input type="file" id="meds-import-file-input" accept=".json" style="display: none;">
+        <div id="meds-button-feedback" class="button-feedback"></div>
       </section>
 
       <!-- Deployment Parameters -->
@@ -93,16 +92,16 @@
         <h3>Deployment Parameters</h3>
         <div class="params-grid">
           <div class="param-group">
-            <label for="days">Deployment Length (Days):</label>
-            <input type="number" id="days" min="0" placeholder="0">
+            <label for="meds-days">Deployment Length (Days):</label>
+            <input type="number" id="meds-days" min="0" placeholder="0">
           </div>
           <div class="param-group">
-            <label for="beds">Expected Number of Beds:</label>
-            <input type="number" id="beds" min="0" placeholder="0">
+            <label for="meds-beds">Expected Number of Beds:</label>
+            <input type="number" id="meds-beds" min="0" placeholder="0">
           </div>
           <div class="param-group">
-            <label for="buffer">Buffer Percentage (%):</label>
-            <input type="number" id="buffer" min="0" max="100" step="0.1" placeholder="0">
+            <label for="meds-buffer">Buffer Percentage (%):</label>
+            <input type="number" id="meds-buffer" min="0" max="100" step="0.1" placeholder="0">
             <small style="color: #666; font-size: 0.85em; margin-top: 5px;">Add percentage buffer to quantities (e.g., 10 for 10%)</small>
           </div>
         </div>
@@ -123,29 +122,29 @@
           </ul>
         </div>
         <div class="sort-bar">
-          <label for="sort-equipment">Sort:</label>
-          <select id="sort-equipment" class="sort-select" aria-label="Sort medicines requirements">
+          <label for="meds-sort-equipment">Sort:</label>
+          <select id="meds-sort-equipment" class="sort-select" aria-label="Sort medicines requirements">
             <option value="name-asc">Name A–Z</option>
             <option value="name-desc">Name Z–A</option>
             <option value="qty-desc">Total quantity High to Low</option>
             <option value="qty-asc">Total quantity Low to High</option>
           </select>
-          <label for="min-qty-filter">Min Qty:</label>
-          <input type="number" id="min-qty-filter" class="min-qty-filter" min="0" step="1" placeholder="off" aria-label="Show rows with total quantity at or above this value">
+          <label for="meds-min-qty-filter">Min Qty:</label>
+          <input type="number" id="meds-min-qty-filter" class="min-qty-filter" min="0" step="1" placeholder="off" aria-label="Show rows with total quantity at or above this value">
           <label class="nonzero-filter-toggle">
-            <input type="checkbox" id="nonzero-only-filter" aria-label="Show non-zero total quantity rows only">
+            <input type="checkbox" id="meds-nonzero-only-filter" aria-label="Show non-zero total quantity rows only">
             Non-zero only
           </label>
         </div>
         <div class="add-item-bar">
-          <input type="text" id="new-item-name" class="add-item-name" placeholder="Custom item name">
-          <input type="number" id="new-item-rate" class="add-item-rate" min="0" step="0.001" placeholder="Per day/per bed">
-          <button type="button" class="btn btn-secondary" id="add-item-btn">Add Item</button>
+          <input type="text" id="meds-new-item-name" class="add-item-name" placeholder="Custom item name">
+          <input type="number" id="meds-new-item-rate" class="add-item-rate" min="0" step="0.001" placeholder="Per day/per bed">
+          <button type="button" class="btn btn-secondary" id="meds-add-item-btn">Add Item</button>
         </div>
-        <input type="text" id="search" placeholder="🔍 Search items..." class="search-box">
-        <div class="filter-notice" id="filter-notice" style="display:none;"></div>
-        <div class="items-info" id="items-info">0 items loaded</div>
-        <div id="consumables-container">
+        <input type="text" id="meds-search" placeholder="🔍 Search items..." class="search-box">
+        <div class="filter-notice" id="meds-filter-notice" style="display:none;"></div>
+        <div class="items-info" id="meds-items-info">0 items loaded</div>
+        <div id="meds-consumables-container">
           <p class="empty-message">Load the UCD Ward or ICU list above.</p>
         </div>
       </section>
@@ -153,7 +152,7 @@
 
     <footer class="disclaimer">
       <p>This tool is a simplified estimator. Verify requirements with qualified personnel before deployment.</p>
-      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.0.0</span>
+      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.0.1</span>
     </footer>
   </div>
 

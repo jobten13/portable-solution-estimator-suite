@@ -1,8 +1,16 @@
 {
   "suiteName": "Field Hospital Calculator Suite",
-  "version": "1.1.0",
-  "lastUpdated": "2026-03-13T00:00:00.000Z",
+  "version": "1.1.1",
+  "lastUpdated": "2026-03-25T00:00:00.000Z",
   "changelog": [
+    {
+      "version": "1.1.1",
+      "date": "2026-03-25T00:00:00.000Z",
+      "changes": [
+        "Unsaved worksheet guard before Load scenario / Import JSON: `scenarioLoadGuardDirty` separate from autosave dirty (confirm still appears after debounced autosave); cleared on load, import, named scenario save, restore autosave, and reset paths",
+        "All five calculators: Load Basic, Load Pro, Water, Consumables, Medicines; Load Pro load path avoids re-marking dirty during scenario apply"
+      ]
+    },
     {
       "version": "1.1.0",
       "date": "2026-03-13T00:00:00.000Z",

@@ -345,9 +345,25 @@
   let autosaveTimerId = null;
   let debouncedAutosaveTimeout = null;
   let loadAutosaveDirty = false;
+  /** True after user edits; NOT cleared when autosave runs — drives load/import overwrite confirm. */
+  let scenarioLoadGuardDirty = false;
+
+  const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
+  const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
+
+  function confirmOverwriteIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+  }
+
+  function confirmImportIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+  }
 
   function notifyWorksheetChanged() {
     loadAutosaveDirty = true;
+    scenarioLoadGuardDirty = true;
     scheduleDebouncedAutosave();
   }
 
@@ -402,7 +418,12 @@
       localStorage.setItem(LAST_SAVED_KEY, now);
       updateAutosaveTimestampDisplay(now);
       loadAutosaveDirty = false;
-    } catch (e) { /* ignore */ }
+      return true;
+    } catch (e) {
+      console.warn('Load Basic autosave failed:', e);
+      showToast('Could not autosave (storage may be full or blocked).', 'error', 4000);
+      return false;
+    }
   }
 
   function loadWorksheetState() {
@@ -418,6 +439,7 @@
           applyScenarioData(parsed);
           calculateLoad();
           loadAutosaveDirty = false;
+          scenarioLoadGuardDirty = false;
           let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
           if (!lastSaved) {
             lastSaved = new Date().toISOString();
@@ -873,6 +895,7 @@
     if (!confirm('Reset all equipment quantities to zero? Scenario name, notes, and capacities are kept.')) return;
     $$('.qty-input').forEach(inp => { if (inp) inp.value = ''; });
     calculateLoad();
+    scenarioLoadGuardDirty = false;
     showToast('Quantities reset', 'success', 2000);
   }
 
@@ -893,6 +916,7 @@
     filterEquipmentSearch();
     updateAutosaveTimestampDisplay('');
     updateSavedDisplay(null);
+    scenarioLoadGuardDirty = false;
     showToast('Full sheet reset complete', 'success', 2000);
   }
 
@@ -942,6 +966,7 @@
     updateSavedDisplay(savedScenario.savedAt);
     acknowledgeClick($(id('btn-save')), 'Saved!', 1500);
     showToast(`Scenario saved: ${displayName}`, 'success', 3000);
+    scenarioLoadGuardDirty = false;
   }
 
   function onLoad() {
@@ -956,6 +981,7 @@
       showToast('Scenario not found', 'error', 2000);
       return;
     }
+    if (!confirmOverwriteIfDirty()) return;
     applyScenarioData(scenario.data);
     const nameEl = $(id('scenario-name'));
     if (nameEl) nameEl.value = scenario.baseName || scenario.data.scenarioName || '';
@@ -965,6 +991,9 @@
     updateSavedDisplay(scenario.savedAt || null);
     acknowledgeClick($(id('btn-load')), 'Loaded!', 1500);
     showToast(`Scenario loaded: ${scenario.displayName}`, 'success', 2500);
+    loadAutosaveDirty = false;
+    scenarioLoadGuardDirty = false;
+    saveWorksheetState();
   }
 
   function onDeleteScenario() {
@@ -1165,6 +1194,10 @@
             ev.target.value = '';
             return;
           }
+          if (!confirmImportIfDirty()) {
+            ev.target.value = '';
+            return;
+          }
           applyScenarioData(sanitized);
           attachListeners();
           calculateLoad();
@@ -1174,6 +1207,9 @@
           } else {
             showToast('Scenario imported and applied', 'success', 3000);
           }
+          loadAutosaveDirty = false;
+          scenarioLoadGuardDirty = false;
+          saveWorksheetState();
         } else {
           showToast('File does not contain a valid scenario', 'warning', 3000);
         }
@@ -1543,6 +1579,23 @@
     if (searchEl) {
       searchEl.removeEventListener('input', filterEquipmentSearch);
       searchEl.addEventListener('input', filterEquipmentSearch);
+    }
+    const scenName = $(id('scenario-name'));
+    const scenNotes = $(id('scenario-notes'));
+    function onScenarioMetaChange() {
+      notifyWorksheetChanged();
+    }
+    if (scenName) {
+      scenName.removeEventListener('input', onScenarioMetaChange);
+      scenName.addEventListener('input', onScenarioMetaChange);
+      scenName.removeEventListener('blur', tryAutosaveOnBlur);
+      scenName.addEventListener('blur', tryAutosaveOnBlur);
+    }
+    if (scenNotes) {
+      scenNotes.removeEventListener('input', onScenarioMetaChange);
+      scenNotes.addEventListener('input', onScenarioMetaChange);
+      scenNotes.removeEventListener('blur', tryAutosaveOnBlur);
+      scenNotes.addEventListener('blur', tryAutosaveOnBlur);
     }
   }
 

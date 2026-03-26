@@ -472,10 +472,25 @@
   let debouncedAutosaveTimeout = null;
   /** Only true after user edits; avoids overwriting prior autosave on open (defaults + initial recalc). */
   let waterAutosaveDirty = false;
+  let scenarioLoadGuardDirty = false;
+
+  const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
+  const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
+
+  function confirmOverwriteIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+  }
+
+  function confirmImportIfDirty() {
+    if (!scenarioLoadGuardDirty) return true;
+    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+  }
 
   function notifyWorksheetChanged() {
     markScenarioListStaleIfNeeded();
     waterAutosaveDirty = true;
+    scenarioLoadGuardDirty = true;
     scheduleDebouncedAutosave();
   }
 
@@ -537,6 +552,7 @@
         try { localStorage.setItem(LAST_SAVED_KEY, lastSaved); } catch (err) {}
       }
       updateAutosaveTimestampDisplay(lastSaved);
+      scenarioLoadGuardDirty = false;
       return true;
     } catch (e) {
       try { localStorage.removeItem(WATER_AUTOSAVE_KEY); } catch (err) {}
@@ -557,6 +573,7 @@
     recalc();
     waterAutosaveDirty = true;
     saveWorksheetState();
+    scenarioLoadGuardDirty = false;
     setScenarioListLine({ kind: 'restored_autosave' });
     showToast('Restored last autosave.', 'success', 2500);
   }
@@ -693,6 +710,7 @@
     updateScenarioDropdown();
     setScenarioListLine({ kind: 'list_saved', name: scenario.name, ts: scenario.timestamp });
     saveWorksheetState();
+    scenarioLoadGuardDirty = false;
     showFeedback(`Scenario "${scenario.name}" saved.`, 'success');
   }
 
@@ -709,6 +727,7 @@
       showFeedback('Scenario not found or invalid.', 'info');
       return;
     }
+    if (!confirmOverwriteIfDirty()) return;
     applyState(scenario.state);
     if (g('water-scenario-name')) g('water-scenario-name').value = scenario.name || (scenario.state && scenario.state.scenarioName) || '';
     setScenarioListLine({
@@ -718,6 +737,7 @@
     });
     recalc();
     saveWorksheetState();
+    scenarioLoadGuardDirty = false;
     showFeedback(`Scenario "${scenario.name || ''}" loaded.`, 'success');
   }
 
@@ -854,6 +874,10 @@
         const state = data.state || data;
         if (state.days != null || state.beds != null) {
           if (!state.scenarioName && data.name) state.scenarioName = data.name;
+          if (!confirmImportIfDirty()) {
+            ev.target.value = '';
+            return;
+          }
           applyState(state);
           setScenarioListLine({
             kind: 'imported',
@@ -862,6 +886,7 @@
           });
           recalc();
           saveWorksheetState();
+          scenarioLoadGuardDirty = false;
           showFeedback('Scenario imported and applied.', 'success');
         } else {
           showFeedback('File does not contain a valid scenario.', 'info');
@@ -893,6 +918,7 @@
     recalc();
     saveWorksheetState();
     setScenarioListLine({ kind: 'none' });
+    scenarioLoadGuardDirty = false;
     showFeedback('Reset to defaults.', 'success');
   }
 
@@ -1132,6 +1158,7 @@
 
     startAutosaveTimer();
     waterAutosaveDirty = false;
+    scenarioLoadGuardDirty = false;
     setScenarioListLine({ kind: 'none' });
     if (typeof WATER_DEFAULTS !== 'undefined') {
       applyState(WATER_DEFAULTS);
