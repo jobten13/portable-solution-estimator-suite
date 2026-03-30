@@ -347,6 +347,8 @@
     if (bufferRow) bufferRow.style.display = showMains ? '' : 'none';
     if (pickupRow) pickupRow.style.display = wastewaterMode === 'mains' ? 'none' : '';
     if (wwMainsRow) wwMainsRow.style.display = wastewaterMode === 'mains' ? '' : 'none';
+    const wwMainsAdvisory = g('water-wastewater-mains-advisory');
+    if (wwMainsAdvisory) wwMainsAdvisory.style.display = wastewaterMode === 'mains' ? '' : 'none';
     if (mainsRow) setMainsRowTier(mainsRow, null);
     if (mainsPill) setWaterStatusPill(mainsPill, 'neutral');
     if (mainsPill) mainsPill.textContent = '—';
@@ -355,13 +357,47 @@
       mainsDetail.setAttribute('aria-hidden', 'true');
     }
 
+    const potableStorageWarnRow = g('water-potable-storage-warning-row');
+    const potableStoragePill = g('water-out-potable-storage-pill');
+    const wastewaterStorageWarnRow = g('water-wastewater-storage-warning-row');
+    const wastewaterStoragePill = g('water-out-wastewater-storage-pill');
+    if (potableStorageWarnRow) {
+      potableStorageWarnRow.style.display = 'none';
+      setMainsRowTier(potableStorageWarnRow, null);
+    }
+    if (potableStoragePill) {
+      setWaterStatusPill(potableStoragePill, 'neutral');
+      potableStoragePill.textContent = '—';
+      potableStoragePill.setAttribute('role', 'status');
+    }
+    const potableStorageDetailEl = g('out-potable-storage-detail');
+    if (potableStorageDetailEl) {
+      potableStorageDetailEl.textContent = '';
+      potableStorageDetailEl.setAttribute('aria-hidden', 'true');
+    }
+    if (wastewaterStorageWarnRow) {
+      wastewaterStorageWarnRow.style.display = 'none';
+      setMainsRowTier(wastewaterStorageWarnRow, null);
+    }
+    if (wastewaterStoragePill) {
+      setWaterStatusPill(wastewaterStoragePill, 'neutral');
+      wastewaterStoragePill.textContent = '—';
+      wastewaterStoragePill.setAttribute('role', 'status');
+    }
+    const wastewaterStorageDetailEl = g('out-wastewater-storage-detail');
+    if (wastewaterStorageDetailEl) {
+      wastewaterStorageDetailEl.textContent = '';
+      wastewaterStorageDetailEl.setAttribute('aria-hidden', 'true');
+    }
+
     // Potable: self-supplied or hybrid container side (uses buffered daily demand)
     if (potableMode === 'self' || potableMode === 'hybrid') {
+      let daysPerDelivery;
       let potableDeliveries = '—';
       if (days <= 0 || beds <= 0) {
         potableDeliveries = 'Enter deployment length and number of beds';
       } else if (potableStorage > 0 && potablePerDayBuffered > 0) {
-        const daysPerDelivery = potableStorage / potablePerDayBuffered;
+        daysPerDelivery = potableStorage / potablePerDayBuffered;
         const deliveriesNeeded = Math.ceil(days / daysPerDelivery);
         potableDeliveries = `~${deliveriesNeeded} over deployment (every ~${Math.round(daysPerDelivery)} days)`;
       } else if (potableStorage > 0) {
@@ -370,6 +406,38 @@
         potableDeliveries = potableMode === 'hybrid' ? 'Enter backup container count & capacity' : 'Enter container count & capacity';
       }
       setText('out-potable-deliveries', potableDeliveries);
+
+      const skipPotableStorageWarn =
+        days <= 0 ||
+        beds <= 0 ||
+        potableStorage <= 0 ||
+        potablePerDayBuffered <= 0 ||
+        typeof daysPerDelivery !== 'number';
+      if (!skipPotableStorageWarn) {
+        const daysCover = daysPerDelivery;
+        let tier = 'danger';
+        if (daysCover >= 2) tier = 'ok';
+        else if (daysCover >= 1) tier = 'warn';
+        const x = roundCoverDays(daysCover);
+        const detailBase = `Containers cover ~${x} days at current demand`;
+        const detailText =
+          tier === 'danger'
+            ? detailBase + ' — expect more than one delivery per day'
+            : detailBase;
+        const pillLabel = tier === 'ok' ? 'ADEQUATE' : tier === 'warn' ? 'MARGINAL' : 'INSUFFICIENT';
+        const potStorageDetail = document.getElementById('water-out-potable-storage-detail');
+        if (potableStorageWarnRow) potableStorageWarnRow.style.display = '';
+        setMainsRowTier(potableStorageWarnRow, tier);
+        if (potableStoragePill) {
+          potableStoragePill.textContent = pillLabel;
+          setWaterStatusPill(potableStoragePill, tier);
+          potableStoragePill.setAttribute('role', 'status');
+        }
+        if (potStorageDetail) {
+          potStorageDetail.textContent = detailText;
+          potStorageDetail.removeAttribute('aria-hidden');
+        }
+      }
     }
 
     // Potable: mains adequacy check
@@ -427,10 +495,11 @@
 
     // Wastewater: container collection (uses buffered daily output)
     if (wastewaterMode === 'containers') {
+      let daysPerFill;
       let wastewaterPickups = '—';
       if (days > 0 && beds > 0) {
         if (wastewaterStorage > 0 && wastewaterPerDayBuffered > 0) {
-          const daysPerFill = wastewaterStorage / wastewaterPerDayBuffered;
+          daysPerFill = wastewaterStorage / wastewaterPerDayBuffered;
           const pickupsNeeded = Math.ceil(days / daysPerFill);
           wastewaterPickups = `~${pickupsNeeded} over deployment (every ~${Math.round(daysPerFill)} days)`;
         } else if (wastewaterStorage > 0) {
@@ -442,6 +511,38 @@
         wastewaterPickups = 'Enter deployment length and number of beds';
       }
       setText('out-wastewater-pickups', wastewaterPickups);
+
+      const skipWastewaterStorageWarn =
+        days <= 0 ||
+        beds <= 0 ||
+        wastewaterStorage <= 0 ||
+        wastewaterPerDayBuffered <= 0 ||
+        typeof daysPerFill !== 'number';
+      if (!skipWastewaterStorageWarn) {
+        const daysCover = daysPerFill;
+        let tier = 'danger';
+        if (daysCover >= 2) tier = 'ok';
+        else if (daysCover >= 1) tier = 'warn';
+        const x = roundCoverDays(daysCover);
+        const detailBase = `Containers cover ~${x} days at current demand`;
+        const detailText =
+          tier === 'danger'
+            ? detailBase + ' — expect more than one pickup per day'
+            : detailBase;
+        const pillLabel = tier === 'ok' ? 'ADEQUATE' : tier === 'warn' ? 'MARGINAL' : 'INSUFFICIENT';
+        const wwStorageDetail = document.getElementById('water-out-wastewater-storage-detail');
+        if (wastewaterStorageWarnRow) wastewaterStorageWarnRow.style.display = '';
+        setMainsRowTier(wastewaterStorageWarnRow, tier);
+        if (wastewaterStoragePill) {
+          wastewaterStoragePill.textContent = pillLabel;
+          setWaterStatusPill(wastewaterStoragePill, tier);
+          wastewaterStoragePill.setAttribute('role', 'status');
+        }
+        if (wwStorageDetail) {
+          wwStorageDetail.textContent = detailText;
+          wwStorageDetail.removeAttribute('aria-hidden');
+        }
+      }
     }
 
     const note = g('water-schedule-note');

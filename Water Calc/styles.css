@@ -782,9 +782,17 @@
 
 /* Mains supply status: full band — same bg/border/text as Load Pro pills per tier */
 .water-calc #water-potable-mains-row.water-mains-row--ok,
+.water-calc #water-potable-storage-warning-row.water-mains-row--ok,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--ok,
 .water-calc #water-potable-mains-row.water-mains-row--warn,
+.water-calc #water-potable-storage-warning-row.water-mains-row--warn,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--warn,
 .water-calc #water-potable-mains-row.water-mains-row--danger,
-.water-calc #water-potable-mains-row.water-mains-row--neutral {
+.water-calc #water-potable-storage-warning-row.water-mains-row--danger,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--danger,
+.water-calc #water-potable-mains-row.water-mains-row--neutral,
+.water-calc #water-potable-storage-warning-row.water-mains-row--neutral,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--neutral {
   margin-left: -8px;
   margin-right: -8px;
   margin-top: 10px;
@@ -795,51 +803,75 @@
   print-color-adjust: exact;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--ok {
+.water-calc #water-potable-mains-row.water-mains-row--ok,
+.water-calc #water-potable-storage-warning-row.water-mains-row--ok,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--ok {
   background: #bbf7d0;
   border: 1px solid #22c55e;
   color: #14532d;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--ok .water-status-pill-detail {
+.water-calc #water-potable-mains-row.water-mains-row--ok .water-status-pill-detail,
+.water-calc #water-potable-storage-warning-row.water-mains-row--ok .water-status-pill-detail,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--ok .water-status-pill-detail {
   color: #14532d;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--warn {
+.water-calc #water-potable-mains-row.water-mains-row--warn,
+.water-calc #water-potable-storage-warning-row.water-mains-row--warn,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--warn {
   background: #fed7aa;
   border: 1px solid #ea580c;
   color: #7c2d12;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--warn .water-status-pill-detail {
+.water-calc #water-potable-mains-row.water-mains-row--warn .water-status-pill-detail,
+.water-calc #water-potable-storage-warning-row.water-mains-row--warn .water-status-pill-detail,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--warn .water-status-pill-detail {
   color: #7c2d12;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--danger {
+.water-calc #water-potable-mains-row.water-mains-row--danger,
+.water-calc #water-potable-storage-warning-row.water-mains-row--danger,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--danger {
   background: #fecaca;
   border: 1px solid #dc2626;
   color: #7f1d1d;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--danger .water-status-pill-detail {
+.water-calc #water-potable-mains-row.water-mains-row--danger .water-status-pill-detail,
+.water-calc #water-potable-storage-warning-row.water-mains-row--danger .water-status-pill-detail,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--danger .water-status-pill-detail {
   color: #7f1d1d;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--neutral {
+.water-calc #water-potable-mains-row.water-mains-row--neutral,
+.water-calc #water-potable-storage-warning-row.water-mains-row--neutral,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--neutral {
   background: #e5e7eb;
   border: 1px solid #d1d5db;
   color: #374151;
 }
 
-.water-calc #water-potable-mains-row.water-mains-row--neutral .water-status-pill-detail {
+.water-calc #water-potable-mains-row.water-mains-row--neutral .water-status-pill-detail,
+.water-calc #water-potable-storage-warning-row.water-mains-row--neutral .water-status-pill-detail,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--neutral .water-status-pill-detail {
   color: #374151;
 }
 
 /* First label span still matched by rule above; inherit row tier text from #water-potable-mains-row */
 .water-calc #water-potable-mains-row.water-mains-row--ok > span:first-of-type,
+.water-calc #water-potable-storage-warning-row.water-mains-row--ok > span:first-of-type,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--ok > span:first-of-type,
 .water-calc #water-potable-mains-row.water-mains-row--warn > span:first-of-type,
+.water-calc #water-potable-storage-warning-row.water-mains-row--warn > span:first-of-type,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--warn > span:first-of-type,
 .water-calc #water-potable-mains-row.water-mains-row--danger > span:first-of-type,
-.water-calc #water-potable-mains-row.water-mains-row--neutral > span:first-of-type {
+.water-calc #water-potable-storage-warning-row.water-mains-row--danger > span:first-of-type,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--danger > span:first-of-type,
+.water-calc #water-potable-mains-row.water-mains-row--neutral > span:first-of-type,
+.water-calc #water-potable-storage-warning-row.water-mains-row--neutral > span:first-of-type,
+.water-calc #water-wastewater-storage-warning-row.water-mains-row--neutral > span:first-of-type {
   color: inherit;
 }
 
