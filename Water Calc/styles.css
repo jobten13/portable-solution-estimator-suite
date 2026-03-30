@@ -696,21 +696,162 @@
   font-size: 0.95em;
 }
 
-.water-calc .result-row span { color: #64748b; }
-
-.water-calc #out-mains-status.mains-status-ok {
-  color: #065f46;
-  font-weight: 700;
+.water-calc .result-row span:not(.water-status-pill):not(.water-status-pill-detail) {
+  color: #64748b;
 }
 
-.water-calc #out-mains-status.mains-status-warn {
-  color: #b45309;
-  font-weight: 700;
+.water-calc .result-row.delivery-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 14px;
 }
 
-.water-calc #out-mains-status.mains-status-danger {
-  color: #b91c1c;
+.water-calc .result-row.delivery-row.water-result-row--critical {
+  margin-left: -8px;
+  margin-right: -8px;
+  padding: 10px 12px;
+  background: #fef2f2;
+  border-left: 4px solid #dc2626;
+  border-radius: 6px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Unified status pills (Load Pro–style); mains label uses uppercase */
+.water-calc .water-status-pill {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
   font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border: 1px solid transparent;
+  line-height: 1.35;
+  max-width: 100%;
+  box-sizing: border-box;
+  vertical-align: middle;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.water-calc .water-status-pill--sentence {
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+
+/* Load Pro .status-green — ok tier (pill = row band tokens) */
+.water-calc .water-status-pill--ok {
+  background: #bbf7d0;
+  color: #14532d;
+  border: 1px solid #22c55e;
+}
+
+/* Load Pro .status-orange — warn tier */
+.water-calc .water-status-pill--warn {
+  background: #fed7aa;
+  color: #7c2d12;
+  border: 1px solid #ea580c;
+}
+
+/* Load Pro .status-red — danger tier */
+.water-calc .water-status-pill--danger {
+  background: #fecaca;
+  color: #7f1d1d;
+  border: 1px solid #dc2626;
+}
+
+/* Match Load Pro .status-grey */
+.water-calc .water-status-pill--neutral {
+  background: #e5e7eb;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.water-calc .water-mains-status-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+/* Mains supply status: full band — same bg/border/text as Load Pro pills per tier */
+.water-calc #water-potable-mains-row.water-mains-row--ok,
+.water-calc #water-potable-mains-row.water-mains-row--warn,
+.water-calc #water-potable-mains-row.water-mains-row--danger,
+.water-calc #water-potable-mains-row.water-mains-row--neutral {
+  margin-left: -8px;
+  margin-right: -8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  box-sizing: border-box;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--ok {
+  background: #bbf7d0;
+  border: 1px solid #22c55e;
+  color: #14532d;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--ok .water-status-pill-detail {
+  color: #14532d;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--warn {
+  background: #fed7aa;
+  border: 1px solid #ea580c;
+  color: #7c2d12;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--warn .water-status-pill-detail {
+  color: #7c2d12;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--danger {
+  background: #fecaca;
+  border: 1px solid #dc2626;
+  color: #7f1d1d;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--danger .water-status-pill-detail {
+  color: #7f1d1d;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--neutral {
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.water-calc #water-potable-mains-row.water-mains-row--neutral .water-status-pill-detail {
+  color: #374151;
+}
+
+/* First label span still matched by rule above; inherit row tier text from #water-potable-mains-row */
+.water-calc #water-potable-mains-row.water-mains-row--ok > span:first-of-type,
+.water-calc #water-potable-mains-row.water-mains-row--warn > span:first-of-type,
+.water-calc #water-potable-mains-row.water-mains-row--danger > span:first-of-type,
+.water-calc #water-potable-mains-row.water-mains-row--neutral > span:first-of-type {
+  color: inherit;
+}
+
+.water-calc .water-status-pill-detail {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #475569;
+  line-height: 1.45;
+  letter-spacing: normal;
+  text-transform: none;
+  max-width: 36em;
 }
 
 .water-calc .delivery-row {

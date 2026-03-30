@@ -24,6 +24,32 @@
     return document.getElementById(fullId);
   }
 
+  const WATER_PILL_TIERS = ['water-status-pill--ok', 'water-status-pill--warn', 'water-status-pill--danger', 'water-status-pill--neutral'];
+
+  const MAINS_ROW_TIERS = ['water-mains-row--ok', 'water-mains-row--warn', 'water-mains-row--danger', 'water-mains-row--neutral'];
+
+  function setMainsRowTier(row, tier) {
+    if (!row) return;
+    MAINS_ROW_TIERS.forEach(function (c) { row.classList.remove(c); });
+    row.removeAttribute('role');
+    if (tier === 'ok' || tier === 'warn' || tier === 'danger' || tier === 'neutral') {
+      row.classList.add('water-mains-row--' + tier);
+      if (tier === 'danger') row.setAttribute('role', 'alert');
+    }
+  }
+
+  function setWaterStatusPill(el, tier) {
+    if (!el) return;
+    WATER_PILL_TIERS.forEach(function (c) { el.classList.remove(c); });
+    el.classList.add('water-status-pill');
+    const t = tier === 'ok' || tier === 'warn' || tier === 'danger' || tier === 'neutral' ? tier : 'neutral';
+    el.classList.add('water-status-pill--' + t);
+  }
+
+  function roundCoverDays(x) {
+    return Math.round(x * 10) / 10;
+  }
+
   function getNum(el, def) {
     if (!el) return def;
     const v = parseFloat(el.value);
@@ -313,15 +339,20 @@
     const bufferRow = g('water-potable-buffer-row');
     const pickupRow = g('water-wastewater-pickup-row');
     const wwMainsRow = g('water-wastewater-mains-row');
-    const mainsStatusEl = g('water-out-mains-status');
+    const mainsPill = g('water-out-mains-pill');
+    const mainsDetail = g('water-out-mains-detail');
     const showMains = potableMode === 'mains' || potableMode === 'hybrid';
     if (deliveryRow) deliveryRow.style.display = showMains && potableMode !== 'hybrid' ? 'none' : '';
     if (mainsRow) mainsRow.style.display = showMains ? '' : 'none';
     if (bufferRow) bufferRow.style.display = showMains ? '' : 'none';
     if (pickupRow) pickupRow.style.display = wastewaterMode === 'mains' ? 'none' : '';
     if (wwMainsRow) wwMainsRow.style.display = wastewaterMode === 'mains' ? '' : 'none';
-    if (mainsStatusEl) {
-      mainsStatusEl.classList.remove('mains-status-ok', 'mains-status-warn', 'mains-status-danger');
+    if (mainsRow) setMainsRowTier(mainsRow, null);
+    if (mainsPill) setWaterStatusPill(mainsPill, 'neutral');
+    if (mainsPill) mainsPill.textContent = '—';
+    if (mainsDetail) {
+      mainsDetail.textContent = '';
+      mainsDetail.setAttribute('aria-hidden', 'true');
     }
 
     // Potable: self-supplied or hybrid container side (uses buffered daily demand)
@@ -348,26 +379,44 @@
       const displayFlow = isGallons()
         ? Math.round(mainsFlowLhr / L_PER_GAL) + ' Gal/hr'
         : Math.round(mainsFlowLhr) + ' L/hr';
-      let mainsStatus = '—';
-      let mainsClass = '';
+      let rowTier = 'neutral';
+      let pillTier = 'neutral';
+      let pillLabel = '—';
+      let detailText = '';
       if (mainsFlowLhr <= 0) {
-        mainsStatus = 'Enter mains flow rate above';
+        pillLabel = 'NEEDS INPUT';
+        detailText = 'Enter mains flow rate above';
       } else if (potablePerDay <= 0) {
-        mainsStatus = 'Enter beds and daily rate to check';
+        pillLabel = 'NEEDS INPUT';
+        detailText = 'Enter beds and daily rate to check';
       } else if (mainsFlowLhr >= peakDemandLhr * 1.25) {
         const peakDisp = isGallons() ? Math.round(peakDemandLhr / L_PER_GAL) : Math.round(peakDemandLhr);
-        mainsStatus = `✓ Adequate (${displayFlow} supply vs. ${peakDisp} ${isGallons() ? 'Gal' : 'L'}/hr peak demand)`;
-        mainsClass = 'mains-status-ok';
+        rowTier = 'ok';
+        pillTier = 'ok';
+        pillLabel = 'ADEQUATE';
+        detailText = `${displayFlow} supply vs. ${peakDisp} ${isGallons() ? 'Gal' : 'L'}/hr peak demand`;
       } else if (mainsFlowLhr >= peakDemandLhr) {
-        mainsStatus = `⚠ Marginal (${displayFlow} supply — limited safety margin)`;
-        mainsClass = 'mains-status-warn';
+        rowTier = 'warn';
+        pillTier = 'warn';
+        pillLabel = 'MARGINAL';
+        detailText = `${displayFlow} supply — limited safety margin`;
       } else {
         const peakDisp = isGallons() ? Math.round(peakDemandLhr / L_PER_GAL) : Math.round(peakDemandLhr);
-        mainsStatus = `✗ Insufficient (${displayFlow} supply cannot meet ${peakDisp} ${isGallons() ? 'Gal' : 'L'}/hr peak demand)`;
-        mainsClass = 'mains-status-danger';
+        rowTier = 'danger';
+        pillTier = 'danger';
+        pillLabel = 'INSUFFICIENT';
+        detailText = `${displayFlow} supply cannot meet ${peakDisp} ${isGallons() ? 'Gal' : 'L'}/hr peak demand`;
       }
-      setText('out-mains-status', mainsStatus);
-      if (mainsStatusEl && mainsClass) mainsStatusEl.classList.add(mainsClass);
+      if (mainsPill) {
+        mainsPill.textContent = pillLabel;
+        setWaterStatusPill(mainsPill, pillTier);
+      }
+      if (mainsDetail) {
+        mainsDetail.textContent = detailText;
+        if (detailText) mainsDetail.removeAttribute('aria-hidden');
+        else mainsDetail.setAttribute('aria-hidden', 'true');
+      }
+      if (mainsRow) setMainsRowTier(mainsRow, rowTier);
       const bufferL = potablePerDay * 2;
       const bufferDisplay = isGallons()
         ? Math.ceil(bufferL / L_PER_GAL).toLocaleString()
