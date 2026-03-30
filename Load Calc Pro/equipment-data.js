@@ -18,7 +18,6 @@
 const LOAD_CALC_PRO_EQUIPMENT = {
   'cat-standard': {
     title: 'Standard Medical Equipment',
-    badge: 'kW/PF Assumptions',
     items: [
       { name: 'Portable Vital Signs Monitor', kw: 0.10, pf: 1.00 },
       { name: 'Patient Monitor', kw: 0.10, pf: 1.00 },
@@ -39,7 +38,6 @@ const LOAD_CALC_PRO_EQUIPMENT = {
   },
   'cat-emergency': {
     title: 'Emergency / Critical Medical Equipment',
-    badge: 'kW/PF Assumptions',
     items: [
       { name: 'Portable Ventilator', kw: 0.20, pf: 1.00 },
       { name: 'Defibrillator', kw: 0.30, pf: 1.00 },
@@ -61,7 +59,6 @@ const LOAD_CALC_PRO_EQUIPMENT = {
   },
   'cat-office': {
     title: 'Office & IT Equipment',
-    badge: 'kW/PF Assumptions',
     items: [
       { name: 'Desktop PC + 1 Monitor', kw: 0.20, pf: 0.95 },
       { name: 'Desktop PC + 2 Monitors', kw: 0.30, pf: 0.95 },
@@ -89,7 +86,6 @@ const LOAD_CALC_PRO_EQUIPMENT = {
   },
   'cat-hvac': {
     title: 'HVAC, Hygiene Pumps, Work Lights',
-    badge: 'kW/PF Assumptions (Motor loads trigger 4x kVA start surge)',
     items: [
       { name: 'HVAC 3.5 Ton', kw: 4.00, pf: 0.80 },
       { name: 'HVAC 3.5 Ton w/ Heat Strip', kw: 8.50, pf: 0.90 },

@@ -185,7 +185,7 @@
                 <th class="num kw-cell">kW each</th>
                 <th class="num pf-cell">PF</th>
                 <th class="num">kW total</th>
-                <th class="kva-peak-cell">kVA Peak</th>
+                <th class="kva-peak-cell" title="Peak starting kVA. Inductive loads (PF &lt; 0.95, kW &gt; 0.1) are modeled at 4× running kVA on start.">kVA Peak</th>
                 <th class="col-delete"></th>
               </tr>
             </thead>
