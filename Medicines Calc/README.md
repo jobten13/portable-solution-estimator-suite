@@ -1,6 +1,6 @@
 # Pharmaceuticals Supply List Calculator (Ward-ICU-Pharma)
 
-Part of the **Field Hospital Calculator** suite. Manages pharmaceuticals requirements for field hospital deployments: load the pre-built **UCD Pharmaceuticals List**, set deployment parameters (days, beds, buffer), add custom items, and save/load scenarios. Sort and search filter the list.
+Part of the **Field Hospital Calculator** suite. Manages pharmaceuticals requirements for field hospital deployments: load the pre-built **Ward Meds** or **ICU Meds** list, set deployment parameters (days, beds, buffer), add custom items, and save/load scenarios. Sort and search filter the list.
 
 ## Suite versioning
 
@@ -12,16 +12,24 @@ Part of the **Field Hospital Calculator** suite. Manages pharmaceuticals require
 
 Open `index.html` in a modern browser. No server required. Works offline.
 
-**Dependencies:** `script.js` (main logic), `consumables-lists.js` (UCD Pharmaceuticals list data), `styles.css`.
+**Dependencies:** `script.js` (main logic), `medications-data.js` (Ward/ICU pharmaceuticals list data), `styles.css`.
 
 ---
 
 ## Functionality
 
 ### Data sources
-- **UCD Pharmaceuticals List** — Load the built-in pharmaceuticals list from `consumables-lists.js` (current source file: `New UCD Lists/Medicines_List_Consolidated-2.csv`, mapped from row 4 onward using Column B = item name and Column C = multiplier).
+- **Ward Meds** — Load the built-in Ward pharmaceuticals list from `medications-data.js` (`PHARMA_ITEMS`).
+- **ICU Meds** — Load the built-in ICU pharmaceuticals list from `medications-data.js` (`PHARMA_ITEMS_SECONDARY`).
 - **Add Item** — Add a custom pharmaceuticals item with a per-day/per-bed rate directly in the calculator.
-- **Clear All Items** — Remove all items and reset to empty state.
+- **Reset Worksheet** — Remove all items and reset to empty state (toolbar; clears deployment inputs and scenario name/notes per app behavior).
+
+### Toolbar: autosave and list-loading tooltips
+- **Restore Autosave** — Grey (**secondary**) button. Restores the last autosaved worksheet state in this browser (recovery slot); named scenarios in the dropdown are unchanged.
+- **Autosaved:** — Text next to Restore Autosave when a timestamp exists. Format: **Autosaved: M/D h:mm AM/PM** (no year, no seconds). Empty when there is no autosave to show.
+- **Ward Meds** / **ICU Meds** — Blue/gold (**`.btn-ucd`**) buttons. Hover tooltips (browser `title` attribute):
+  - **Ward Meds:** *Load the built-in Ward pharmaceuticals list from medications-data.js; replaces the current worksheet list.*
+  - **ICU Meds:** *Load the built-in ICU pharmaceuticals list from medications-data.js; replaces the current worksheet list.*
 
 ### Deployment parameters
 - **Expected Length of Deployment (Days)** — Number of days (used for scaling or notes).
@@ -30,8 +38,9 @@ Open `index.html` in a modern browser. No server required. Works offline.
 
 ### Pharmaceuticals requirements table
 - **Per row:** Item name and calculated quantity. Totals/summary reflect visible rows after search.
-- **Row deletion:** Any row can be deleted using the row-level **Delete** action for scenario-specific tailoring. Loading the UCD list restores the original baseline list.
-- **Sort** — Name A–Z/Z–A, Total quantity High to Low / Low to High (persisted in localStorage).
+- **Row deletion:** Any row can be deleted using the row-level **Delete** action for scenario-specific tailoring. Loading Ward or ICU meds restores the original baseline list.
+- **Items count line** — Below the search box: when the worksheet has items, shows counts such as **`N Ward Meds items loaded`** or **`N ICU Meds items loaded`**, **`N of M Ward Meds items shown`** when search/filters hide rows, or **`Custom List`** / other **`currentFileName`** labels as appropriate. With no list label, shows **`N items loaded`** or **`N of M items shown`**. The toolbar no longer shows a separate “file status” label; the active list name is included in this line.
+- **Sort** — Name A–Z/Z–A, Total quantity High to Low / Low to High, plus **Source list order** when a built-in list is active (persisted in localStorage).
 - **Search** — Filter items by name (live); row count and totals use visible rows only.
 
 ### Scenarios
@@ -51,8 +60,8 @@ Open `index.html` in a modern browser. No server required. Works offline.
 
 ## UX/UI design
 
-- **Layout:** Banner → Toolbar (Print, UCD Pharmaceuticals List, Clear All Items, file status) → Scenarios → Deployment Parameters (highlight) → Pharmaceuticals Requirements (sort, search, item count, table).
-- **Suite alignment:** Same banner, scenario block, and button roles (Print blue, UCD list button, Save/Load green, Delete amber, Clear red, Secondary gray). Structure mirrors the Consumables calculator; IDs are pharma-specific (no `cons-` prefix).
+- **Layout:** Banner → Toolbar (**Restore Autosave**, **Autosaved:** timestamp, Print, **Ward Meds** / **ICU Meds**, **Reset Worksheet**) → Scenarios → Deployment Parameters (highlight) → Pharmaceuticals Requirements (sort, search, items count line, table).
+- **Suite alignment:** Same banner, scenario block, and button roles (Print blue, Ward/ICU list buttons in UC Davis blue/gold, Save/Load green, Delete amber, Clear red, **Restore Autosave** and Import/Export as grey secondary). Structure mirrors the Consumables calculator; IDs use the `meds-` prefix.
 
 ---
 
@@ -62,7 +71,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 |------|--------|
 | `index.html` | Structure, toolbar, scenario UI, deployment params, sort/search, table container. |
 | `script.js` | Table build, recalc, validation, scenarios, search filter, sort, placeholder/focus behavior. |
-| `consumables-lists.js` | UCD Pharmaceuticals list data (item names and default quantities). |
+| `medications-data.js` | Ward and ICU pharmaceuticals list data (`PHARMA_ITEMS`, `PHARMA_ITEMS_SECONDARY`). |
 | `styles.css` | Layout, cards, table, validation and placeholder styles, print. |
 | `stress-test-robust.html` | Standalone robustness test harness for pharmaceuticals quantity calculations and data invariants. |
 

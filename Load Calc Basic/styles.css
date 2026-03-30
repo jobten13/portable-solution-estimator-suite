@@ -124,6 +124,11 @@
 .load-basic-calc .btn-save:hover,
 .load-basic-calc .btn-load:hover { background: #059669; }
 
+.load-basic-calc .btn-success {
+  background: #10b981;
+  color: #fff;
+}
+
 .load-basic-calc .btn-delete {
   background: #f59e0b;
   color: #fff;
@@ -220,6 +225,8 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 .load-basic-calc .scenario-select {
@@ -227,7 +234,13 @@
   border: 2px solid #e5e7eb;
   border-radius: 6px;
   font-size: 0.85em;
-  min-width: 170px;
+  box-sizing: border-box;
+  min-width: min(120px, 100%);
+  max-width: min(280px, 100%);
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: white;
 }
 
@@ -337,6 +350,9 @@
 .load-basic-calc .help-popover ul { margin: 0; padding-left: 1.2em; }
 .load-basic-calc .help-popover li { margin-bottom: 6px; }
 .load-basic-calc .help-popover li:last-child { margin-bottom: 0; }
+.load-basic-calc .toolbar-wrap > .help-popover {
+  margin-top: 8px;
+}
 
 /* Sort bar */
 .load-basic-calc .sort-bar {
@@ -713,57 +729,6 @@
   to { transform: translateX(100%); opacity: 0; }
 }
 
-/* Guide modal (README rendered as HTML in-page) */
-.load-basic-calc .guide-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-}
-.load-basic-calc .guide-modal-overlay[hidden] { display: none !important; }
-.load-basic-calc .guide-modal-panel {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-.load-basic-calc .guide-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid #e5e7eb;
-  flex-shrink: 0;
-}
-.load-basic-calc .guide-modal-title { font-weight: 600; font-size: 1rem; }
-.load-basic-calc .guide-modal-close { flex-shrink: 0; }
-.load-basic-calc .guide-modal-body {
-  flex: 1;
-  overflow: auto;
-  padding: 16px 20px;
-  min-height: 200px;
-  border-radius: 0 0 8px 8px;
-}
-.load-basic-calc .guide-modal-body .guide-loading { color: #6b7280; }
-.load-basic-calc .guide-modal-body h1 { font-size: 1.35rem; margin: 0 0 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
-.load-basic-calc .guide-modal-body h2 { font-size: 1.15rem; margin: 1em 0 0.35em; }
-.load-basic-calc .guide-modal-body h3 { font-size: 1rem; margin: 0.85em 0 0.25em; }
-.load-basic-calc .guide-modal-body p { margin: 0 0 0.5em; line-height: 1.5; }
-.load-basic-calc .guide-modal-body ul { margin: 0.25em 0 0.75em; padding-left: 1.25em; }
-.load-basic-calc .guide-modal-body li { margin-bottom: 0.25em; }
-.load-basic-calc .guide-modal-body table.guide-table { width: 100%; border-collapse: collapse; margin: 0.5em 0 1em; font-size: 0.9em; }
-.load-basic-calc .guide-modal-body table.guide-table th,
-.load-basic-calc .guide-modal-body table.guide-table td { border: 1px solid #e5e7eb; padding: 6px 10px; text-align: left; }
-.load-basic-calc .guide-modal-body table.guide-table th { background: #f3f4f6; font-weight: 600; }
-
 /* Export format dialog (radio choice) */
 .load-basic-calc .export-format-dialog {
   position: fixed;
@@ -862,7 +827,6 @@
   .load-basic-calc .help-icon,
   .load-basic-calc .help-popover,
   .load-basic-calc .equipment-list-heading,
-  .load-basic-calc .guide-modal-overlay,
   .load-basic-calc .export-format-dialog { display: none !important; }
   .load-basic-calc .scenario-section {
     display: block !important;
@@ -1000,6 +964,17 @@
   .app .scenario-meta .field textarea {
     font-size: 0.85rem !important;
     line-height: 1.35 !important;
+  }
+
+  /* Print: white section/card backgrounds (toner) — match Consumables */
+  .load-basic-calc .scenario-section,
+  .app .scenario-section,
+  .load-basic-calc .sidebar .card,
+  .app .sidebar .card,
+  .load-basic-calc .category,
+  .app .category {
+    background: #fff !important;
+    box-shadow: none !important;
   }
 
   .load-basic-calc .category-body { display: block !important; }

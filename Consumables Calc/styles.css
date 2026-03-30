@@ -144,6 +144,8 @@
   gap: 6px;
   flex-wrap: nowrap;
   align-items: center;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 /* Match Water scenario field styling */
@@ -396,7 +398,13 @@
   border: 2px solid #e5e7eb;
   border-radius: 6px;
   font-size: 0.85em;
-  min-width: 170px;
+  box-sizing: border-box;
+  min-width: min(120px, 100%);
+  max-width: min(280px, 100%);
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: white;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, outline-color 0.2s ease;
 }
@@ -502,6 +510,11 @@
 
 .cons-calc .btn-secondary:hover {
   background: #4b5563;
+}
+
+.cons-calc .btn-success {
+  background: #10b981;
+  color: #fff;
 }
 
 /* Sort bar */

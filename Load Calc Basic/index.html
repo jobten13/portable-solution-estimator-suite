@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="app-version" content="1.0.1">
+  <meta name="app-version" content="1.1.2">
   <meta name="suite-version" content="">
   <title>Load Calc Basic</title>
   <link rel="stylesheet" href="styles.css">
@@ -18,12 +18,22 @@
 
     <div class="toolbar-wrap">
       <div class="toolbar">
-        <button type="button" id="btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
+        <button type="button" id="btn-clear-autosave" class="btn btn-secondary" title="Restore the worksheet autosave from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore Autosave</button>
         <span id="load-basic-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
         <button type="button" id="btn-print" class="btn btn-print" title="Print the current view.">Print</button>
-        <button type="button" id="guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
         <button type="button" id="btn-reset-qty" class="btn btn-delete" title="Set all equipment quantities to zero. Does not clear scenario name, notes, or generator/fuel inputs.">Reset Quantities</button>
         <button type="button" id="btn-full-reset" class="btn btn-clear" title="Clear quantities, scenario name/notes, generator/fuel inputs, and search; remove custom rows.">Reset Worksheet</button>
+        <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-toolbar" role="tooltip" hidden>
+        <ul>
+          <li><strong>Restore Autosave</strong> — recovers the last autosaved worksheet for this browser (after refresh).</li>
+          <li><strong>Autosaved:</strong> line — when the recovery slot was last updated (not the named scenario list).</li>
+          <li><strong>Print</strong> — prints the current worksheet view.</li>
+          <li><strong>Reset Quantities</strong> — sets all equipment quantities to zero; keeps scenario name, notes, and generator/fuel inputs.</li>
+          <li><strong>Reset Worksheet</strong> — full reset: quantities, scenario name/notes, generator/fuel, search, and custom rows.</li>
+          <li>For scenarios, equipment, and summary: use the <strong>?</strong> next to each section below.</li>
+        </ul>
       </div>
     </div>
 
@@ -35,11 +45,12 @@
       </div>
       <div class="help-popover" id="help-popover-scenarios" role="tooltip" hidden>
         <ul>
+          <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
           <li><strong>Save Scenario</strong> stores your current quantities, generator and fuel inputs, and notes in this browser.</li>
           <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
           <li><strong>Load</strong> restores a scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
           <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-          <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery data for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh; use Restore before editing if you need the previous session.</li>
+          <li>The toolbar <strong>Autosaved:</strong> line shows when the worksheet was last autosaved (format <strong>Autosaved: M/D h:mm AM/PM</strong>). <strong>Restore Autosave</strong> reloads that recovery data after a refresh; use it before editing if you need the previous session.</li>
         </ul>
       </div>
       <div class="scenario-actions">
@@ -217,21 +228,11 @@
 
     <footer class="footer disclaimer">
       Disclaimer: This tool is a simplified estimator based on fixed typical values and industry standards (0.8 PF). Actual site conditions, motor starting currents (kVA surge), and equipment specifications MUST be verified by a qualified electrical engineer. Not for final design without expert review.
-      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.0.1</span>
+      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.1.2</span>
     </footer>
 
-    <div id="guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
-      <div class="guide-modal-panel">
-        <div class="guide-modal-header">
-          <span class="guide-modal-title">User guide</span>
-          <button type="button" id="guide-modal-close" class="btn btn-secondary guide-modal-close" aria-label="Close user guide">Close</button>
-        </div>
-        <div id="guide-modal-body" class="guide-modal-body"></div>
-      </div>
-    </div>
   </div>
 
-  <script src="guide-content.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

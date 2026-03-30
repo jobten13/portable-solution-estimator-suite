@@ -129,68 +129,6 @@
     return div.innerHTML;
   }
 
-  function simpleMarkdownToHtml(md) {
-    if (!md || typeof md !== 'string') return '';
-    function inline(s) {
-      return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>');
-    }
-    const lines = md.split(/\r?\n/);
-    const out = [];
-    let inTable = false;
-    let inList = false;
-    for (let i = 0; i < lines.length; i++) {
-      const raw = lines[i];
-      const trimmed = raw.trim();
-      if (trimmed === '' || trimmed === '---') {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<p></p>');
-        continue;
-      }
-      if (trimmed.startsWith('### ')) {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<h3>' + inline(trimmed.slice(4)) + '</h3>');
-        continue;
-      }
-      if (trimmed.startsWith('## ')) {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<h2>' + inline(trimmed.slice(3)) + '</h2>');
-        continue;
-      }
-      if (trimmed.startsWith('# ')) {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<h1>' + inline(trimmed.slice(2)) + '</h1>');
-        continue;
-      }
-      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-        if (inTable) { /* same table */ } else { out.push('<table class="guide-table">'); inTable = true; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        const cells = trimmed.slice(1, -1).split('|').map(c => c.trim());
-        const isSep = cells.every(c => /^[-:]+$/.test(c));
-        if (!isSep) {
-          const lastTr = out[out.length - 1] && out[out.length - 1].startsWith('<tr');
-          const tag = !lastTr ? 'th' : 'td';
-          out.push('<tr>' + cells.map(c => '<' + tag + '>' + inline(c) + '</' + tag + '>').join('') + '</tr>');
-        }
-        continue;
-      }
-      if (inTable) { out.push('</table>'); inTable = false; }
-      if (trimmed.startsWith('- ')) {
-        if (!inList) { out.push('<ul>'); inList = true; }
-        out.push('<li>' + inline(trimmed.slice(2)) + '</li>');
-        continue;
-      }
-      if (inList) { out.push('</ul>'); inList = false; }
-      out.push('<p>' + inline(trimmed) + '</p>');
-    }
-    if (inTable) out.push('</table>');
-    if (inList) out.push('</ul>');
-    return out.join('');
-  }
-
   // --- Input validation ---
   const SIDEBAR_RULES = {
     'gen-capacity': { min: 0, max: 100000, message: 'Generator capacity must be between 0 and 100,000 kW' },
@@ -318,7 +256,19 @@
     }
     try {
       const date = new Date(tsIsoString);
-      el.textContent = isNaN(date.getTime()) ? '' : 'Last autosaved: ' + date.toLocaleString();
+      if (isNaN(date.getTime())) {
+        el.textContent = '';
+        return;
+      }
+      const mo = date.getMonth() + 1;
+      const day = date.getDate();
+      const h24 = date.getHours();
+      const min = date.getMinutes();
+      const ampm = h24 >= 12 ? 'PM' : 'AM';
+      let h12 = h24 % 12;
+      if (h12 === 0) h12 = 12;
+      const mm = min < 10 ? '0' + min : String(min);
+      el.textContent = `Autosaved: ${mo}/${day} ${h12}:${mm} ${ampm}`;
     } catch (e) {
       el.textContent = '';
     }
@@ -466,16 +416,19 @@
       showToast('Could not restore autosave.', 'error', 2500);
       return;
     }
-    showToast('Restored last autosave.', 'success', 2500);
+    showToast('Restored worksheet from autosave.', 'success', 2500);
   }
 
   function showToast(message, type = 'info', duration = 3000) {
-    let container = document.getElementById('toast-container');
+    const host =
+      document.getElementById('panel-load-calc') ||
+      document.querySelector('.load-basic-calc') ||
+      document.body;
+    let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
-      container.id = 'toast-container';
       container.className = 'toast-container';
-      document.body.appendChild(container);
+      host.appendChild(container);
     }
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -490,14 +443,14 @@
     }, duration);
   }
 
-  function acknowledgeClick(btn, text, duration = 1000) {
+  function acknowledgeClick(btn, text, duration = 1500) {
+    if (!btn) return;
     const origText = btn.textContent.trim();
-    const origClass = btn.className;
     btn.textContent = text;
-    btn.className = `${origClass.replace(/\s*btn-\w+/g, '')} btn-primary`;
+    btn.classList.add('btn-success');
     setTimeout(() => {
       btn.textContent = origText;
-      btn.className = origClass;
+      btn.classList.remove('btn-success');
     }, duration);
   }
 
@@ -827,6 +780,14 @@
     filterEquipmentSearch();
   }
 
+  function syncScenarioSelectTitle() {
+    const sel = $(id('scenario-select'));
+    if (!sel) return;
+    const opt = sel.selectedOptions && sel.selectedOptions[0];
+    const text = opt ? String(opt.textContent || '').trim() : '';
+    sel.title = text;
+  }
+
   function populateScenarioSelect() {
     const sel = $(id('scenario-select'));
     if (!sel) return;
@@ -852,6 +813,7 @@
     if (btnLoad) btnLoad.disabled = disabled;
     if (btnDelete) btnDelete.disabled = disabled;
     if (btnClear) btnClear.disabled = disabled;
+    syncScenarioSelectTitle();
   }
 
   function onPrint() {
@@ -990,7 +952,6 @@
     updateAutosaveTimestampDisplay(scenario.savedAt || '');
     updateSavedDisplay(scenario.savedAt || null);
     acknowledgeClick($(id('btn-load')), 'Loaded!', 1500);
-    showToast(`Scenario loaded: ${scenario.displayName}`, 'success', 2500);
     loadAutosaveDirty = false;
     scenarioLoadGuardDirty = false;
     saveWorksheetState();
@@ -1167,6 +1128,16 @@
     URL.revokeObjectURL(a.href);
   }
 
+  function acknowledgeImportButton(text) {
+    const btn = $(id('btn-import'));
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = text;
+    setTimeout(() => {
+      btn.textContent = orig;
+    }, 1500);
+  }
+
   function onScenarioFileSelected(ev) {
     const file = ev.target && ev.target.files[0];
     if (!file) return;
@@ -1175,8 +1146,14 @@
     reader.onload = () => {
       try {
         const issues = [];
-        const json = JSON.parse(reader.result);
-        const state = json.state || json.data || json;
+        const parsed = JSON.parse(reader.result);
+        const rootPayload =
+          parsed && typeof parsed === 'object' &&
+          Object.prototype.hasOwnProperty.call(parsed, 'data') &&
+          parsed.data != null && typeof parsed.data === 'object' && !Array.isArray(parsed.data)
+            ? parsed.data
+            : parsed;
+        const state = rootPayload.state || rootPayload.data || rootPayload;
         let data = null;
         if (state.data) {
           data = state.data;
@@ -1190,7 +1167,7 @@
         if (data) {
           const sanitized = sanitizeImportedScenarioData(data, issues);
           if (!sanitized) {
-            showToast('File does not contain a valid scenario', 'warning', 3000);
+            acknowledgeImportButton('Invalid file');
             ev.target.value = '';
             return;
           }
@@ -1203,23 +1180,23 @@
           calculateLoad();
           if (issues.length > 0) {
             downloadImportIssueReport(sourceFileName, issues);
-            showToast(`Imported with ${issues.length} data issue(s). Report downloaded for review/printing.`, 'warning', 5000);
+            acknowledgeImportButton(`Imported (${issues.length} issue${issues.length === 1 ? '' : 's'})`);
           } else {
-            showToast('Scenario imported and applied', 'success', 3000);
+            acknowledgeImportButton('Imported!');
           }
           loadAutosaveDirty = false;
           scenarioLoadGuardDirty = false;
           saveWorksheetState();
         } else {
-          showToast('File does not contain a valid scenario', 'warning', 3000);
+          acknowledgeImportButton('Invalid file');
         }
       } catch (e) {
-        showToast(`Import failed: ${e.message || 'Invalid or corrupted file.'} Use a scenario JSON exported from this calculator.`, 'error', 4000);
+        acknowledgeImportButton('Invalid file');
       }
       ev.target.value = '';
     };
     reader.onerror = () => {
-      showToast('Error reading file. Please try again or choose a different file.', 'error', 4000);
+      acknowledgeImportButton('Invalid file');
       ev.target.value = '';
     };
     reader.readAsText(file);
@@ -1276,12 +1253,10 @@
     if (format === 'CSV') {
       const csv = buildCsvExport(data);
       downloadTextFile(csv, 'text/csv;charset=utf-8', 'load-calculator-basic-export.csv');
-      showToast('Scenario exported as CSV', 'success', 2000);
       return;
     }
     const payload = { data, exportedAt: new Date().toISOString() };
     downloadTextFile(JSON.stringify(payload, null, 2), 'application/json', 'load-calculator-basic-scenario.json');
-    showToast('Scenario exported', 'success', 2000);
   }
 
   function closeExportFormatDialog() {
@@ -1450,6 +1425,22 @@
     tryAutosaveOnBlur();
   }
 
+  function onExportFormatConfirm() {
+    const selected = document.querySelector('#' + PREFIX + 'export-format-dialog input[name="' + PREFIX + 'export-format"]:checked');
+    const fmt = selected ? selected.value : 'JSON';
+    performExportWithFormat(fmt);
+    closeExportFormatDialog();
+  }
+
+  function closeExportOnOverlayClick(e) {
+    const dialog = document.getElementById(PREFIX + 'export-format-dialog');
+    if (e.target === dialog) closeExportFormatDialog();
+  }
+
+  function onScenarioMetaChange() {
+    notifyWorksheetChanged();
+  }
+
   function attachListeners() {
     $$('[data-reset-target]').forEach(btn => {
       btn.removeEventListener('click', onResetCategory);
@@ -1502,57 +1493,22 @@
     const btnClearAutosave = $(id('btn-clear-autosave'));
     const fileInput = $(id('scenario-file-input'));
     if (btnPrint) { btnPrint.removeEventListener('click', onPrint); btnPrint.addEventListener('click', onPrint); }
-    const guideOverlay = document.getElementById(PREFIX + 'guide-modal-overlay');
-    const guideBody = document.getElementById(PREFIX + 'guide-modal-body');
-    function openGuide() {
-      if (!guideOverlay || !guideBody) return;
-      if (guideBody.innerHTML === '') {
-        const embedded = typeof window.LOAD_CALC_BASIC_GUIDE_MARKDOWN === 'string' && window.LOAD_CALC_BASIC_GUIDE_MARKDOWN.length > 0;
-        if (embedded) {
-          guideBody.innerHTML = simpleMarkdownToHtml(window.LOAD_CALC_BASIC_GUIDE_MARKDOWN);
-        } else {
-          guideBody.innerHTML = '<p class="guide-loading">Loading…</p>';
-          fetch('README.md').then(r => r.text()).then(md => {
-            guideBody.innerHTML = simpleMarkdownToHtml(md);
-          }).catch(() => {
-            guideBody.innerHTML = '<p>User guide could not be loaded. Open README.md from this folder if needed.</p>';
-          });
-        }
-      }
-      guideOverlay.hidden = false;
-      guideOverlay.setAttribute('aria-hidden', 'false');
-    }
-    const btnGuide = document.getElementById(PREFIX + 'guide-btn');
-    if (btnGuide) { btnGuide.removeEventListener('click', openGuide); btnGuide.addEventListener('click', openGuide); }
-    function closeGuide() {
-      if (guideOverlay) { guideOverlay.hidden = true; guideOverlay.setAttribute('aria-hidden', 'true'); }
-    }
-    const guideClose = document.getElementById(PREFIX + 'guide-modal-close');
-    if (guideClose) { guideClose.removeEventListener('click', closeGuide); guideClose.addEventListener('click', closeGuide); }
-    function closeGuideOnOverlayClick(e) {
-      if (e.target === guideOverlay) { guideOverlay.hidden = true; guideOverlay.setAttribute('aria-hidden', 'true'); }
-    }
-    if (guideOverlay) {
-      guideOverlay.removeEventListener('click', closeGuideOnOverlayClick);
-      guideOverlay.addEventListener('click', closeGuideOnOverlayClick);
-    }
     if (btnReset) { btnReset.removeEventListener('click', onResetQuantities); btnReset.addEventListener('click', onResetQuantities); }
     if (btnFull) { btnFull.removeEventListener('click', onFullReset); btnFull.addEventListener('click', onFullReset); }
     if (btnSave) { btnSave.removeEventListener('click', onSave); btnSave.addEventListener('click', onSave); }
     if (btnLoad) { btnLoad.removeEventListener('click', onLoad); btnLoad.addEventListener('click', onLoad); }
     if (btnDeleteScen) { btnDeleteScen.removeEventListener('click', onDeleteScenario); btnDeleteScen.addEventListener('click', onDeleteScenario); }
     if (btnClearScen) { btnClearScen.removeEventListener('click', onClearAllScenarios); btnClearScen.addEventListener('click', onClearAllScenarios); }
+    const selScenario = $(id('scenario-select'));
+    if (selScenario) {
+      selScenario.removeEventListener('change', syncScenarioSelectTitle);
+      selScenario.addEventListener('change', syncScenarioSelectTitle);
+    }
     if (btnImport) { btnImport.removeEventListener('click', onImportFromFile); btnImport.addEventListener('click', onImportFromFile); }
     if (btnExport) { btnExport.removeEventListener('click', onExportToFile); btnExport.addEventListener('click', onExportToFile); }
     const exportFormatDialog = document.getElementById(PREFIX + 'export-format-dialog');
     const exportFormatConfirm = document.getElementById(PREFIX + 'export-format-confirm');
     const exportFormatCancel = document.getElementById(PREFIX + 'export-format-cancel');
-    function onExportFormatConfirm() {
-      const selected = document.querySelector('#' + PREFIX + 'export-format-dialog input[name="' + PREFIX + 'export-format"]:checked');
-      const fmt = selected ? selected.value : 'JSON';
-      performExportWithFormat(fmt);
-      closeExportFormatDialog();
-    }
     if (exportFormatConfirm) {
       exportFormatConfirm.removeEventListener('click', onExportFormatConfirm);
       exportFormatConfirm.addEventListener('click', onExportFormatConfirm);
@@ -1560,9 +1516,6 @@
     if (exportFormatCancel) {
       exportFormatCancel.removeEventListener('click', closeExportFormatDialog);
       exportFormatCancel.addEventListener('click', closeExportFormatDialog);
-    }
-    function closeExportOnOverlayClick(e) {
-      if (e.target === exportFormatDialog) closeExportFormatDialog();
     }
     if (exportFormatDialog) {
       exportFormatDialog.removeEventListener('click', closeExportOnOverlayClick);
@@ -1582,9 +1535,6 @@
     }
     const scenName = $(id('scenario-name'));
     const scenNotes = $(id('scenario-notes'));
-    function onScenarioMetaChange() {
-      notifyWorksheetChanged();
-    }
     if (scenName) {
       scenName.removeEventListener('input', onScenarioMetaChange);
       scenName.addEventListener('input', onScenarioMetaChange);

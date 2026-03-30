@@ -78,7 +78,7 @@
   font-size: 0.85em;
 }
 
-.load-pro-calc .toolbar #clear-autosave-btn {
+.load-pro-calc .toolbar #btn-clear-autosave {
   margin-right: 0;
 }
 
@@ -90,11 +90,53 @@
   margin-right: auto;
 }
 
+/* Toast */
+.load-pro-calc .toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.load-pro-calc .toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #fff;
+  min-width: 200px;
+  max-width: 300px;
+  animation: toast-in 0.3s ease-out;
+}
+
+.load-pro-calc .toast-success { background: #22c55e; }
+.load-pro-calc .toast-info { background: #3b82f6; }
+.load-pro-calc .toast-warning { background: #f59e0b; }
+.load-pro-calc .toast-error { background: #dc2626; }
+
+.load-pro-calc .toast.fade-out { animation: toast-out 0.3s ease-in forwards; }
+
+@keyframes toast-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toast-out {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
 .load-pro-calc .load-scenario-group {
   display: flex;
   gap: 6px;
   flex-wrap: nowrap;
   align-items: center;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 .load-pro-calc .scenario-select {
@@ -102,7 +144,13 @@
   border: 2px solid #e5e7eb;
   border-radius: 6px;
   font-size: 0.85em;
-  min-width: 170px;
+  box-sizing: border-box;
+  min-width: min(120px, 100%);
+  max-width: min(280px, 100%);
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: white;
 }
 
@@ -504,6 +552,9 @@
 .load-pro-calc .help-popover ul { margin: 0; padding-left: 1.2em; }
 .load-pro-calc .help-popover li { margin-bottom: 6px; }
 .load-pro-calc .help-popover li:last-child { margin-bottom: 0; }
+.load-pro-calc .toolbar-wrap > .help-popover {
+  margin-top: 8px;
+}
 
 /* Cards */
 .load-pro-calc .card {
@@ -622,57 +673,6 @@
 .load-pro-calc .autosave-timestamp { margin-top: 6px; font-size: 0.8rem; color: #6b7280; }
 .load-pro-calc .version-label { display: block; font-size: 0.75em; color: #d1d5db; margin-top: 4px; text-align: center; }
 
-/* Guide modal (README rendered as HTML in-page) */
-.load-pro-calc .guide-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 16px;
-}
-.load-pro-calc .guide-modal-overlay[hidden] { display: none !important; }
-.load-pro-calc .guide-modal-panel {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-.load-pro-calc .guide-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid #e5e7eb;
-  flex-shrink: 0;
-}
-.load-pro-calc .guide-modal-title { font-weight: 600; font-size: 1rem; }
-.load-pro-calc .guide-modal-close { flex-shrink: 0; }
-.load-pro-calc .guide-modal-body {
-  flex: 1;
-  overflow: auto;
-  padding: 16px 20px;
-  min-height: 200px;
-  border-radius: 0 0 8px 8px;
-}
-.load-pro-calc .guide-modal-body .guide-loading { color: #6b7280; }
-.load-pro-calc .guide-modal-body h1 { font-size: 1.35rem; margin: 0 0 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
-.load-pro-calc .guide-modal-body h2 { font-size: 1.15rem; margin: 1em 0 0.35em; }
-.load-pro-calc .guide-modal-body h3 { font-size: 1rem; margin: 0.85em 0 0.25em; }
-.load-pro-calc .guide-modal-body p { margin: 0 0 0.5em; line-height: 1.5; }
-.load-pro-calc .guide-modal-body ul { margin: 0.25em 0 0.75em; padding-left: 1.25em; }
-.load-pro-calc .guide-modal-body li { margin-bottom: 0.25em; }
-.load-pro-calc .guide-modal-body table.guide-table { width: 100%; border-collapse: collapse; margin: 0.5em 0 1em; font-size: 0.9em; }
-.load-pro-calc .guide-modal-body table.guide-table th,
-.load-pro-calc .guide-modal-body table.guide-table td { border: 1px solid #e5e7eb; padding: 6px 10px; text-align: left; }
-.load-pro-calc .guide-modal-body table.guide-table th { background: #f3f4f6; font-weight: 600; }
-
 /* Export format dialog (radio choice) */
 .load-pro-calc .export-format-dialog {
   position: fixed;
@@ -755,7 +755,7 @@
     padding: 10px 12px 14px;
   }
   .print-timestamp { display: block !important; }
-  .load-pro-calc .toolbar-wrap, .load-pro-calc .toolbar, .load-pro-calc .scenario-actions, .load-pro-calc .scenario-storage-note, .load-pro-calc .sort-bar, .load-pro-calc .search-wrap, .load-pro-calc .disclaimer, .load-pro-calc .note, .load-pro-calc .category-actions, .load-pro-calc .col-delete, .load-pro-calc .custom-form, .load-pro-calc .btn-icon, .load-pro-calc .help-icon, .load-pro-calc .help-popover, .load-pro-calc .guide-modal-overlay, .load-pro-calc .export-format-dialog { display: none !important; }
+  .load-pro-calc .toolbar-wrap, .load-pro-calc .toolbar, .load-pro-calc .scenario-actions, .load-pro-calc .scenario-storage-note, .load-pro-calc .sort-bar, .load-pro-calc .search-wrap, .load-pro-calc .disclaimer, .load-pro-calc .note, .load-pro-calc .category-actions, .load-pro-calc .col-delete, .load-pro-calc .custom-form, .load-pro-calc .btn-icon, .load-pro-calc .help-icon, .load-pro-calc .help-popover, .load-pro-calc .export-format-dialog, .load-pro-calc .toast-container { display: none !important; }
   /* Slightly condense Scenarios on print (no content truncation). */
   .load-pro-calc .scenario-section {
     display: block !important;
@@ -900,5 +900,20 @@
     page-break-inside: avoid;
     break-inside: avoid;
   }
+
+  /* Print: white section/card backgrounds (toner) — match Consumables */
+  .load-pro-calc .scenario-section,
+  .calc-app .scenario-section,
+  .load-pro-calc .card,
+  .load-pro-calc .summary-card,
+  .load-pro-calc .capacity-card,
+  .load-pro-calc .runtime-card,
+  .calc-app .card,
+  .load-pro-calc .category,
+  .calc-app .category {
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
   .load-pro-calc .category.collapsed .category-body { display: block !important; }
 }

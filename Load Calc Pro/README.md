@@ -19,7 +19,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 ## Functionality
 
 ### Equipment categories and table
-- **Categories:** Standard Medical, Emergency/Critical, Office & IT, HVAC/Hygiene/Work Lights (data-driven from equipment-data).
+- **Categories:** Standard Medical, Emergency/Critical, Office & IT, HVAC, Hygiene Pumps, Work Lights (data-driven from equipment-data).
 - **Per row:** Item name, **Qty**, **kW each**, **PF**, kW total, kVA Peak. Editable kW and PF; quantity drives totals.
 - **Search** — Filter equipment by name (live filter). Sidebar shows all-items totals plus filtered-view subtotals (kW and kVA) when search is active.
 - **Sort** — Name A–Z/Z–A, kW High/Low, kVA Peak High/Low (persisted in localStorage).
@@ -41,9 +41,9 @@ Open `index.html` in a modern browser. No server required. Works offline.
 - **Save scenario** — Saves current equipment quantities, kW/PF, custom rows, and sidebar inputs (kVA, fuel, rate) to browser storage. Validation must pass for key inputs before saving.
 - **Load / Delete / Clear all** — Restore or remove saved scenarios from dropdown.
 - **Import from file / Export to file** — Export format: JSON (backup/re-import) or CSV (human-readable report). Import accepts JSON scenario files.
-- **Worksheet autosave/restore** — In-progress worksheet state autosaves in this browser and restores on reopen.
-- **Clear Autosaved State** (toolbar) — Removes worksheet autosave data only; named saved scenarios remain.
-- **Last autosaved** (toolbar) — Shows the timestamp of the most recent worksheet autosave in this browser.
+- **Worksheet autosave** — In-progress worksheet state is saved to a **recovery slot** in this browser while you work. The page does **not** auto-restore that slot on open; use **Restore Autosave** when you want to recover the last autosaved state.
+- **Restore Autosave** (toolbar) — Grey (**secondary**) button. Restores worksheet state from the autosave recovery slot. Named saved scenarios remain.
+- **Autosaved:** (toolbar) — Text next to Restore Autosave when a timestamp exists. Format: **Autosaved: M/D h:mm AM/PM** (no year, no seconds). Empty when there is nothing to show.
 
 ### Validation and UX
 - **Input validation** — Sidebar (available kVA, fuel capacity, fuel rate) and table inputs (qty, kW, PF) validated on blur with red border and inline message. Save blocked when errors exist.
@@ -87,8 +87,8 @@ Open `index.html` in a modern browser. No server required. Works offline.
 
 ## UX/UI design
 
-- **Layout:** Banner → Toolbar (Clear Autosaved State, Last autosaved, Print, Reset Quantities, Reset Worksheet) → Scenarios → Sort bar → Search bar → Table note → Main grid (categories column + sidebar). Sidebar: load summary, generator capacity check, fuel & runtime.
-- **Suite alignment:** Same banner, scenario block pattern, and button roles (Print blue, Save/Load green, Delete amber, Clear red, Secondary gray). Collapsible categories; status pills for capacity.
+- **Layout:** Banner → Toolbar (**Restore Autosave**, **Autosaved:** timestamp, Print, User guide, Reset Quantities, Reset Worksheet) → Scenarios → Sort bar → Search bar → Table note → Main grid (categories column + sidebar). Sidebar: load summary, generator capacity check, fuel & runtime.
+- **Suite alignment:** Same banner, scenario block pattern, and button roles (Print blue, Save/Load green, Delete amber, Clear red, **Restore Autosave** and Import/Export as grey secondary). Collapsible categories; status pills for capacity.
 - **Files:** `index.html`, `styles.css`, `script.js`, `equipment-data.js`, `UNIFIED_UX_SPEC.md` (suite style guide).
 
 ---
@@ -101,6 +101,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 | `script.js` | Build tables from equipment data, recalc, validation, scenarios, search filter, sort. |
 | `styles.css` | Layout, cards, table, validation and placeholder styles, print. |
 | `equipment-data.js` | `LOAD_CALC_PRO_EQUIPMENT` — categories and items (name, kw, pf). |
+| `guide-content.js` | Embedded user guide markdown for the in-app User guide modal. |
 | `UNIFIED_UX_SPEC.md` | Unified UX/UI spec for the calculator suite. |
 
 ---
@@ -118,7 +119,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 - **Scenarios help** explains save/load/delete/clear/import/export (including export format: JSON or CSV) and scenario naming guidance.
 - **Equipment list help** (next to Sort) explains list focus tools and filtered-view subtotal behavior.
 - **Summary/capacity/fuel helps** clarify all-items calculation basis and planning assumptions.
-- **Toolbar buttons** (Print, User guide, Reset Quantities, Reset Worksheet, Clear Autosaved State) and **Import/Export** have tooltips describing what each does.
+- **Toolbar buttons** (Print, User guide, Reset Quantities, Reset Worksheet, **Restore Autosave**) and **Import/Export** have tooltips describing what each does.
 
 ---
 

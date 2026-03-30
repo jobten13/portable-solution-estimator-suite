@@ -57,7 +57,7 @@
   font-size: 0.85em;
 }
 
-.water-calc .toolbar #btn-clear-autosave {
+.water-calc .toolbar #water-btn-clear-autosave {
   margin-right: 0;
 }
 
@@ -202,6 +202,10 @@
 
 .water-calc .help-popover li:last-child {
   margin-bottom: 0;
+}
+
+.water-calc .toolbar-wrap > .help-popover {
+  margin-top: 8px;
 }
 
 .water-calc .section-note {
@@ -502,6 +506,8 @@
   gap: 6px;
   flex-wrap: nowrap;
   align-items: center;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 .water-calc .scenario-select {
@@ -509,7 +515,13 @@
   border: 2px solid #e5e7eb;
   border-radius: 6px;
   font-size: 0.85em;
-  min-width: 170px;
+  box-sizing: border-box;
+  min-width: min(120px, 100%);
+  max-width: min(280px, 100%);
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   background: white;
 }
 
@@ -549,6 +561,11 @@
 .water-calc .btn-load:hover {
   background: #059669;
   color: white;
+}
+
+.water-calc .btn-success {
+  background: #10b981;
+  color: #fff;
 }
 
 /* Delete / Reset: amber */
@@ -805,6 +822,15 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     margin-top: auto;
+  }
+
+  /* Print: white section/card backgrounds (toner) — match Consumables */
+  .water-calc section.section,
+  .water-calc .bladder-card,
+  .water-calc .result-card,
+  .water-calc .results-grid {
+    background: #fff !important;
+    box-shadow: none !important;
   }
 }
 

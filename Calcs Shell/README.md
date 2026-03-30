@@ -14,7 +14,7 @@ Single app shell for the five calculators: Consumables, Pharmaceuticals, Water, 
 | Load Pro | **Integrated** | HTML in panel, load-pro- prefixed IDs; ROOT/PREFIX, g(), ROOT_OR_DOC; toast load-pro-toast-container; help popovers and guide modal scoped; Pro styles.css, guide-content.js, equipment-data.js, script.js linked. |
 | Water | **Integrated** | HTML in panel, water- prefixed IDs; Water CSS/JS + water-data.js linked; script has ROOT, PREFIX, g() prefix-aware; toast (water-toast-container), help, export, unit labels scoped to ROOT. |
 | Consumables | **Integrated** | HTML in panel, cons- IDs throughout; ROOT + g() scoped when in shell; help popovers cons-help-popover-*, toast cons-toast-container; consumables-lists.js + consumables.js linked. |
-| Pharmaceuticals | **Integrated** | HTML in panel, meds- prefixed IDs; ROOT/PREFIX, g() prefix-aware; help popovers meds-help-popover-*, toast meds-toast-container; Medicines styles.css, pharma-lists.js, script.js linked. |
+| Pharmaceuticals | **Integrated** | HTML in panel, meds- prefixed IDs; ROOT/PREFIX, g() prefix-aware; help popovers meds-help-popover-*, toast meds-toast-container; Medicines styles.css, medications-data.js, script.js linked. |
 
 ---
 
@@ -24,13 +24,13 @@ Single app shell for the five calculators: Consumables, Pharmaceuticals, Water, 
 - **shell.js** – Panel switching; URL hash sync (`#consumables`, `#medicines`, `#water`, `#load-basic`, `#load-pro`); default panel Consumables; `window.ShellAPI = { showToast }`.
 - **shell.css** – Shell-only styles (header, nav, panels, footer, toast). Includes shared `.btn-ucd` (UC Davis blue/gold) for Consumables and Pharmaceuticals. Calc styles are loaded separately and scoped per panel.
 - **`../version.json`** (Calcs Final root) – Suite version and changelog (see [Version control](#version-control)).
-- **`../version-control.js`** – Loads `version.json` and sets `#shell-version` and `[data-suite-version]` spans.
+- **`../version-control.js`** – Loads `version.json` and updates `meta[name="suite-version"]` and all `[data-suite-version]` elements.
 
 ## How to run
 
-Open **index.html** in a browser from the folder that contains both **Calcs Shell** and **RestorePoints** (the project root), so relative paths to Load Calc Basic assets resolve. Use the nav to switch panels. The URL hash updates so you can bookmark or share a specific calc.
+Open **Calcs Shell/index.html** in Chrome or Edge. Use the nav buttons to switch between calculators. The URL hash updates so you can bookmark a specific calc.
 
-**Operator note — three preservation paths:** Toolbar **Restore last autosave** (browser recovery slot for the current sheet), **Save / Load Scenario** (named list in this browser), and **Export / Import** (files on disk — export does not add a scenario row by itself). See **`../README.md`** and **`../PROJECT_TRACKER.md`** (*Suite concepts*).
+**Operator note — three preservation paths:** Toolbar **Restore Autosave** (grey; restores the browser recovery slot for the current sheet) with **Autosaved: M/D h:mm AM/PM** when a timestamp exists, **Save / Load Scenario** (named list in this browser), and **Export / Import** (files on disk — export does not add a scenario row by itself). See **`../README.md`** and **`../PROJECT_TRACKER.md`** (*Suite concepts*).
 
 ## Version control
 
@@ -59,8 +59,8 @@ Only one panel is visible at a time. Each panel has a class for CSS scoping (e.g
 
 ## UCD list data (discrete scripts)
 
-- **Consumables** UCD buttons (“UCD Ward List”, “UCD ICU List”) use **Consumables Calc/consumables-lists.js** only (`UCD_WARD_ITEMS`, `UCD_ICU_ITEMS`).
-- **Pharmaceuticals** UCD buttons (“UCD Ward Meds”, “UCD ICU Meds”) use **Medicines Calc/pharma-lists.js** only (`PHARMA_ITEMS`, `PHARMA_ITEMS_SECONDARY`).
+- **Consumables** Ward/ICU buttons (“Ward Consumables”, “ICU Consumables”) use **Consumables Calc/consumables-lists.js** only (`UCD_WARD_ITEMS`, `UCD_ICU_ITEMS`).
+- **Pharmaceuticals** Ward/ICU buttons (“Ward Meds”, “ICU Meds”) use **Medicines Calc/medications-data.js** only (`PHARMA_ITEMS`, `PHARMA_ITEMS_SECONDARY`).
 - Each calc loads its own list script; there is no shared list file between Consumables and Pharmaceuticals.
 - UCD list buttons are styled in **UC Davis blue/gold** via the `.btn-ucd` class. In the shell, `.btn-ucd` is defined once in **shell.css** (shared by Consumables and Pharmaceuticals); RestorePoint calc styles may also define it for standalone use’s.
 

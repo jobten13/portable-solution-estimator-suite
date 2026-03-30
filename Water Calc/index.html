@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="app-version" content="1.0.1">
+  <meta name="app-version" content="1.1.2">
   <meta name="suite-version" content="">
   <title>Field Hospital Calculator - Water Requirements</title>
   <link rel="stylesheet" href="styles.css">
@@ -18,10 +18,20 @@
 
     <div class="toolbar-wrap">
       <div class="toolbar">
-        <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Load the last autosaved worksheet from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore last autosave</button>
+        <button type="button" id="water-btn-clear-autosave" class="btn btn-secondary" title="Restore the worksheet autosave from this browser. Opening the calc always starts fresh; use this to recover unsaved work.">Restore Autosave</button>
         <span id="water-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
         <button type="button" class="btn btn-print" id="water-print-btn" title="Print the current view.">Print</button>
         <button type="button" class="btn btn-clear" id="water-reset-btn" title="Reset all inputs, unit, and modes to baseline values.">Reset to Defaults</button>
+        <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-toolbar" role="tooltip" hidden>
+        <ul>
+          <li><strong>Restore Autosave</strong> — recovers the last autosaved worksheet for this browser (after refresh).</li>
+          <li><strong>Autosaved:</strong> line — when the recovery slot was last updated (not the named scenario list).</li>
+          <li><strong>Print</strong> — prints the current water worksheet view.</li>
+          <li><strong>Reset to Defaults</strong> — restores baseline inputs, unit, and modes; save your scenario first if you need to keep the current setup.</li>
+          <li>For scenarios, deployment, and results: use the <strong>?</strong> next to each section below.</li>
+        </ul>
       </div>
     </div>
 
@@ -37,7 +47,7 @@
             <li>Use a clear scenario name and notes so others can quickly understand assumptions.</li>
             <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
           <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
-          <li><strong>Toolbar “Worksheet autosaved”</strong> is recovery data for the open worksheet. <strong>Restore last autosave</strong> reloads it after a refresh. Use <strong>Restore</strong> before editing if you need the previous session.</li>
+          <li>The toolbar <strong>Autosaved:</strong> line shows when the worksheet was last autosaved (format <strong>Autosaved: M/D h:mm AM/PM</strong>). <strong>Restore Autosave</strong> reloads that recovery data after a refresh. Use it before editing if you need the previous session.</li>
           <li>The line under scenario name refers to the <strong>named scenario list</strong> only — not the same time as worksheet autosave.</li>
         </ul>
         </div>
@@ -267,7 +277,7 @@
       </section>
     </div>
     <footer class="disclaimer">
-      <span class="version-label" data-suite-version></span> · <span class="version-label" id="water-version-info">Version 1.0.1</span>
+      <span class="version-label" data-suite-version></span> · <span class="version-label" id="water-version-info">Version 1.1.2</span>
     </footer>
   </div>
 

@@ -21,72 +21,15 @@
   const $ = (sel, root) => (root || PRO_ROOT).querySelector(sel);
   const $$ = (sel, root) => Array.from((root || PRO_ROOT).querySelectorAll(sel));
 
+  /** Shell: `#load-pro-scenario-select`; standalone HTML: `#scenario-select`. */
+  function getScenarioSelectEl() {
+    return $('#load-pro-scenario-select') || $('#scenario-select');
+  }
+
   function escapeHtml(s) {
     const div = document.createElement('div');
     div.textContent = s;
     return div.innerHTML;
-  }
-
-  function simpleMarkdownToHtml(md) {
-    if (!md || typeof md !== 'string') return '';
-    function inline(s) {
-      return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>');
-    }
-    const lines = md.split(/\r?\n/);
-    const out = [];
-    let inTable = false;
-    let inList = false;
-    for (let i = 0; i < lines.length; i++) {
-      const raw = lines[i];
-      const trimmed = raw.trim();
-      if (trimmed === '' || trimmed === '---') {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<p></p>');
-        continue;
-      }
-      if (trimmed.startsWith('### ')) {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<h3>' + inline(trimmed.slice(4)) + '</h3>');
-        continue;
-      }
-      if (trimmed.startsWith('## ')) {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<h2>' + inline(trimmed.slice(3)) + '</h2>');
-        continue;
-      }
-      if (trimmed.startsWith('# ')) {
-        if (inTable) { out.push('</table>'); inTable = false; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        out.push('<h1>' + inline(trimmed.slice(2)) + '</h1>');
-        continue;
-      }
-      if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
-        if (inTable) { /* same table */ } else { out.push('<table class="guide-table">'); inTable = true; }
-        if (inList) { out.push('</ul>'); inList = false; }
-        const cells = trimmed.slice(1, -1).split('|').map(c => c.trim());
-        const isSep = cells.every(c => /^[-:]+$/.test(c));
-        if (!isSep) {
-          const lastTr = out[out.length - 1] && out[out.length - 1].startsWith('<tr');
-          const tag = !lastTr ? 'th' : 'td';
-          out.push('<tr>' + cells.map(c => '<' + tag + '>' + inline(c) + '</' + tag + '>').join('') + '</tr>');
-        }
-        continue;
-      }
-      if (inTable) { out.push('</table>'); inTable = false; }
-      if (trimmed.startsWith('- ')) {
-        if (!inList) { out.push('<ul>'); inList = true; }
-        out.push('<li>' + inline(trimmed.slice(2)) + '</li>');
-        continue;
-      }
-      if (inList) { out.push('</ul>'); inList = false; }
-      out.push('<p>' + inline(trimmed) + '</p>');
-    }
-    if (inTable) out.push('</table>');
-    if (inList) out.push('</ul>');
-    return out.join('');
   }
 
   function formatNum(n, decimals = 2) {
@@ -720,7 +663,19 @@
     }
     try {
       const date = new Date(tsIsoString);
-      el.textContent = isNaN(date.getTime()) ? '' : 'Last autosaved: ' + date.toLocaleString();
+      if (isNaN(date.getTime())) {
+        el.textContent = '';
+        return;
+      }
+      const mo = date.getMonth() + 1;
+      const day = date.getDate();
+      const h24 = date.getHours();
+      const min = date.getMinutes();
+      const ampm = h24 >= 12 ? 'PM' : 'AM';
+      let h12 = h24 % 12;
+      if (h12 === 0) h12 = 12;
+      const mm = min < 10 ? '0' + min : String(min);
+      el.textContent = `Autosaved: ${mo}/${day} ${h12}:${mm} ${ampm}`;
     } catch (e) {
       el.textContent = '';
     }
@@ -791,12 +746,15 @@
   }
 
   function showToast(message, type = 'info', duration = 3000) {
-    let container = document.getElementById('toast-container');
+    const host =
+      document.querySelector('#panel-load-pro .calc-app') ||
+      document.querySelector('.load-pro-calc') ||
+      document.body;
+    let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
-      container.id = 'toast-container';
       container.className = 'toast-container';
-      document.body.appendChild(container);
+      host.appendChild(container);
     }
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
@@ -912,8 +870,16 @@
     } catch (e) { return []; }
   }
 
+  function syncScenarioSelectTitle() {
+    const select = getScenarioSelectEl();
+    if (!select) return;
+    const opt = select.selectedOptions && select.selectedOptions[0];
+    const text = opt ? String(opt.textContent || '').trim() : '';
+    select.title = text;
+  }
+
   function updateScenarioDropdown() {
-    const select = $('#load-pro-scenario-select');
+    const select = getScenarioSelectEl();
     if (!select) return;
     const scenarios = getSavedScenarios();
     if (scenarios.length === 0) {
@@ -936,6 +902,7 @@
     if (loadBtn) loadBtn.disabled = disabled;
     if (deleteBtn) deleteBtn.disabled = disabled;
     if (clearBtn) clearBtn.disabled = disabled;
+    syncScenarioSelectTitle();
   }
 
   function buildImportIssueReport(sourceFileName, issues) {
@@ -1089,7 +1056,7 @@
   }
 
   function loadSelectedScenario() {
-    const select = $('#load-pro-scenario-select');
+    const select = getScenarioSelectEl();
     const scenarioId = select ? select.value : '';
     if (!scenarioId) {
       acknowledge('load-pro-load-scenario-btn', 'Select one first');
@@ -1111,7 +1078,7 @@
   }
 
   function deleteSelectedScenario() {
-    const select = $('#load-pro-scenario-select');
+    const select = getScenarioSelectEl();
     const scenarioId = select ? select.value : '';
     if (!scenarioId) {
       acknowledge('load-pro-delete-scenario-btn', 'Select one first');
@@ -1314,9 +1281,7 @@
       showToast('Could not restore autosave.', 'error', 2500);
       return;
     }
-    acknowledge('load-pro-btn-clear-autosave', 'Restored');
-    acknowledge('btn-clear-autosave', 'Restored');
-    showToast('Restored last autosave.', 'success', 2500);
+    showToast('Restored worksheet from autosave.', 'success', 2500);
   }
 
   function init() {
@@ -1383,44 +1348,6 @@
         doLoadProPrint();
       });
     }
-    const guideOverlay = $('#load-pro-guide-modal-overlay');
-    const guideBody = $('#load-pro-guide-modal-body');
-    function renderGuideMd(html) {
-      if (guideBody) guideBody.innerHTML = html;
-    }
-    function openGuide() {
-      if (!guideOverlay || !guideBody) return;
-      if (guideBody.innerHTML === '') {
-        const embedded = typeof window.LOAD_CALC_PRO_GUIDE_MARKDOWN === 'string' && window.LOAD_CALC_PRO_GUIDE_MARKDOWN.length > 0;
-        if (embedded) {
-          renderGuideMd(simpleMarkdownToHtml(window.LOAD_CALC_PRO_GUIDE_MARKDOWN));
-        } else {
-          guideBody.innerHTML = '<p class="guide-loading">Loading…</p>';
-          fetch('README.md').then(r => r.text()).then(md => {
-            renderGuideMd(simpleMarkdownToHtml(md));
-          }).catch(() => {
-            renderGuideMd('<p>User guide could not be loaded. Open README.md from this folder if needed.</p>');
-          });
-        }
-      }
-      guideOverlay.hidden = false;
-      guideOverlay.setAttribute('aria-hidden', 'false');
-    }
-    $('#load-pro-guide-btn').addEventListener('click', openGuide);
-    function closeGuide() {
-      if (guideOverlay) {
-        guideOverlay.hidden = true;
-        guideOverlay.setAttribute('aria-hidden', 'true');
-      }
-    }
-    $('#load-pro-guide-modal-close').addEventListener('click', closeGuide);
-    function closeGuideOnOverlayClick(e) {
-      if (e.target === guideOverlay) closeGuide();
-    }
-    if (guideOverlay) {
-      guideOverlay.removeEventListener('click', closeGuideOnOverlayClick);
-      guideOverlay.addEventListener('click', closeGuideOnOverlayClick);
-    }
 
     $('#load-pro-load-scenario-btn').addEventListener('click', loadSelectedScenario);
     $('#load-pro-delete-scenario-btn').addEventListener('click', deleteSelectedScenario);
@@ -1452,6 +1379,9 @@
       const file = e.target.files && e.target.files[0];
       if (file) loadScenarioFromFile(file);
     });
+
+    const scenarioSelectEl = getScenarioSelectEl();
+    if (scenarioSelectEl) scenarioSelectEl.addEventListener('change', syncScenarioSelectTitle);
 
     updateScenarioDropdown();
 

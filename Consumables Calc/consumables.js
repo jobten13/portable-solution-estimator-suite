@@ -22,6 +22,13 @@
     return document.getElementById(`cons-${id}`);
   }
 
+  // Toast styles target `.cons-calc .toast-container`. In Shell, keep the container inside `#panel-consumables`.
+  (function ensureConsCalcRootForToasts() {
+    if (document.getElementById('panel-consumables')) return;
+    const root = document.querySelector('.cons-calc') || document.querySelector('.calc-app');
+    if (root && !root.classList.contains('cons-calc')) root.classList.add('cons-calc');
+  })();
+
   const VALIDATION_RULES = {
     days: { min: 0, max: 3650, message: 'Days must be between 0 and 3650' },
     beds: { min: 0, max: 10000, message: 'Beds must be between 0 and 10,000' },
@@ -140,15 +147,15 @@
   let deploymentBeds = 0;
   let bufferPercentage = 0;
   let currentFileName = null;
-  let currentSortKey = 'name-asc';
+  let currentSortKey = 'source-asc';
   /** 'ward' | 'icu' | 'custom' | null. null = no list / cleared; 'custom' = list present but not a known Ward/ICU list; 'ward'/'icu' = known list. Drives rate column label (Per Ward Bed / Per ICU Bed / Per Bed). */
   let currentListType = null;
   let customItemCounter = 1;
 
   function listTypeFromFileName(fileName) {
     if (!fileName) return null;
-    if (fileName === 'UCD Ward List') return 'ward';
-    if (fileName === 'UCD ICU List') return 'icu';
+    if (fileName === 'Ward Consumables') return 'ward';
+    if (fileName === 'ICU Consumables') return 'icu';
     return 'custom';
   }
 
@@ -274,6 +281,7 @@
     if (g('load-btn')) g('load-btn').addEventListener('click', loadSelectedScenario);
     if (g('delete-btn')) g('delete-btn').addEventListener('click', deleteSelectedScenario);
     if (g('clear-btn')) g('clear-btn').addEventListener('click', clearAllScenarios);
+    if (g('scenario-select')) g('scenario-select').addEventListener('change', syncScenarioSelectTitle);
     if (g('import-btn')) g('import-btn').addEventListener('click', importFromFile);
     const importInput = document.getElementById('cons-import-file-input');
     if (importInput) importInput.addEventListener('change', onImportFileSelected);
@@ -459,7 +467,7 @@
 
     if (filteredConsumables.length === 0) {
       if (allConsumables.length === 0) {
-        container.innerHTML = '<p class="empty-message">Load the UCD Ward or ICU list above.</p>';
+        container.innerHTML = '<p class="empty-message">Load Ward Consumables or ICU Consumables above.</p>';
       } else {
         container.innerHTML = '<p class="empty-message">No items match your search.</p>';
       }
@@ -488,7 +496,8 @@
       const rate = Number(item.usagePerDayPerBed);
       const safeRate = Number.isFinite(rate) && rate >= 0 ? rate : 0;
       const totalQty = calculateItemQuantity(safeRate);
-      html += '<tr>';
+      const sourceOrder = getItemSourceOrder(item);
+      html += `<tr data-source-order="${sourceOrder}">`;
       html += `<td>${escapeHtml(item.name)}</td>`;
       html += `<td class="number-cell">${safeRate.toFixed(3)}</td>`;
       html += `<td class="number-cell highlight-cell">${Math.ceil(totalQty)}</td>`;
@@ -512,6 +521,28 @@
     return parseInt(cells[2].textContent, 10) || 0;
   }
 
+  function getItemSourceOrder(item) {
+    if (item && item.id != null && Number.isFinite(Number(item.id))) return Number(item.id);
+    const idx = allConsumables.indexOf(item);
+    return idx >= 0 ? 1000000 + idx : 2000000;
+  }
+
+  function getRowSourceOrder(row) {
+    const v = row.getAttribute('data-source-order');
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? n : 2000000;
+  }
+
+  /** After loading Ward/ICU consumables data, show rows in MSF/source order (not Name A–Z). */
+  function setSortToUcdSourceOrder() {
+    currentSortKey = 'source-asc';
+    const sortSel = g('sort-equipment');
+    if (sortSel) sortSel.value = 'source-asc';
+    try {
+      localStorage.setItem(SORT_STORAGE_KEY, 'source-asc');
+    } catch (e) { /* ignore */ }
+  }
+
   function applySort() {
     const container = g('consumables-container');
     if (!container) return;
@@ -530,6 +561,7 @@
     currentSortKey = key;
 
     rows.sort((a, b) => {
+      if (key === 'source-asc') return getRowSourceOrder(a) - getRowSourceOrder(b);
       if (key === 'name-asc') return getRowSortName(a).localeCompare(getRowSortName(b));
       if (key === 'name-desc') return getRowSortName(b).localeCompare(getRowSortName(a));
       const qA = getRowSortQty(a);
@@ -611,12 +643,6 @@
     currentFileName = currentFileName || 'Custom List';
     currentListType = 'custom';
 
-    const fs = g('file-status');
-    if (fs) {
-      fs.textContent = currentFileName;
-      fs.style.color = '#28a745';
-    }
-
     nameEl.value = '';
     rateEl.value = '';
     filterItems();
@@ -690,6 +716,18 @@
     URL.revokeObjectURL(a.href);
   }
 
+  function acknowledge(suffixId, text) {
+    const btn = g(suffixId);
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = text;
+    btn.classList.add('btn-success');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('btn-success');
+    }, 1500);
+  }
+
   function importFromFile() {
     const input = document.getElementById('cons-import-file-input');
     if (input) { input.value = ''; input.click(); }
@@ -753,13 +791,9 @@
           if (data.fileName) {
             currentFileName = data.fileName;
             currentListType = resolveListType(data);
-            const fs = g('file-status');
-            if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
           } else {
             currentFileName = null;
             currentListType = null;
-            const fs2 = g('file-status');
-            if (fs2) { fs2.textContent = 'No list loaded'; fs2.style.color = '#666'; }
           }
           clearViewFilters();
           filterItems();
@@ -768,15 +802,15 @@
           scenarioLoadGuardDirty = false;
           if (issues.length > 0) {
             downloadImportIssueReport(sourceFileName, issues);
-            showFeedback(`Imported with ${issues.length} data issue(s). Report downloaded for review/printing.`, 'error');
+            acknowledge('import-btn', `Imported (${issues.length} issue${issues.length === 1 ? '' : 's'})`);
           } else {
-            showFeedback('Scenario imported and applied.', 'success');
+            acknowledge('import-btn', 'Imported!');
           }
         } else {
-          showFeedback('File does not contain a valid scenario.', 'error');
+          acknowledge('import-btn', 'Invalid file');
         }
       } catch (e) {
-        showFeedback(`Invalid file: ${e.message || 'parse error'}`, 'error');
+        acknowledge('import-btn', 'Invalid file');
       }
       if (ev.target) ev.target.value = '';
     };
@@ -902,7 +936,14 @@
     info.style.display = '';
     const count = filteredConsumables.length;
     const total = allConsumables.length;
-    if (count === total) {
+    const label = currentFileName;
+    if (label) {
+      if (count === total) {
+        info.textContent = `${total} ${label} items loaded`;
+      } else {
+        info.textContent = `${count} of ${total} ${label} items shown`;
+      }
+    } else if (count === total) {
       info.textContent = `${total} items loaded`;
     } else {
       info.textContent = `${count} of ${total} items shown`;
@@ -911,7 +952,7 @@
 
   function printReport() {
     if (allConsumables.length === 0) {
-      showFeedback('No data to print. Please load the Ward or ICU list first.', 'info');
+      showFeedback('No data to print. Please load Ward Consumables or ICU Consumables first.', 'info');
       return;
     }
     if (filteredConsumables.length === 0) {
@@ -930,7 +971,7 @@
 
   function saveScenario() {
     if (allConsumables.length === 0) {
-      showFeedback('No data to save. Please load the Ward or ICU list first.', 'info');
+      showFeedback('No data to save. Please load Ward Consumables or ICU Consumables first.', 'info');
       return;
     }
 
@@ -1022,6 +1063,14 @@
     }
   }
 
+  function syncScenarioSelectTitle() {
+    const select = g('scenario-select');
+    if (!select) return;
+    const opt = select.selectedOptions && select.selectedOptions[0];
+    const text = opt ? String(opt.textContent || '').trim() : '';
+    select.title = text;
+  }
+
   function updateScenarioDropdown() {
     const select = g('scenario-select');
     if (!select) return;
@@ -1045,6 +1094,7 @@
     if (loadBtn) loadBtn.disabled = disabled;
     if (deleteBtn) deleteBtn.disabled = disabled;
     if (clearBtn) clearBtn.disabled = disabled;
+    syncScenarioSelectTitle();
   }
 
   function loadSelectedScenario() {
@@ -1089,13 +1139,12 @@
     if (scenario.fileName) {
       currentFileName = scenario.fileName;
       currentListType = resolveListType(scenario);
-      const fse = g('file-status');
-      if (fse) { fse.textContent = currentFileName; fse.style.color = '#28a745'; }
+      if (currentFileName === 'Ward Consumables' || currentFileName === 'ICU Consumables') {
+        setSortToUcdSourceOrder();
+      }
     } else {
       currentFileName = null;
       currentListType = null;
-      const fse2 = g('file-status');
-      if (fse2) { fse2.textContent = 'No list loaded'; fse2.style.color = '#666'; }
     }
 
     if (g('scenario-name')) g('scenario-name').value = scenario.baseName || scenario.name || '';
@@ -1106,7 +1155,7 @@
     calculateAndDisplay();
     saveData();
     scenarioLoadGuardDirty = false;
-    showFeedback(`Scenario "${scenario.name}" loaded successfully!`, 'success');
+    acknowledge('load-btn', 'Loaded!');
   }
 
   function deleteSelectedScenario() {
@@ -1159,7 +1208,19 @@
     }
     try {
       const date = new Date(tsIsoString);
-      el.textContent = isNaN(date.getTime()) ? '' : 'Last autosaved: ' + date.toLocaleString();
+      if (isNaN(date.getTime())) {
+        el.textContent = '';
+        return;
+      }
+      const mo = date.getMonth() + 1;
+      const day = date.getDate();
+      const h24 = date.getHours();
+      const min = date.getMinutes();
+      const ampm = h24 >= 12 ? 'PM' : 'AM';
+      let h12 = h24 % 12;
+      if (h12 === 0) h12 = 12;
+      const mm = min < 10 ? '0' + min : String(min);
+      el.textContent = `Autosaved: ${mo}/${day} ${h12}:${mm} ${ampm}`;
     } catch (e) {
       el.textContent = '';
     }
@@ -1177,12 +1238,15 @@
   function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 3000;
-    let container = document.getElementById('toast-container');
+    const host =
+      document.getElementById('panel-consumables') ||
+      document.querySelector('.cons-calc') ||
+      document.body;
+    let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
-      container.id = 'toast-container';
       container.className = 'toast-container';
-      document.body.appendChild(container);
+      host.appendChild(container);
     }
     const toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
@@ -1305,11 +1369,6 @@
       currentListType = allConsumables.length > 0 ? 'custom' : null;
     }
 
-    const fs = g('file-status');
-    if (fs) {
-      fs.textContent = currentFileName || 'No list loaded';
-      fs.style.color = currentFileName ? '#28a745' : '#666';
-    }
     const wb = g('ward-list-btn');
     const ib = g('icu-list-btn');
     if (wb) wb.classList.remove('active');
@@ -1334,7 +1393,7 @@
       return;
     }
     loadSavedData();
-    showToast('Restored last autosave.', 'success', 2500);
+    showToast('Restored worksheet from autosave.', 'success', 2500);
   }
 
   function escapeHtml(text) {
@@ -1391,9 +1450,6 @@
       localStorage.removeItem(STORAGE_FILENAME);
     } catch (e) {}
 
-    const fs = g('file-status');
-    if (fs) { fs.textContent = 'No list loaded'; fs.style.color = '#666'; }
-
     const wb = g('ward-list-btn');
     const ib = g('icu-list-btn');
     if (wb) wb.classList.remove('active');
@@ -1409,71 +1465,65 @@
 
   function loadWardList() {
     if (typeof UCD_WARD_ITEMS === 'undefined' || !UCD_WARD_ITEMS.length) {
-      showFeedback('Ward List is not available.', 'error');
+      showFeedback('Ward Consumables list is not available.', 'error');
       return;
     }
     allConsumables = JSON.parse(JSON.stringify(UCD_WARD_ITEMS));
     filteredConsumables = allConsumables.slice();
-    currentFileName = 'UCD Ward List';
+    currentFileName = 'Ward Consumables';
     currentListType = 'ward';
 
-    const fs = g('file-status');
-    if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
     clearViewFilters();
     const wb = g('ward-list-btn');
     const ib = g('icu-list-btn');
     if (wb) wb.classList.add('active');
     if (ib) ib.classList.remove('active');
 
+    setSortToUcdSourceOrder();
     filterItems();
-    displayConsumables();
-    updateItemsInfo();
     saveData();
     scenarioLoadGuardDirty = false;
-    showFeedback('Ward List loaded', 'success');
+    showFeedback('Ward Consumables loaded', 'success');
   }
 
   function loadICUList() {
     if (typeof UCD_ICU_ITEMS === 'undefined' || !UCD_ICU_ITEMS.length) {
-      showFeedback('ICU List is not available.', 'error');
+      showFeedback('ICU Consumables list is not available.', 'error');
       return;
     }
     allConsumables = JSON.parse(JSON.stringify(UCD_ICU_ITEMS));
     filteredConsumables = allConsumables.slice();
-    currentFileName = 'UCD ICU List';
+    currentFileName = 'ICU Consumables';
     currentListType = 'icu';
 
-    const fs = g('file-status');
-    if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
     clearViewFilters();
     const wb = g('ward-list-btn');
     const ib = g('icu-list-btn');
     if (wb) wb.classList.remove('active');
     if (ib) ib.classList.add('active');
 
+    setSortToUcdSourceOrder();
     filterItems();
-    displayConsumables();
-    updateItemsInfo();
     saveData();
     scenarioLoadGuardDirty = false;
-    showFeedback('ICU List loaded', 'success');
+    showFeedback('ICU Consumables loaded', 'success');
   }
 
   function init() {
     const sortSel = g('sort-equipment');
-    const validSorts = ['name-asc', 'name-desc', 'qty-desc', 'qty-asc'];
+    const validSorts = ['source-asc', 'name-asc', 'name-desc', 'qty-desc', 'qty-asc'];
     try {
       const saved = localStorage.getItem(SORT_STORAGE_KEY);
       if (saved && validSorts.includes(saved)) {
         currentSortKey = saved;
         if (sortSel) sortSel.value = saved;
       } else {
-        currentSortKey = 'name-asc';
-        if (sortSel) sortSel.value = 'name-asc';
+        currentSortKey = 'source-asc';
+        if (sortSel) sortSel.value = 'source-asc';
       }
     } catch (e) {
-      currentSortKey = 'name-asc';
-      if (sortSel) sortSel.value = 'name-asc';
+      currentSortKey = 'source-asc';
+      if (sortSel) sortSel.value = 'source-asc';
     }
     setupEventListeners();
     consAutosaveDirty = false;
@@ -1484,6 +1534,7 @@
     } catch (e) { /* ignore */ }
     updateAddItemRatePlaceholder();
     updateInventoryHelpRateLabel();
+    updateItemsInfo();
   }
 
   if (document.readyState === 'loading') {

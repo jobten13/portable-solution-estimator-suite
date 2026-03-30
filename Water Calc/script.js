@@ -11,6 +11,14 @@
   const baseLiterValues = { potable: 80, wastewater: 65 };
   const GRAY_RATIO = 0.77; // Estimated ~77% gray water, ~23% black water
 
+  // Toast styles target `.water-calc .toast-container` (see styles.css). In Calcs Shell, append inside `#panel-water`
+  // so fixed positioning applies; standalone gets `.water-calc` on the main wrapper for the same CSS.
+  (function ensureWaterCalcRootForToasts() {
+    if (document.getElementById('panel-water')) return;
+    const root = document.querySelector('.water-calc') || document.querySelector('.container');
+    if (root && !root.classList.contains('water-calc')) root.classList.add('water-calc');
+  })();
+
   function g(id) {
     const fullId = (id && id.startsWith('water-')) ? id : 'water-' + (id || '');
     return document.getElementById(fullId);
@@ -437,7 +445,19 @@
     }
     try {
       const date = new Date(tsIsoString);
-      el.textContent = isNaN(date.getTime()) ? '' : 'Worksheet autosaved: ' + date.toLocaleString();
+      if (isNaN(date.getTime())) {
+        el.textContent = '';
+        return;
+      }
+      const mo = date.getMonth() + 1;
+      const day = date.getDate();
+      const h24 = date.getHours();
+      const min = date.getMinutes();
+      const ampm = h24 >= 12 ? 'PM' : 'AM';
+      let h12 = h24 % 12;
+      if (h12 === 0) h12 = 12;
+      const mm = min < 10 ? '0' + min : String(min);
+      el.textContent = `Autosaved: ${mo}/${day} ${h12}:${mm} ${ampm}`;
     } catch (e) {
       el.textContent = '';
     }
@@ -446,12 +466,15 @@
   function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 3000;
-    let container = document.getElementById('toast-container');
+    const host =
+      document.getElementById('panel-water') ||
+      document.querySelector('.water-calc') ||
+      document.body;
+    let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
-      container.id = 'toast-container';
       container.className = 'toast-container';
-      document.body.appendChild(container);
+      host.appendChild(container);
     }
     const toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
@@ -575,7 +598,15 @@
     saveWorksheetState();
     scenarioLoadGuardDirty = false;
     setScenarioListLine({ kind: 'restored_autosave' });
-    showToast('Restored last autosave.', 'success', 2500);
+    showToast('Restored worksheet from autosave.', 'success', 2500);
+  }
+
+  function syncScenarioSelectTitle() {
+    const select = g('water-scenario-select');
+    if (!select) return;
+    const opt = select.selectedOptions && select.selectedOptions[0];
+    const text = opt ? String(opt.textContent || '').trim() : '';
+    select.title = text;
   }
 
   function updateScenarioDropdown() {
@@ -606,6 +637,7 @@
     if (loadBtn) loadBtn.disabled = disabled;
     if (deleteBtn) deleteBtn.disabled = disabled;
     if (clearBtn) clearBtn.disabled = disabled;
+    syncScenarioSelectTitle();
   }
 
   /** Bottom line = scenario list / import only (not worksheet autosave — that’s the toolbar). */
@@ -738,7 +770,7 @@
     recalc();
     saveWorksheetState();
     scenarioLoadGuardDirty = false;
-    showFeedback(`Scenario "${scenario.name || ''}" loaded.`, 'success');
+    acknowledge('water-load-btn', 'Loaded!');
   }
 
   function deleteSelectedScenario() {
@@ -864,6 +896,18 @@
     }
   }
 
+  function acknowledge(suffixId, text) {
+    const btn = g(suffixId);
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = text;
+    btn.classList.add('btn-success');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('btn-success');
+    }, 1500);
+  }
+
   function onFileSelected(ev) {
     const file = ev.target && ev.target.files[0];
     if (!file) return;
@@ -887,17 +931,17 @@
           recalc();
           saveWorksheetState();
           scenarioLoadGuardDirty = false;
-          showFeedback('Scenario imported and applied.', 'success');
+          acknowledge('import-btn', 'Imported!');
         } else {
-          showFeedback('File does not contain a valid scenario.', 'info');
+          acknowledge('import-btn', 'Invalid file');
         }
       } catch (e) {
-        showFeedback(`Import failed: ${e.message || 'Invalid or corrupted file.'} Use a scenario JSON exported from this calculator.`, 'error');
+        acknowledge('import-btn', 'Invalid file');
       }
       ev.target.value = '';
     };
     reader.onerror = () => {
-      showFeedback('Error reading file. Please try again or choose a different file.', 'error');
+      acknowledge('import-btn', 'Invalid file');
       ev.target.value = '';
     };
     reader.readAsText(file);
@@ -1106,6 +1150,7 @@
     if (g('water-load-btn')) g('water-load-btn').addEventListener('click', loadSelectedScenario);
     if (g('water-delete-btn')) g('water-delete-btn').addEventListener('click', deleteSelectedScenario);
     if (g('water-clear-btn')) g('water-clear-btn').addEventListener('click', clearAllScenarios);
+    if (g('water-scenario-select')) g('water-scenario-select').addEventListener('change', syncScenarioSelectTitle);
     if (g('water-import-btn')) g('water-import-btn').addEventListener('click', importFromFile);
     if (g('water-export-btn')) g('water-export-btn').addEventListener('click', onExportToFile);
 

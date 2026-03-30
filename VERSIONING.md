@@ -10,8 +10,9 @@ Handoff overview: **[README.md](README.md)**.
 ## Bump for a release
 
 1. Edit **`version.json`** — update **`version`**, **`lastUpdated`**, and **prepend** a **`changelog`** entry (newest first).
-2. Reload the app; the shell footer and **`Suite v…`** labels update automatically.
-3. **Do not** paste the new version number into multiple README files — keep **`version.json`** as the only written source for the suite number.
+2. **Calcs Shell `file://` fallback:** Update the **same** suite version in **`Calcs Shell/index.html`** wherever marked *“Fallback must match version.json”* — `meta name="suite-version"` and each panel footer **`[data-suite-version]`** (e.g. `Suite v1.1.1`). There is **no** separate shell bottom bar. When the page is served over **http**, **`version-control.js`** overwrites those spans and **`meta`** from **`version.json`**. Standalone calc pages use **`[data-suite-version]`** in their own **`index.html`** as well.
+3. Reload the app over **http**; shell panel footers and standalone **`Suite v…`** labels update from **`version.json`** automatically.
+4. **Do not** paste the new suite number into multiple **README** files — **`version.json`** remains the canonical **http** source; Shell HTML fallbacks are the exception above.
 
 ### Optional: PowerShell helper
 
@@ -61,7 +62,6 @@ Opening HTML via **`file://`** may block **`fetch`** of **`version.json`** in so
 **`version-control.js`** loads **`version.json`** and sets:
 
 - **`meta[name="suite-version"]`**
-- **`#shell-version`** (shell footer)
-- Elements with **`[data-suite-version]`**
+- Elements with **`[data-suite-version]`** (Calcs Shell: each panel footer; standalone: calc footer)
 
 Standalone calculator pages may show **`Suite v…`** together with a **per-app** version label in the footer; the suite number still comes from **`version.json`**.

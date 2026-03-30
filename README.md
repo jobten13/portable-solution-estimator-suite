@@ -19,7 +19,7 @@ Each calculator folder has its own **README.md** (behavior, tooltips / user-guid
 
 In every calculator (and in **Calcs Shell**), treat these as **three different paths**:
 
-1. **Worksheet autosave** (toolbar “Last autosaved” + **Restore last autosave**) — One **recovery** slot in this browser for the **current sheet** while you work. It is **not** a named row in the scenario dropdown.
+1. **Worksheet autosave** (toolbar **Autosaved:** timestamp + **Restore Autosave**, grey secondary button) — One **recovery** slot in this browser for the **current sheet** while you work. It is **not** a named row in the scenario dropdown. Timestamp format is **Autosaved: M/D h:mm AM/PM** (no year, no seconds).
 2. **Save / Load Scenario** — **Named** snapshots stored in this browser and listed in the scenario dropdown for planning inside the app.
 3. **Export / Import** — A **file** on disk (JSON for backup/re-import; CSV where offered as a human-readable report). Export does **not** by itself add a scenario to the browser list until you **Import** JSON or **Save Scenario**.
 

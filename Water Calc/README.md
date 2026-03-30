@@ -48,6 +48,8 @@ Capacity drives how often deliveries (potable) and pickups (wastewater) are need
 
 ### Other actions
 - **Print** — Opens print dialog; toolbar and scenario controls are hidden in print view.
+- **Restore Autosave** (toolbar) — Grey (**secondary**) button. Restores the last autosaved worksheet state from this browser’s recovery slot; named scenarios in the dropdown are unchanged.
+- **Autosaved:** (toolbar) — Text next to Restore Autosave when a timestamp exists. Format: **Autosaved: M/D h:mm AM/PM** (no year, no seconds). Empty when there is no autosave to show.
 - **Reset to defaults** — Resets all inputs to defaults (e.g. 0 days/beds/buffer, default potable/wastewater rates, Gallons unit, 0 containers).
 
 ### Validation and UX
@@ -58,7 +60,7 @@ Capacity drives how often deliveries (potable) and pickups (wastewater) are need
 
 ## UX/UI design
 
-- **Layout:** Banner → Toolbar (Print, Reset) → Scenarios panel → Deployment parameters (highlight section) → Water use (with unit toggle) → Storage configuration (two cards: potable / wastewater) → Supply & disposal mode → Results (two cards + schedule note).
+- **Layout:** Banner → Toolbar (**Restore Autosave**, **Autosaved:** timestamp, Print, **Reset to defaults**) → Scenarios panel → Deployment parameters (highlight section) → Water use (with unit toggle) → Storage configuration (two cards: potable / wastewater) → Supply & disposal mode → Results (two cards + schedule note).
 - **Suite alignment:** Same banner style (blue gradient), button colors (e.g. Print blue, Save/Load green, Delete amber, Clear red, Secondary gray), section headings, and param-group layout as other calculators. Disabled scenario buttons use opacity 0.85.
 - **Responsive:** Grids and cards wrap on smaller screens. Print styles hide controls and simplify the view.
 

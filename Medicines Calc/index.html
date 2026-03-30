@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="app-version" content="1.0.1">
+  <meta name="app-version" content="1.1.2">
   <meta name="suite-version" content="">
   <title>Field Hospital Calculator - Pharmaceuticals Supply List</title>
   <link rel="stylesheet" href="styles.css">
@@ -17,13 +17,21 @@
     </header>
     <div class="toolbar-wrap">
       <div class="toolbar">
-        <button type="button" id="meds-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
+        <button type="button" id="meds-btn-clear-autosave" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore Autosave</button>
         <span id="medicines-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
         <button type="button" class="btn btn-print" id="meds-print-btn" title="Print the current view.">Print</button>
-        <button type="button" class="btn btn-ucd" id="meds-pharma-list-btn" title="Load the UCD Ward pharmaceuticals list.">UCD Ward Meds</button>
-        <button type="button" class="btn btn-ucd" id="meds-pharma-secondary-list-btn" title="Load the UCD ICU pharmaceuticals list.">UCD ICU Meds</button>
+        <button type="button" class="btn btn-ucd" id="meds-pharma-list-btn" title="Load the Ward medications list.">Ward Meds</button>
+        <button type="button" class="btn btn-ucd" id="meds-pharma-secondary-list-btn" title="Load the ICU medications list.">ICU Meds</button>
         <button type="button" class="btn btn-clear-items" id="meds-clear-items-btn" title="Clear list, scenario name/notes, and deployment inputs; reset to empty worksheet.">Reset Worksheet</button>
-        <span id="meds-file-status" class="status-text">No list loaded</span>
+        <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-toolbar" role="tooltip" hidden>
+        <ul>
+          <li><strong>Restore Autosave</strong> — recovers your last unsaved session</li>
+          <li><strong>Ward/ICU buttons</strong> — load a clinical baseline list</li>
+          <li><strong>Print</strong> — outputs the current view</li>
+          <li><strong>Reset Worksheet</strong> — clears everything and starts fresh; save your scenario first if you want to keep your work</li>
+        </ul>
       </div>
     </div>
 
@@ -35,13 +43,15 @@
         </div>
         <div class="help-popover" id="help-popover-scenarios" role="tooltip" hidden>
           <ul>
-            <li><strong>Save Scenario</strong> stores your current pharmaceuticals list and deployment inputs in this browser.</li>
+            <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+            <li>The toolbar <strong>Autosaved:</strong> line shows when the recovery slot was last updated (format <strong>Autosaved: M/D h:mm AM/PM</strong>).</li>
+            <li><strong>Save Scenario</strong> stores your current medications list and deployment inputs in this browser.</li>
             <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
             <li><strong>Export</strong> lets you choose JSON (backup/re-import) or CSV (human-readable report); <strong>Import</strong> restores from an exported JSON scenario file.</li>
           </ul>
         </div>
         <div class="scenario-actions">
-          <button type="button" class="btn btn-save" id="meds-save-btn" title="Save current pharmaceuticals list and deployment inputs to this browser.">Save Scenario</button>
+          <button type="button" class="btn btn-save" id="meds-save-btn" title="Save current medications list and deployment inputs to this browser.">Save Scenario</button>
           <div class="load-scenario-group">
             <select id="meds-scenario-select" class="scenario-select" aria-label="Choose a saved scenario to load">
               <option value="">— Select scenario to load —</option>
@@ -116,9 +126,9 @@
         <div class="help-popover" id="help-popover-inventory" role="tooltip" hidden>
           <ul>
             <li><strong>Per day/Per bed:</strong> Usage rate per bed per day. Total quantity = days x beds x rate x (1 + buffer%).</li>
-            <li>Load the UCD Ward or ICU list. Sort and search to find items quickly.</li>
-            <li><strong>Min Qty</strong> is a view-only filter on total quantity and does not change saved data.</li>
-            <li>Use <strong>Add Item</strong> to add custom medications. Any row can be deleted in this working scenario, and loading the UCD list restores the original baseline list.</li>
+            <li>Load Ward Meds or ICU Meds. Sort and search to find items quickly.</li>
+            <li><strong>Min Qty</strong> is a view-only filter on total quantity; it does not change saved data.</li>
+            <li>Use <strong>Add Item</strong> to add custom medications. Any row can be deleted in this working scenario, and loading Ward or ICU meds restores the original baseline list.</li>
           </ul>
         </div>
         <div class="sort-bar">
@@ -145,18 +155,18 @@
         <div class="filter-notice" id="meds-filter-notice" style="display:none;"></div>
         <div class="items-info" id="meds-items-info">0 items loaded</div>
         <div id="meds-consumables-container">
-          <p class="empty-message">Load the UCD Ward or ICU list above.</p>
+          <p class="empty-message">Load Ward Meds or ICU Meds above.</p>
         </div>
       </section>
     </div>
 
     <footer class="disclaimer">
       <p>This tool is a simplified estimator. Verify requirements with qualified personnel before deployment.</p>
-      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.0.1</span>
+      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.1.2</span>
     </footer>
   </div>
 
-  <script src="consumables-lists.js"></script>
+  <script src="medications-data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

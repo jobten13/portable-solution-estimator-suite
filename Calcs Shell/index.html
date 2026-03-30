@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Fallback must match version.json "version" when releasing; JS overwrites when fetch succeeds. -->
-  <meta name="suite-version" content="1.1.1">
+  <meta name="suite-version" content="1.1.2">
+  <meta name="app-version" content="1.1.2">
   <title>Field Hospital Calculator Suite</title>
   <link rel="stylesheet" href="../Load Calc Basic/styles.css">
   <link rel="stylesheet" href="../Load Calc Pro/styles.css">
@@ -36,12 +37,22 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="load-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
+              <button type="button" id="load-btn-clear-autosave" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore Autosave</button>
               <span id="load-load-basic-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" id="load-btn-print" class="btn btn-print" title="Print the current view.">Print</button>
-              <button type="button" id="load-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
               <button type="button" id="load-btn-reset-qty" class="btn btn-delete" title="Set all equipment quantities to zero. Does not clear scenario name, notes, or generator/fuel inputs.">Reset Quantities</button>
               <button type="button" id="load-btn-full-reset" class="btn btn-clear" title="Clear quantities, scenario name/notes, generator/fuel inputs, and search; remove custom rows.">Reset Worksheet</button>
+              <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+            </div>
+            <div class="help-popover" id="load-help-popover-toolbar" role="tooltip" hidden>
+              <ul>
+                <li><strong>Restore Autosave</strong> — recovers the last autosaved worksheet for this browser (after refresh).</li>
+                <li><strong>Autosaved:</strong> line — when the recovery slot was last updated (not the named scenario list).</li>
+                <li><strong>Print</strong> — prints the current worksheet view.</li>
+                <li><strong>Reset Quantities</strong> — sets all equipment quantities to zero; keeps scenario name, notes, and generator/fuel inputs.</li>
+                <li><strong>Reset Worksheet</strong> — full reset: quantities, scenario name/notes, generator/fuel, search, and custom rows.</li>
+                <li>For scenarios, equipment, and summary: use the <strong>?</strong> next to each section below.</li>
+              </ul>
             </div>
           </div>
           <div class="content-wrap">
@@ -52,7 +63,8 @@
               </div>
               <div class="help-popover" id="load-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
-                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li>The toolbar <strong>Autosaved:</strong> line shows when the recovery slot was last updated (format <strong>Autosaved: M/D h:mm AM/PM</strong>).</li>
                   <li><strong>Save Scenario</strong> stores your current quantities, generator and fuel inputs, and notes in this browser.</li>
                   <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores a scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
@@ -230,17 +242,8 @@
           <footer class="footer disclaimer">
             Disclaimer: This tool is a simplified estimator based on fixed typical values and industry standards (0.8 PF). Actual site conditions, motor starting currents (kVA surge), and equipment specifications MUST be verified by a qualified electrical engineer. Not for final design without expert review.
             <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
-            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.2</span>
           </footer>
-          <div id="load-guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
-            <div class="guide-modal-panel">
-              <div class="guide-modal-header">
-                <span class="guide-modal-title">User guide</span>
-                <button type="button" id="load-guide-modal-close" class="btn btn-secondary guide-modal-close" aria-label="Close user guide">Close</button>
-              </div>
-              <div id="load-guide-modal-body" class="guide-modal-body"></div>
-            </div>
-          </div>
         </div>
       </div>
       <div id="panel-load-pro" class="load-pro-calc calc-panel" hidden>
@@ -251,12 +254,22 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="load-pro-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
+              <button type="button" id="load-pro-btn-clear-autosave" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore Autosave</button>
               <span id="load-pro-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" id="load-pro-print-summary-btn" class="btn btn-print" title="Print the current view.">Print</button>
-              <button type="button" id="load-pro-guide-btn" class="btn btn-secondary" title="Open the user guide in this page.">User guide</button>
               <button type="button" id="load-pro-reset-btn" class="btn btn-delete" title="Set all equipment quantities to zero. Does not clear scenario name, notes, or generator/fuel inputs.">Reset Quantities</button>
               <button type="button" id="load-pro-clear-sheet-btn" class="btn btn-clear" title="Clear quantities, kW/PF to defaults, generator/fuel inputs, and search; remove custom rows.">Reset Worksheet</button>
+              <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+            </div>
+            <div class="help-popover" id="load-pro-help-popover-toolbar" role="tooltip" hidden>
+              <ul>
+                <li><strong>Restore Autosave</strong> — recovers the last autosaved worksheet for this browser (after refresh).</li>
+                <li><strong>Autosaved:</strong> line — when the recovery slot was last updated (not the named scenario list).</li>
+                <li><strong>Print</strong> — prints the current worksheet view.</li>
+                <li><strong>Reset Quantities</strong> — sets all equipment quantities to zero; keeps scenario name, notes, and generator/fuel inputs.</li>
+                <li><strong>Reset Worksheet</strong> — full reset: quantities, kW/PF, generator/fuel, search, and custom rows.</li>
+                <li>For scenarios, equipment, and summary: use the <strong>?</strong> next to each section below.</li>
+              </ul>
             </div>
           </div>
           <input type="file" id="load-pro-load-scenario-file" accept="application/json" hidden>
@@ -268,7 +281,8 @@
               </div>
               <div class="help-popover" id="load-pro-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
-                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li>The toolbar <strong>Autosaved:</strong> line shows when the recovery slot was last updated (format <strong>Autosaved: M/D h:mm AM/PM</strong>).</li>
                   <li><strong>Save Scenario</strong> stores your current table values, generator inputs, and notes in this browser.</li>
                   <li>Use a clear scenario name and brief notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
@@ -470,17 +484,8 @@
             <footer class="disclaimer">
               <p>Simplified estimator. Actual site conditions, motor starting currents (kVA surge), and equipment specifications must be verified by a qualified electrical engineer. Not for final design without expert review.</p>
               <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
-              <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
+              <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.2</span>
             </footer>
-          </div>
-          <div id="load-pro-guide-modal-overlay" class="guide-modal-overlay" hidden aria-hidden="true">
-            <div class="guide-modal-panel">
-              <div class="guide-modal-header">
-                <span class="guide-modal-title">User guide</span>
-                <button type="button" id="load-pro-guide-modal-close" class="btn btn-secondary guide-modal-close" aria-label="Close user guide">Close</button>
-              </div>
-              <div id="load-pro-guide-modal-body" class="guide-modal-body"></div>
-            </div>
           </div>
         </div>
       </div>
@@ -492,10 +497,20 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="water-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore last autosave</button>
+              <button type="button" id="water-btn-clear-autosave" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged. Opening the calc starts fresh until you restore.">Restore Autosave</button>
               <span id="water-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="water-print-btn" title="Print the current view.">Print</button>
               <button type="button" class="btn btn-clear" id="water-reset-btn" title="Reset all inputs, unit, and modes to baseline values.">Reset to Defaults</button>
+              <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+            </div>
+            <div class="help-popover" id="water-help-popover-toolbar" role="tooltip" hidden>
+              <ul>
+                <li><strong>Restore Autosave</strong> — recovers the last autosaved worksheet for this browser (after refresh).</li>
+                <li><strong>Autosaved:</strong> line — when the recovery slot was last updated (not the named scenario list).</li>
+                <li><strong>Print</strong> — prints the current water worksheet view.</li>
+                <li><strong>Reset to Defaults</strong> — restores baseline inputs, unit, and modes; save your scenario first if you need to keep the current setup.</li>
+                <li>For scenarios, deployment, and results: use the <strong>?</strong> next to each section below.</li>
+              </ul>
             </div>
           </div>
           <div class="main-content">
@@ -506,7 +521,8 @@
               </div>
               <div class="help-popover" id="water-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
-                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li>The toolbar <strong>Autosaved:</strong> line shows when the recovery slot was last updated (format <strong>Autosaved: M/D h:mm AM/PM</strong>).</li>
                   <li><strong>Save Scenario</strong> stores your current inputs, unit, and modes in this browser.</li>
                   <li>Use a clear scenario name and notes so others can quickly understand assumptions.</li>
                   <li><strong>Load</strong> restores a saved setup, <strong>Delete</strong> removes one scenario, and <strong>Clear all</strong> removes all saved scenarios.</li>
@@ -729,7 +745,7 @@
           </div>
           <footer class="disclaimer">
             <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
-            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.2</span>
           </footer>
         </div>
       </div>
@@ -741,13 +757,21 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="cons-clear-autosave-btn" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged.">Restore last autosave</button>
+              <button type="button" id="cons-clear-autosave-btn" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged.">Restore Autosave</button>
               <span id="cons-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="cons-print-btn">Print</button>
-              <button type="button" class="btn btn-ucd" id="cons-ward-list-btn">UCD Ward List</button>
-              <button type="button" class="btn btn-ucd" id="cons-icu-list-btn">UCD ICU List</button>
+              <button type="button" class="btn btn-ucd" id="cons-ward-list-btn" title="Load the built-in Ward consumables list; replaces the current worksheet list.">Ward Consumables</button>
+              <button type="button" class="btn btn-ucd" id="cons-icu-list-btn" title="Load the built-in ICU consumables list; replaces the current worksheet list.">ICU Consumables</button>
               <button type="button" class="btn btn-clear-items" id="cons-clear-items-btn">Reset Worksheet</button>
-              <span id="cons-file-status" class="status-text">No list loaded</span>
+              <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+            </div>
+            <div class="help-popover" id="cons-help-popover-toolbar" role="tooltip" hidden>
+              <ul>
+                <li><strong>Restore Autosave</strong> — recovers your last unsaved session</li>
+                <li><strong>Ward/ICU buttons</strong> — load a clinical baseline list</li>
+                <li><strong>Print</strong> — outputs the current view</li>
+                <li><strong>Reset Worksheet</strong> — clears everything and starts fresh; save your scenario first if you want to keep your work</li>
+              </ul>
             </div>
           </div>
           <div class="main-content">
@@ -758,7 +782,8 @@
               </div>
               <div class="help-popover" id="cons-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
-                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li>The toolbar <strong>Autosaved:</strong> line shows when the recovery slot was last updated (format <strong>Autosaved: M/D h:mm AM/PM</strong>).</li>
                   <li><strong>Save Scenario</strong> stores your current list, deployment inputs, and notes in this browser.</li>
                   <li>Use a clear scenario name and notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
@@ -847,14 +872,15 @@
               <div class="help-popover" id="cons-help-popover-inventory" role="tooltip" hidden>
                 <ul>
                   <li><strong>Per day/Per bed:</strong> Usage rate per bed per day. Total quantity = days × beds × rate × (1 + buffer%).</li>
-                  <li>Load the UCD Ward or ICU list. Sort and search to find items quickly.</li>
-                  <li><strong>Min Qty</strong> is a view-only filter on total quantity and does not change saved data.</li>
+                  <li>Load Ward Consumables or ICU Consumables. Sort and search to find items quickly.</li>
+                  <li><strong>Min Qty</strong> is a view-only filter on total quantity; it does not change saved data.</li>
                   <li>Use <strong>Add Item</strong> to add custom consumables.</li>
                 </ul>
               </div>
               <div class="sort-bar">
                 <label for="cons-sort-equipment">Sort:</label>
                 <select id="cons-sort-equipment" class="sort-select" aria-label="Sort consumables requirements">
+                  <option value="source-asc">Source list order</option>
                   <option value="name-asc">Name A–Z</option>
                   <option value="name-desc">Name Z–A</option>
                   <option value="qty-desc">Total quantity High to Low</option>
@@ -876,14 +902,14 @@
               <div class="filter-notice" id="cons-filter-notice" style="display:none;"></div>
               <div class="items-info" id="cons-items-info">0 items loaded</div>
               <div id="cons-consumables-container">
-                <p class="empty-message">Load the UCD Ward or ICU list above.</p>
+                <p class="empty-message">Load Ward Consumables or ICU Consumables above.</p>
               </div>
             </section>
           </div>
           <footer class="disclaimer">
             <p>Simplified estimator. Verify quantities and assumptions with qualified personnel before deployment.</p>
             <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
-            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.2</span>
           </footer>
         </div>
       </div>
@@ -895,13 +921,21 @@
           </header>
           <div class="toolbar-wrap">
             <div class="toolbar">
-              <button type="button" id="meds-btn-clear-autosave" class="btn btn-delete" title="Restore the last autosaved worksheet in this browser (recovery slot). Named scenarios in the list are unchanged.">Restore last autosave</button>
+              <button type="button" id="meds-btn-clear-autosave" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged.">Restore Autosave</button>
               <span id="meds-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="meds-print-btn" title="Print the current view.">Print</button>
-              <button type="button" class="btn btn-ucd" id="meds-pharma-list-btn" title="Load the UCD Ward pharmaceuticals list.">UCD Ward Meds</button>
-              <button type="button" class="btn btn-ucd" id="meds-pharma-secondary-list-btn" title="Load the UCD ICU pharmaceuticals list.">UCD ICU Meds</button>
+              <button type="button" class="btn btn-ucd" id="meds-pharma-list-btn" title="Load the Ward medications list.">Ward Meds</button>
+              <button type="button" class="btn btn-ucd" id="meds-pharma-secondary-list-btn" title="Load the ICU medications list.">ICU Meds</button>
               <button type="button" class="btn btn-clear-items" id="meds-clear-items-btn" title="Clear list, scenario name/notes, and deployment inputs; reset to empty worksheet.">Reset Worksheet</button>
-              <span id="meds-file-status" class="status-text">No list loaded</span>
+              <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+            </div>
+            <div class="help-popover" id="meds-help-popover-toolbar" role="tooltip" hidden>
+              <ul>
+                <li><strong>Restore Autosave</strong> — recovers your last unsaved session</li>
+                <li><strong>Ward/ICU buttons</strong> — load a clinical baseline list</li>
+                <li><strong>Print</strong> — outputs the current view</li>
+                <li><strong>Reset Worksheet</strong> — clears everything and starts fresh; save your scenario first if you want to keep your work</li>
+              </ul>
             </div>
           </div>
           <div class="main-content">
@@ -912,15 +946,16 @@
               </div>
               <div class="help-popover" id="meds-help-popover-scenarios" role="tooltip" hidden>
                 <ul>
-                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore last autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
-                  <li><strong>Save Scenario</strong> stores your current pharmaceuticals list and deployment inputs in this browser.</li>
+                  <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+                  <li>The toolbar <strong>Autosaved:</strong> line shows when the recovery slot was last updated (format <strong>Autosaved: M/D h:mm AM/PM</strong>).</li>
+                  <li><strong>Save Scenario</strong> stores your current medications list and deployment inputs in this browser.</li>
                   <li>Use a clear scenario name and notes so assumptions are easy to understand later.</li>
                   <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
                   <li><strong>Export</strong> downloads JSON (backup/re-import) or CSV (report); <strong>Import</strong> applies a JSON file — it is separate from the toolbar recovery slot.</li>
                 </ul>
               </div>
               <div class="scenario-actions">
-                <button type="button" class="btn btn-save" id="meds-save-btn" title="Save current pharmaceuticals list and deployment inputs to this browser.">Save Scenario</button>
+                <button type="button" class="btn btn-save" id="meds-save-btn" title="Save current medications list and deployment inputs to this browser.">Save Scenario</button>
                 <div class="load-scenario-group">
                   <select id="meds-scenario-select" class="scenario-select">
                     <option value="">— Select scenario to load —</option>
@@ -1001,8 +1036,9 @@
               <div class="help-popover" id="meds-help-popover-inventory" role="tooltip" hidden>
                 <ul>
                   <li><strong>Per day/Per bed:</strong> Usage rate per bed per day. Total quantity = days × beds × rate × (1 + buffer%).</li>
-                  <li>Load the UCD Ward or ICU list. Sort and search to find items quickly.</li>
-                  <li><strong>Min Qty</strong> is a view-only filter. Use <strong>Add Item</strong> to add custom medications.</li>
+                  <li>Load Ward Meds or ICU Meds. Sort and search to find items quickly.</li>
+                  <li><strong>Min Qty</strong> is a view-only filter on total quantity; it does not change saved data.</li>
+                  <li>Use <strong>Add Item</strong> to add custom medications. Any row can be deleted in this working scenario, and loading Ward or ICU meds restores the original baseline list.</li>
                 </ul>
               </div>
               <div class="sort-bar">
@@ -1029,14 +1065,14 @@
               <div class="filter-notice" id="meds-filter-notice" style="display:none;"></div>
               <div class="items-info" id="meds-items-info">0 items loaded</div>
               <div id="meds-consumables-container">
-                <p class="empty-message">Load the UCD Ward or ICU list above.</p>
+                <p class="empty-message">Load Ward Meds or ICU Meds above.</p>
               </div>
             </section>
           </div>
           <footer class="disclaimer">
             <p>This tool is a simplified estimator. Verify requirements with qualified personnel before deployment.</p>
             <!-- Fallback must match version.json "version" when releasing (overwritten when fetch succeeds). -->
-            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.1</span>
+            <span class="version-label shell-suite-build" data-suite-version>Suite v1.1.2</span>
           </footer>
         </div>
       </div>
@@ -1073,10 +1109,8 @@
     })();
   </script>
   <script src="shell.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
-  <script src="../Load Calc Basic/guide-content.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="../Load Calc Basic/equipment-data-basic.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="../Load Calc Basic/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
-  <script src="../Load Calc Pro/guide-content.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="../Load Calc Pro/equipment-data.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="../Load Calc Pro/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="../Water Calc/water-data.js" onerror="window.reportShellScriptLoadError(this.src)"></script>

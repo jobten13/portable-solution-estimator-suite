@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="app-version" content="1.1.1">
+  <meta name="app-version" content="1.1.2">
   <meta name="suite-version" content="">
   <title>Field Hospital Calculator – Consumables Supply List</title>
   <link rel="stylesheet" href="styles.css">
@@ -18,13 +18,21 @@
 
     <div class="toolbar-wrap">
       <div class="toolbar">
-        <button type="button" id="cons-clear-autosave-btn" class="btn btn-delete" title="Clears autosaved worksheet state only. Named saved scenarios are not deleted.">Clear Autosaved State</button>
+        <button type="button" id="cons-clear-autosave-btn" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged.">Restore Autosave</button>
         <span id="cons-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
         <button type="button" class="btn btn-print" id="cons-print-btn">Print</button>
-        <button type="button" class="btn btn-ucd" id="cons-ward-list-btn">UCD Ward List</button>
-        <button type="button" class="btn btn-ucd" id="cons-icu-list-btn">UCD ICU List</button>
+        <button type="button" class="btn btn-ucd" id="cons-ward-list-btn" title="Load the built-in Ward consumables list; replaces the current worksheet list.">Ward Consumables</button>
+        <button type="button" class="btn btn-ucd" id="cons-icu-list-btn" title="Load the built-in ICU consumables list; replaces the current worksheet list.">ICU Consumables</button>
         <button type="button" class="btn btn-clear-items" id="cons-clear-items-btn">Reset Worksheet</button>
-        <span id="cons-file-status" class="status-text">No list loaded</span>
+        <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
+      </div>
+      <div class="help-popover" id="help-popover-toolbar" role="tooltip" hidden>
+        <ul>
+          <li><strong>Restore Autosave</strong> — recovers your last unsaved session</li>
+          <li><strong>Ward/ICU buttons</strong> — load a clinical baseline list</li>
+          <li><strong>Print</strong> — outputs the current view</li>
+          <li><strong>Reset Worksheet</strong> — clears everything and starts fresh; save your scenario first if you want to keep your work</li>
+        </ul>
       </div>
     </div>
 
@@ -36,6 +44,8 @@
       </div>
       <div class="help-popover" id="help-popover-scenarios" role="tooltip" hidden>
         <ul>
+          <li><strong>How your work is kept:</strong> (1) Toolbar <strong>Restore Autosave</strong> — one browser recovery slot for the <em>current</em> worksheet (not a named scenario row). (2) <strong>Save / Load Scenario</strong> — named snapshots in the dropdown. (3) <strong>Export / Import</strong> — files on disk; export does not add a scenario until you <strong>Import</strong> JSON or <strong>Save</strong>.</li>
+          <li>The toolbar <strong>Autosaved:</strong> line shows when the recovery slot was last updated (format <strong>Autosaved: M/D h:mm AM/PM</strong>).</li>
           <li><strong>Save Scenario</strong> stores your current list, deployment inputs, and notes in this browser.</li>
           <li>Use a clear scenario name and notes so assumptions are easy to understand later.</li>
           <li><strong>Load</strong> restores one scenario, <strong>Delete</strong> removes one, and <strong>Clear all</strong> removes all saved scenarios.</li>
@@ -126,14 +136,15 @@
       <div class="help-popover" id="help-popover-inventory" role="tooltip" hidden>
         <ul>
           <li><strong>Per day/Per bed:</strong> Usage rate per bed per day. Total quantity = days × beds × rate × (1 + buffer%).</li>
-          <li>Load the UCD Ward or ICU list. Sort and search to find items quickly.</li>
-          <li><strong>Min Qty</strong> is a view-only filter on total quantity and does not change saved data.</li>
-          <li>Use <strong>Add Item</strong> to add custom consumables. Any row can be deleted in this working scenario, and loading a UCD list restores the original baseline list.</li>
+          <li>Load Ward Consumables or ICU Consumables. Sort and search to find items quickly.</li>
+          <li><strong>Min Qty</strong> is a view-only filter on total quantity; it does not change saved data.</li>
+          <li>Use <strong>Add Item</strong> to add custom consumables. Any row can be deleted in this working scenario, and loading Ward or ICU consumables restores the original baseline list.</li>
         </ul>
       </div>
       <div class="sort-bar">
         <label for="cons-sort-equipment">Sort:</label>
         <select id="cons-sort-equipment" class="sort-select" aria-label="Sort consumables requirements">
+          <option value="source-asc">Source list order</option>
           <option value="name-asc">Name A–Z</option>
           <option value="name-desc">Name Z–A</option>
           <option value="qty-desc">Total quantity High to Low</option>
@@ -155,14 +166,14 @@
       <div class="filter-notice" id="cons-filter-notice" style="display:none;"></div>
       <div class="items-info" id="cons-items-info">0 items loaded</div>
       <div id="cons-consumables-container">
-        <p class="empty-message">Load the UCD Ward or ICU list above.</p>
+        <p class="empty-message">Load Ward Consumables or ICU Consumables above.</p>
       </div>
     </section>
     </div>
 
     <footer class="disclaimer">
       <p>Simplified estimator. Verify quantities and assumptions with qualified personnel before deployment.</p>
-      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.1.1</span>
+      <span class="version-label" data-suite-version></span> · <span class="version-label" id="version-info">Version 1.1.2</span>
     </footer>
   </div>
 

@@ -39,9 +39,9 @@ Open `index.html` in a modern browser. No server required. Works offline.
 - **Save scenario** — Saves quantities, scenario name/notes, generator capacity, and fuel inputs to browser storage. Validation must pass before saving.
 - **Load / Delete / Clear all** — Restore or remove saved scenarios from dropdown.
 - **Import from file / Export to file** — Export format: JSON (backup/re-import) or CSV (human-readable report). Import accepts JSON scenario files. If imported data contains invalid values, the app sanitizes what it can, warns the user, and downloads a printable `.txt` sanitization report with fix guidance.
-- **Worksheet autosave/restore** — In-progress worksheet state autosaves locally and restores on reopen in the same browser.
-- **Clear Autosaved State** (toolbar) — Removes only worksheet autosave data; named saved scenarios are not deleted.
-- **Last autosaved** (toolbar) — Shows the timestamp of the most recent worksheet autosave in this browser.
+- **Worksheet autosave** — In-progress worksheet state is saved to a **recovery slot** in this browser (debounced while you work). The page does **not** auto-restore that slot on open; use **Restore Autosave** when you want to pull the last autosaved state back into the sheet.
+- **Restore Autosave** (toolbar) — Grey (**secondary**) button. Restores worksheet state from the autosave recovery slot. Named saved scenarios in the dropdown are unchanged.
+- **Autosaved:** (toolbar) — Text next to Restore Autosave when a timestamp exists. Format: **Autosaved: M/D h:mm AM/PM** (no year, no seconds). Empty when there is nothing to show.
 
 ### Validation and UX
 - **Input validation** — Generator capacity, fuel capacity, and table quantities validated on blur with red border and inline message. Save blocked when errors exist.
@@ -55,8 +55,8 @@ Open `index.html` in a modern browser. No server required. Works offline.
 
 ## UX/UI design
 
-- **Layout:** Banner → Toolbar (Clear Autosaved State, Last autosaved, Print, User guide, Reset Quantities, Reset Worksheet) → Scenarios (with name/notes) → Sort bar → Search bar → Main grid (categories column + sidebar). Sidebar: Load summary, generator capacity check, fuel & runtime.
-- **Suite alignment:** Same banner, scenario block pattern, and button roles (Print blue, Save/Load green, Delete amber, Clear red, Secondary gray). Collapsible categories; status pill for capacity.
+- **Layout:** Banner → Toolbar (**Restore Autosave**, **Autosaved:** timestamp, Print, User guide, Reset Quantities, Reset Worksheet) → Scenarios (with name/notes) → Sort bar → Search bar → Main grid (categories column + sidebar). Sidebar: Load summary, generator capacity check, fuel & runtime.
+- **Suite alignment:** Same banner, scenario block pattern, and button roles (Print blue, Save/Load green, Delete amber, Clear red, **Restore Autosave** and Import/Export as grey secondary). Collapsible categories; status pill for capacity.
 
 ---
 
@@ -84,7 +84,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 - **Scenarios help** explains save/load/delete/clear/import/export (including export format: JSON or CSV) and scenario naming guidance.
 - **Equipment list help** (next to Sort) explains list focus tools and filtered-view subtotal behavior.
 - **Summary/capacity/fuel helps** clarify all-items calculation basis and planning assumptions.
-- **Toolbar buttons** (Print, User guide, Reset Quantities, Reset Worksheet, Clear Autosaved State) and **Import/Export** have tooltips describing what each does.
+- **Toolbar buttons** (Print, User guide, Reset Quantities, Reset Worksheet, **Restore Autosave**) and **Import/Export** have tooltips describing what each does.
 - **User guide** opens the README (rendered in-page); content is embedded so it works offline. After editing README.md, run `build-guide-content.ps1` to refresh the in-app guide.
 
 ---

@@ -135,8 +135,8 @@
 
   function listTypeFromFileName(fileName) {
     if (!fileName) return null;
-    if (fileName === 'UCD Ward Meds') return 'ward';
-    if (fileName === 'UCD ICU Meds') return 'icu';
+    if (fileName === 'Ward Meds') return 'ward';
+    if (fileName === 'ICU Meds') return 'icu';
     return 'custom';
   }
 
@@ -370,6 +370,7 @@
     if (g('meds-load-btn')) g('meds-load-btn').addEventListener('click', loadSelectedScenario);
     if (g('meds-delete-btn')) g('meds-delete-btn').addEventListener('click', deleteSelectedScenario);
     if (g('meds-clear-btn')) g('meds-clear-btn').addEventListener('click', clearAllScenarios);
+    if (g('meds-scenario-select')) g('meds-scenario-select').addEventListener('change', syncScenarioSelectTitle);
     if (g('meds-import-btn')) g('meds-import-btn').addEventListener('click', () => { g('meds-import-file-input').click(); });
     if (g('meds-import-file-input')) g('meds-import-file-input').addEventListener('change', handleImportFile);
     if (g('meds-export-btn')) g('meds-export-btn').addEventListener('click', onExportToFile);
@@ -468,7 +469,7 @@
 
     if (filteredConsumables.length === 0) {
       if (allConsumables.length === 0) {
-        container.innerHTML = '<p class="empty-message">Load the UCD Ward or ICU list above.</p>';
+        container.innerHTML = '<p class="empty-message">Load Ward Meds or ICU Meds above.</p>';
       } else {
         container.innerHTML = '<p class="empty-message">No items match your search.</p>';
       }
@@ -621,12 +622,6 @@
     currentFileName = currentFileName || 'Custom List';
     currentListType = currentListType || 'custom';
 
-    const fs = g('meds-file-status');
-    if (fs) {
-      fs.textContent = currentFileName;
-      fs.style.color = '#28a745';
-    }
-
     nameEl.value = '';
     rateEl.value = '';
     filterItems();
@@ -700,6 +695,18 @@
     URL.revokeObjectURL(a.href);
   }
 
+  function acknowledge(btnId, text) {
+    const btn = g(btnId);
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = text;
+    btn.classList.add('btn-success');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('btn-success');
+    }, 1500);
+  }
+
   function calculateItemQuantity(usagePerDayPerBed) {
     const baseQuantity = deploymentDays * deploymentBeds * usagePerDayPerBed;
     const bufferMultiplier = 1 + (bufferPercentage / 100);
@@ -715,9 +722,21 @@
   function updateItemsInfo() {
     const info = g('meds-items-info');
     if (!info) return;
+    if (allConsumables.length === 0) {
+      info.style.display = 'none';
+      return;
+    }
+    info.style.display = '';
     const count = filteredConsumables.length;
     const total = allConsumables.length;
-    if (count === total) {
+    const label = currentFileName;
+    if (label) {
+      if (count === total) {
+        info.textContent = `${total} ${label} items loaded`;
+      } else {
+        info.textContent = `${count} of ${total} ${label} items shown`;
+      }
+    } else if (count === total) {
       info.textContent = `${total} items loaded`;
     } else {
       info.textContent = `${count} of ${total} items shown`;
@@ -837,6 +856,14 @@
     }
   }
 
+  function syncScenarioSelectTitle() {
+    const select = g('meds-scenario-select');
+    if (!select) return;
+    const opt = select.selectedOptions && select.selectedOptions[0];
+    const text = opt ? String(opt.textContent || '').trim() : '';
+    select.title = text;
+  }
+
   function updateScenarioDropdown() {
     const select = g('meds-scenario-select');
     if (!select) return;
@@ -864,6 +891,7 @@
     if (loadBtn) loadBtn.disabled = disabled;
     if (deleteBtn) deleteBtn.disabled = disabled;
     if (clearBtn) clearBtn.disabled = disabled;
+    syncScenarioSelectTitle();
   }
 
   function loadSelectedScenario() {
@@ -907,13 +935,9 @@
     if (scenario.fileName) {
       currentFileName = scenario.fileName;
       currentListType = resolveListType(scenario);
-      const fse = g('meds-file-status');
-      if (fse) { fse.textContent = currentFileName; fse.style.color = '#28a745'; }
     } else {
       currentFileName = null;
       currentListType = null;
-      const fse2 = g('meds-file-status');
-      if (fse2) { fse2.textContent = 'No list loaded'; fse2.style.color = '#666'; }
     }
     if (g('meds-scenario-name')) g('meds-scenario-name').value = scenario.baseName || scenario.name || '';
     if (g('meds-scenario-notes')) g('meds-scenario-notes').value = scenario.notes || '';
@@ -924,7 +948,7 @@
     calculateAndDisplay();
     saveData();
     scenarioLoadGuardDirty = false;
-    showFeedback(`Scenario "${scenario.name}" loaded successfully!`, 'success');
+    acknowledge('meds-load-btn', 'Loaded!');
   }
 
   function deleteSelectedScenario() {
@@ -1037,13 +1061,9 @@
         if (scenario.fileName) {
           currentFileName = scenario.fileName;
           currentListType = resolveListType(scenario);
-          const fse = g('meds-file-status');
-          if (fse) { fse.textContent = currentFileName; fse.style.color = '#28a745'; }
         } else {
           currentFileName = null;
           currentListType = null;
-          const fse2 = g('meds-file-status');
-          if (fse2) { fse2.textContent = 'No list loaded'; fse2.style.color = '#666'; }
         }
         // Imported files have name only; saved scenarios have baseName and name.
         if (g('meds-scenario-name')) g('meds-scenario-name').value = scenario.name || '';
@@ -1055,13 +1075,13 @@
         scenarioLoadGuardDirty = false;
         if (issues.length > 0) {
           downloadImportIssueReport(sourceFileName, issues);
-          showFeedback(`Imported with ${issues.length} data issue(s). Report downloaded for review/printing.`, 'error');
+          acknowledge('meds-import-btn', `Imported (${issues.length} issue${issues.length === 1 ? '' : 's'})`);
         } else {
-          showFeedback('Scenario imported successfully.', 'success');
+          acknowledge('meds-import-btn', 'Imported!');
         }
       } catch (err) {
         console.error(err);
-        showFeedback(`Import failed: ${err.message || 'Invalid or corrupted file.'} Use a scenario JSON exported from this calculator.`, 'error');
+        acknowledge('meds-import-btn', 'Invalid file');
       }
       input.value = '';
     };
@@ -1172,7 +1192,19 @@
     }
     try {
       const date = new Date(tsIsoString);
-      el.textContent = isNaN(date.getTime()) ? '' : 'Last autosaved: ' + date.toLocaleString();
+      if (isNaN(date.getTime())) {
+        el.textContent = '';
+        return;
+      }
+      const mo = date.getMonth() + 1;
+      const day = date.getDate();
+      const h24 = date.getHours();
+      const min = date.getMinutes();
+      const ampm = h24 >= 12 ? 'PM' : 'AM';
+      let h12 = h24 % 12;
+      if (h12 === 0) h12 = 12;
+      const mm = min < 10 ? '0' + min : String(min);
+      el.textContent = `Autosaved: ${mo}/${day} ${h12}:${mm} ${ampm}`;
     } catch (e) {
       el.textContent = '';
     }
@@ -1190,12 +1222,15 @@
   function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 3000;
-    let container = document.getElementById('toast-container');
+    const host =
+      document.getElementById('panel-medications') ||
+      document.querySelector('.meds-calc') ||
+      document.body;
+    let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
-      container.id = 'toast-container';
       container.className = 'toast-container';
-      document.body.appendChild(container);
+      host.appendChild(container);
     }
     const toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
@@ -1312,13 +1347,9 @@
     if (savedFileName) {
       currentFileName = savedFileName;
       currentListType = listTypeFromFileName(savedFileName);
-      const fs = g('meds-file-status');
-      if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
     } else {
       currentFileName = null;
       currentListType = allConsumables.length > 0 ? 'custom' : null;
-      const fs = g('meds-file-status');
-      if (fs) { fs.textContent = 'No list loaded'; fs.style.color = '#666'; }
     }
     calculateAndDisplay();
     let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
@@ -1339,7 +1370,7 @@
       return;
     }
     loadSavedData();
-    showToast('Restored last autosave.', 'success', 2500);
+    showToast('Restored worksheet from autosave.', 'success', 2500);
   }
 
   function escapeHtml(text) {
@@ -1381,9 +1412,6 @@
       showFeedback('Items cleared; storage preference could not be updated.', 'info');
     }
 
-    const fs = g('meds-file-status');
-    if (fs) { fs.textContent = 'No list loaded'; fs.style.color = '#666'; }
-
     const pb = g('meds-pharma-list-btn');
     if (pb) pb.classList.remove('active');
     const psb = g('meds-pharma-secondary-list-btn');
@@ -1419,23 +1447,21 @@
 
   function loadPharmaList() {
     if (typeof PHARMA_ITEMS === 'undefined' || !PHARMA_ITEMS.length) {
-      showFeedback('UCD Ward Meds list is not available. Add data to consumables-lists.js.', 'info');
+      showFeedback('Ward Meds list is not available. Add data to medications-data.js (PHARMA_ITEMS).', 'info');
       return;
     }
     try {
       allConsumables = JSON.parse(JSON.stringify(PHARMA_ITEMS));
     } catch (e) {
-      console.error('Failed to load UCD Ward Meds list:', e);
+      console.error('Failed to load Ward Meds list:', e);
       allConsumables = [];
-      showFeedback('Could not load UCD list. Data may be invalid.', 'error');
+      showFeedback('Could not load Ward Meds list. Data may be invalid.', 'error');
       return;
     }
     filteredConsumables = allConsumables.slice();
-    currentFileName = 'UCD Ward Meds';
+    currentFileName = 'Ward Meds';
     currentListType = 'ward';
 
-    const fs = g('meds-file-status');
-    if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
     const searchEl = g('meds-search');
     if (searchEl) searchEl.value = '';
     const minQtyEl = g('meds-min-qty-filter');
@@ -1452,28 +1478,26 @@
     updateItemsInfo();
     saveData();
     scenarioLoadGuardDirty = false;
-    showFeedback('UCD Ward Meds loaded', 'success');
+    showFeedback('Ward Meds loaded', 'success');
   }
 
   function loadSecondaryPharmaList() {
     if (typeof PHARMA_ITEMS_SECONDARY === 'undefined' || !PHARMA_ITEMS_SECONDARY.length) {
-      showFeedback('UCD ICU Meds list is not available. Add data to consumables-lists.js (PHARMA_ITEMS_SECONDARY).', 'info');
+      showFeedback('ICU Meds list is not available. Add data to medications-data.js (PHARMA_ITEMS_SECONDARY).', 'info');
       return;
     }
     try {
       allConsumables = JSON.parse(JSON.stringify(PHARMA_ITEMS_SECONDARY));
     } catch (e) {
-      console.error('Failed to load UCD ICU Meds list:', e);
+      console.error('Failed to load ICU Meds list:', e);
       allConsumables = [];
-      showFeedback('Could not load UCD ICU Meds list. Data may be invalid.', 'error');
+      showFeedback('Could not load ICU Meds list. Data may be invalid.', 'error');
       return;
     }
     filteredConsumables = allConsumables.slice();
-    currentFileName = 'UCD ICU Meds';
+    currentFileName = 'ICU Meds';
     currentListType = 'icu';
 
-    const fs = g('meds-file-status');
-    if (fs) { fs.textContent = currentFileName; fs.style.color = '#28a745'; }
     const searchEl = g('meds-search');
     if (searchEl) searchEl.value = '';
     const minQtyEl = g('meds-min-qty-filter');
@@ -1490,7 +1514,7 @@
     updateItemsInfo();
     saveData();
     scenarioLoadGuardDirty = false;
-    showFeedback('UCD ICU Meds loaded', 'success');
+    showFeedback('ICU Meds loaded', 'success');
   }
 
   function init() {
@@ -1512,6 +1536,7 @@
     } catch (e) { /* ignore */ }
     updateAddItemRatePlaceholder();
     updateInventoryHelpRateLabel();
+    updateItemsInfo();
   }
 
   if (document.readyState === 'loading') {

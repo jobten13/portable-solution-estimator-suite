@@ -1,6 +1,6 @@
 # Consumables Supply List Calculator
 
-Part of the **Field Hospital Calculator** suite. **Standalone module:** this folder is self-contained and can be used independently (e.g. deployed alone, or given to a different team). It does not depend on the Pharmaceuticals calc or any shared code. Manages consumables requirements for field hospital deployments: load pre-built UCD Ward or ICU lists, set deployment parameters (days, beds, buffer), and save/load scenarios. Sort and search filter the list.
+Part of the **Field Hospital Calculator** suite. **Standalone module:** this folder is self-contained and can be used independently (e.g. deployed alone, or given to a different team). It does not depend on the Pharmaceuticals calc or any shared code. Manages consumables requirements for field hospital deployments: load pre-built Ward Consumables or ICU Consumables lists, set deployment parameters (days, beds, buffer), and save/load scenarios. Sort and search filter the list.
 
 ## Suite versioning
 
@@ -12,17 +12,24 @@ Part of the **Field Hospital Calculator** suite. **Standalone module:** this fol
 
 Open `index.html` in a modern browser. No server required. Works offline.
 
-**Dependencies:** `consumables.js` (main logic), `consumables-lists.js` (UCD Ward/ICU list data), `styles.css`.
+**Dependencies:** `consumables.js` (main logic), `consumables-lists.js` (Ward/ICU consumables list data), `styles.css`.
 
 ---
 
 ## Functionality
 
 ### Data sources
-- **UCD Ward List** — Load the built-in Ward consumables list from `consumables-lists.js`.
-- **UCD ICU List** — Load the built-in ICU consumables list from `consumables-lists.js`.
+- **Ward Consumables** — Load the built-in Ward consumables list from `consumables-lists.js`.
+- **ICU Consumables** — Load the built-in ICU consumables list from `consumables-lists.js`.
 - **Add Item** — Add a custom consumable with a per-day/per-bed rate directly in the calculator.
-- **Clear All Items** — Remove all items and reset to empty state.
+- **Reset Worksheet** — Remove all items and reset to empty state (toolbar; clears deployment inputs and scenario name/notes per app behavior).
+
+### Toolbar: autosave and list-loading tooltips
+- **Restore Autosave** — Grey (**secondary**) button. Restores the last autosaved worksheet state in this browser (recovery slot); named scenarios in the dropdown are unchanged.
+- **Autosaved:** — Text next to Restore Autosave when a timestamp exists. Format: **Autosaved: M/D h:mm AM/PM** (no year, no seconds). Empty when there is no autosave to show.
+- **Ward Consumables** / **ICU Consumables** — Blue/gold (**`.btn-ucd`**) buttons. Hover tooltips (browser `title` attribute):
+  - **Ward Consumables:** *Load the built-in Ward consumables list; replaces the current worksheet list.*
+  - **ICU Consumables:** *Load the built-in ICU consumables list; replaces the current worksheet list.*
 
 ### Deployment parameters
 - **Expected Length of Deployment (Days)** — Number of days (used for scaling or notes; can drive per-day logic if implemented).
@@ -31,8 +38,9 @@ Open `index.html` in a modern browser. No server required. Works offline.
 
 ### Consumables requirements table
 - **Per row:** Item name and calculated quantity. Totals/summary reflect visible rows after search.
-- **Row deletion:** Any row can be deleted using the row-level **Delete** action for scenario-specific tailoring. Loading a UCD list restores the original baseline list.
-- **Sort** — Name A–Z/Z–A, Total quantity High to Low / Low to High (persisted).
+- **Row deletion:** Any row can be deleted using the row-level **Delete** action for scenario-specific tailoring. Loading Ward or ICU consumables restores the original baseline list.
+- **Items count line** — Below the search box: when a list is loaded, shows counts such as **`236 Ward Consumables items loaded`** or **`184 ICU Consumables items loaded`**, or **`N of M Ward Consumables items shown`** when filters/search hide rows. The toolbar no longer shows a separate “list status” label; the active list name is included in this line. Hidden when the worksheet has no items (empty state message applies).
+- **Sort** — Name A–Z/Z–A, Total quantity High to Low / Low to High, plus **Source list order** when a built-in list is active (persisted).
 - **Search** — Filter items by name (live); row count and totals use visible rows only.
 
 ### Scenarios
@@ -52,8 +60,8 @@ Open `index.html` in a modern browser. No server required. Works offline.
 
 ## UX/UI design
 
-- **Layout:** Banner → Toolbar (Print, UCD Ward/ICU, Clear All Items, list status) → Scenarios → Deployment Parameters (highlight) → Consumables Requirements (sort, search, item count, table).
-- **Suite alignment:** Same banner, scenario block, and button roles (Print blue, UCD/list buttons, Save/Load green, Delete amber, Clear red, Secondary gray). IDs use `cons-` prefix for clarity.
+- **Layout:** Banner → Toolbar (**Restore Autosave**, **Autosaved:** timestamp, Print, **Ward Consumables** / **ICU Consumables**, **Reset Worksheet**) → Scenarios → Deployment Parameters (highlight) → Consumables Requirements (sort, search, items count line, table).
+- **Suite alignment:** Same banner, scenario block, and button roles (Print blue, Ward/ICU list buttons in UC Davis blue/gold, Save/Load green, Delete amber, Clear red, **Restore Autosave** and Import/Export as grey secondary). IDs use `cons-` prefix for clarity.
 
 ---
 
@@ -63,7 +71,7 @@ Open `index.html` in a modern browser. No server required. Works offline.
 |------|--------|
 | `index.html` | Structure, toolbar, scenario UI, deployment params, sort/search, table container. |
 | `consumables.js` | Table build, recalc, validation, scenarios, search filter, sort, placeholder/focus behavior. |
-| `consumables-lists.js` | UCD Ward and ICU consumables list data (item names and default quantities). |
+| `consumables-lists.js` | Ward and ICU consumables list data (item names and default quantities). |
 | `styles.css` | Layout, cards, table, validation and placeholder styles, print. |
 | `stress-test-robust.html` | Standalone robustness test harness for consumables quantity calculations and data invariants. |
 
@@ -77,8 +85,8 @@ Open `index.html` in a modern browser. No server required. Works offline.
 ### Future implementation note
 - Consider an intentional empty-start experience on open (no list preloaded), with a clear starter prompt in the table area:
   - `Get started` message
-  - `Load UCD Ward List` button
-  - `Load UCD ICU List` button
+  - `Ward Consumables` button
+  - `ICU Consumables` button
 - This should call existing list-load handlers (no duplicated logic) and keep current toolbar buttons as-is.
 
 ---
