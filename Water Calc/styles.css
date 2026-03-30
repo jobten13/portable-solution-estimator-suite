@@ -633,12 +633,14 @@
   border: 1px solid #2563eb;
 }
 
-.water-calc .disclaimer {
-  margin-top: auto;
-  padding: 16px 30px;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
-  text-align: center;
+/* Footer disclaimer — match Load Calc Basic .load-basic-calc .footer.disclaimer */
+.water-calc .footer.disclaimer {
+  margin: 0;
+  padding: 14px 24px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
 }
 
 .water-calc .version-label {
