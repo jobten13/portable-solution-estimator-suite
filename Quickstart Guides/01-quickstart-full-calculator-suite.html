@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Start — Full Calculator Suite</title>
+  <style>
+    * { box-sizing: border-box; }
+    html { margin: 0; }
+    body {
+      margin: 0;
+      background: #fff;
+      color: #111827;
+      font-family: Arial, system-ui, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.5;
+    }
+    .shell-doc {
+      line-height: 1.42;
+    }
+    .doc-header {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 16px 24px;
+      width: 100%;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .shell-doc .doc-header {
+      padding: 10px 18px;
+    }
+    .doc-header-subtitle {
+      font-size: 9pt;
+      font-weight: normal;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .doc-header-title {
+      font-size: 14pt;
+      font-weight: 700;
+      margin: 0.35em 0 0.2em;
+      line-height: 1.25;
+    }
+    .doc-header-version {
+      font-size: 8pt;
+      color: rgba(255, 255, 255, 0.88);
+      margin: 0;
+    }
+    .doc-main {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.75in;
+    }
+    .doc-section-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid #1e3a5f;
+      padding-bottom: 0.35em;
+      margin: 1em 0 0.45em;
+    }
+    .doc-section-title:first-of-type { margin-top: 0; }
+    .shell-doc .doc-section-title {
+      padding-bottom: 0.22em;
+      margin: 0.58em 0 0.28em;
+    }
+    .shell-doc .doc-section-title:first-of-type { margin-top: 0; }
+    p { margin: 0 0 0.5em; }
+    .shell-doc .doc-main > p { margin: 0 0 0.32em; }
+    ul, ol {
+      margin: 0 0 0.5em;
+      padding-left: 1.35em;
+    }
+    .shell-doc .doc-main ol {
+      margin: 0 0 0.32em;
+      padding-left: 1.2em;
+    }
+    ul li, ol li { margin-bottom: 4px; }
+    .shell-doc .doc-main ol li { margin-bottom: 1px; }
+    .calc-block { margin-bottom: 0.35em; }
+    .shell-doc .calc-block { margin-bottom: 0.12em; }
+    .calc-name {
+      display: block;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .shell-doc .calc-name {
+      margin: 0;
+      line-height: 1.2;
+      font-weight: normal;
+      color: inherit;
+    }
+    .shell-doc .calc-name strong {
+      font-weight: 700;
+      color: #1e3a5f;
+    }
+    .calc-desc {
+      margin: 0.1em 0 0.45em;
+      padding-left: 1.25em;
+      font-weight: normal;
+      color: #111827;
+      line-height: 1.45;
+    }
+    .shell-doc .calc-desc {
+      margin: 0 0 0.12em;
+      padding-left: 1.1em;
+      line-height: 1.32;
+    }
+    .doc-footer { margin-top: 0.65em; }
+    .shell-doc .doc-footer { margin-top: 0.35em; }
+    .doc-footer-rule {
+      border: none;
+      border-top: 1px solid #1e3a5f;
+      margin: 0 0 0.45em;
+    }
+    .shell-doc .doc-footer-rule { margin: 0 0 0.3em; }
+    .doc-footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1em;
+      font-size: 8pt;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+    .doc-footer-inner span:last-child { text-align: right; max-width: 55%; }
+    @media print {
+      @page { size: letter; margin: 0.75in; }
+      html, body {
+        height: auto !important;
+        min-height: 0 !important;
+      }
+      body { font-size: 9.5pt; }
+      .doc-header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background: #1e3a5f !important;
+        color: #fff !important;
+      }
+      .doc-main { padding: 0; max-width: none; margin: 0; }
+      .doc-section-title { page-break-after: avoid; }
+      .shell-doc .doc-header {
+        padding: 8px 16px;
+      }
+      .shell-doc .doc-header-title {
+        margin: 0.2em 0 0.08em;
+      }
+      .shell-doc .doc-header-subtitle {
+        line-height: 1.2;
+      }
+      .shell-doc .doc-section-title { margin-top: 0.42em; }
+      .shell-doc .doc-section-title:first-of-type { margin-top: 0; }
+      .shell-doc .doc-main > p,
+      .shell-doc .doc-main ol { margin-bottom: 0.25em; }
+      .shell-doc .calc-block { margin-bottom: 0.08em; }
+      .shell-doc .calc-desc { margin-bottom: 0.08em; }
+      .shell-doc .doc-footer { margin-top: 0.28em; }
+      .shell-doc .doc-footer-rule { margin-bottom: 0.22em; }
+    }
+  </style>
+</head>
+<body class="shell-doc">
+  <header class="doc-header">
+    <p class="doc-header-subtitle">Field Hospital Calculator Suite</p>
+    <p class="doc-header-title">Quick Start — Full Calculator Suite</p>
+    <p class="doc-header-version">Version 1.1.2</p>
+  </header>
+  <main class="doc-main">
+    <h2 class="doc-section-title">1. What is this tool?</h2>
+    <p>This is the <strong>Field Hospital Calculator Suite</strong>, a browser-based planning tool for field hospital deployment. It helps clinical and logistics teams estimate consumable supplies, pharmaceutical needs, water requirements, and electrical (generator) load. You do not need to install software; it runs in your web browser when you open it from the folder you were given.</p>
+
+    <h2 class="doc-section-title">2. How to open the tool</h2>
+    <ol>
+      <li>Locate the file you received — either a zip file or a folder.</li>
+      <li>If it is a zip file, right-click it and choose <strong>Extract All</strong> (Windows) or double-click to unzip (Mac).</li>
+      <li>In the <strong>top-level</strong> folder (the one that contains <strong>Calcs Shell</strong> and the calculator folders), double-click <strong>0_START_HERE_Click_to_Open_Calculator.html</strong>. It sends you straight into the suite. If nothing happens, use the link on that page, or open the <strong>Calcs Shell</strong> folder and double-click <strong>index.html</strong> instead.</li>
+      <li>The tool will open in your web browser.</li>
+      <li>If asked which browser to use, choose <strong>Chrome</strong> or <strong>Edge</strong>.</li>
+      <li>Use the buttons at the top of the page to switch between calculators.</li>
+    </ol>
+
+    <h2 class="doc-section-title">3. The five calculators</h2>
+    <div class="calc-block">
+      <p class="calc-name"><strong>Consumables</strong></p>
+      <p class="calc-desc">Ward/ICU consumable quantities from built-in lists, scaled by deployment length, beds, and optional buffer.</p>
+    </div>
+    <div class="calc-block">
+      <p class="calc-name"><strong>Pharmaceuticals</strong></p>
+      <p class="calc-desc">Medication quantities from built-in ward or ICU lists using your deployment details.</p>
+    </div>
+    <div class="calc-block">
+      <p class="calc-name"><strong>Water</strong></p>
+      <p class="calc-desc">Potable and wastewater volumes and delivery or pickup timing over the deployment.</p>
+    </div>
+    <div class="calc-block">
+      <p class="calc-name"><strong>Load Basic</strong></p>
+      <p class="calc-desc">Total electrical load (kilowatts) from standard lists versus an available generator—simpler than Load Pro.</p>
+    </div>
+    <div class="calc-block">
+      <p class="calc-name"><strong>Load Pro</strong></p>
+      <p class="calc-desc">Detailed load including equipment startup demand, generator sizing, and optional fuel runtime.</p>
+    </div>
+
+    <h2 class="doc-section-title">4. Saving your work</h2>
+    <p>The tool saves your in-progress work automatically in the background as you use it. You can also save <strong>named scenarios</strong> to come back to later in the same browser. Use <strong>Export</strong> to create a file you can keep as a backup or share with others. For the most reliable experience, use the suite in <strong>one browser tab at a time</strong> — avoid opening the same tool in several tabs at once.</p>
+
+    <h2 class="doc-section-title">5. If something goes wrong</h2>
+    <p>If the page looks blank or broken, try a hard refresh: press Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac). If some of your work seems missing, use the Restore Autosave button on the toolbar of the calculator you were using; that brings back the last automatically saved state without changing your saved named scenarios.</p>
+  </main>
+  <footer class="doc-footer">
+    <hr class="doc-footer-rule">
+    <div class="doc-footer-inner">
+      <span>Field Hospital Calculator Suite v1.1.2</span>
+      <span>For planning use only. Verify all outputs with qualified personnel before deployment.</span>
+    </div>
+  </footer>
+</body>
+</html>

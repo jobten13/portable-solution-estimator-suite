@@ -33,7 +33,7 @@
       "date": "2026-03-12T00:00:00.000Z",
       "changes": [
         "Toolbar (nav) reordered: Consumables, Medicines, Water, Load Basic, Load Pro; default panel Consumables",
-        "Nav buttons given tooltips; README intro and docs updated to match tab order"
+        "Nav buttons given tooltips; README intro and Quickstart Guides updated to match tab order"
       ]
     },
     {

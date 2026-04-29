@@ -1,0 +1,479 @@
+{
+  "name": "Calcs Shell (Load Pro panel) - Scenario A (1774654448453)",
+  "notes": "Notes A",
+  "availableKva": "0",
+  "fuelTankCapacityGallons": 3,
+  "fuelRateGalPerKw": 0,
+  "rows": [
+    {
+      "name": "CPAP",
+      "qty": "0",
+      "kw": "0.12",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "ECG / EKG",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Electric Hospital Bed",
+      "qty": "0",
+      "kw": "0.25",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "ICU Bed",
+      "qty": "0",
+      "kw": "0.35",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Infusion / Syringe Pump",
+      "qty": "0",
+      "kw": "0.02",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "IV Administration Pump",
+      "qty": "0",
+      "kw": "0.02",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Orthopedic Cast Cutter",
+      "qty": "0",
+      "kw": "0.4",
+      "pf": "0.8",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Oxygen Concentrator",
+      "qty": "0",
+      "kw": "0.4",
+      "pf": "0.9",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Patient Monitor",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Portable Oxygen Concentrator",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "0.9",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Portable Ultrasound",
+      "qty": "0",
+      "kw": "0.2",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Portable Vital Signs Monitor",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Sequential Compression Device",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "1",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Small Lab Centrifuge",
+      "qty": "0",
+      "kw": "0.05",
+      "pf": "0.85",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Suction Machine",
+      "qty": "0",
+      "kw": "0.05",
+      "pf": "0.8",
+      "catId": "cat-standard"
+    },
+    {
+      "name": "Anesthesia Machine",
+      "qty": "0",
+      "kw": "0.12",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Bair Hugger",
+      "qty": "0",
+      "kw": "1.1",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Blanket Warmer",
+      "qty": "0",
+      "kw": "1.2",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Blood Chemistry POC",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Blood Gas Analyzer",
+      "qty": "0",
+      "kw": "0.4",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Chemistry Analyzer",
+      "qty": "0",
+      "kw": "1",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Crash Cart (mixed loads)",
+      "qty": "0",
+      "kw": "0.5",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Defibrillator",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Hematology Analyzer",
+      "qty": "0",
+      "kw": "0.4",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Portable Ventilator",
+      "qty": "0",
+      "kw": "0.2",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Portable X-Ray",
+      "qty": "0",
+      "kw": "3",
+      "pf": "0.8",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Rapid Infuser",
+      "qty": "0",
+      "kw": "1",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Refrigerator (Blood Storage)",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "0.75",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Refrigerator (Pharmacy/Specimen)",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "0.75",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Refrigerator Freezer",
+      "qty": "0",
+      "kw": "0.5",
+      "pf": "0.7",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Video Laryngoscope",
+      "qty": "0",
+      "kw": "0.05",
+      "pf": "1",
+      "catId": "cat-emergency"
+    },
+    {
+      "name": "Computer Monitor",
+      "qty": "0",
+      "kw": "0.03",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Desk Light",
+      "qty": "0",
+      "kw": "0.03",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Desktop PC + 1 Monitor",
+      "qty": "0",
+      "kw": "0.2",
+      "pf": "0.95",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Desktop PC + 2 Monitors",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "0.95",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Floor Light - Exam",
+      "qty": "0",
+      "kw": "0.08",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Label printer (thermal)",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Laptop",
+      "qty": "0",
+      "kw": "0.07",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Mini Fridge (Office)",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "0.75",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Multifunction Printer",
+      "qty": "0",
+      "kw": "0.8",
+      "pf": "0.95",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Network Switch / Router (per rack)",
+      "qty": "0",
+      "kw": "0.05",
+      "pf": "0.98",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Office / Task Lighting (per room)",
+      "qty": "0",
+      "kw": "0.15",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Printer (Printing)",
+      "qty": "0",
+      "kw": "0.8",
+      "pf": "0.95",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Printer (Standby)",
+      "qty": "0",
+      "kw": "0.05",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Radio charging base (multi-unit, 6–12 bay)",
+      "qty": "0",
+      "kw": "0.15",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Radio charging base (single)",
+      "qty": "0",
+      "kw": "0.005",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Smartphone (charging)",
+      "qty": "0",
+      "kw": "0.01",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Tablet (charging)",
+      "qty": "0",
+      "kw": "0.015",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Tool Battery Charger",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "TV / Display (large, e.g. 55\")",
+      "qty": "0",
+      "kw": "0.1",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "TV / Display (small, e.g. 32\")",
+      "qty": "0",
+      "kw": "0.05",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "VoIP Phone",
+      "qty": "0",
+      "kw": "0.02",
+      "pf": "1",
+      "catId": "cat-office"
+    },
+    {
+      "name": "Air Shelter Inflator",
+      "qty": "0",
+      "kw": "1.5",
+      "pf": "0.8",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Bladder Fill / Transfer Pump",
+      "qty": "0",
+      "kw": "0.75",
+      "pf": "0.8",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "External Work Light (20K Lumens)",
+      "qty": "0",
+      "kw": "0.25",
+      "pf": "1",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Furnace / Air Handler Blower",
+      "qty": "0",
+      "kw": "0.6",
+      "pf": "0.85",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "HVAC 3.5 Ton",
+      "qty": "0",
+      "kw": "4",
+      "pf": "0.8",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "HVAC 3.5 Ton w/ Heat Strip",
+      "qty": "0",
+      "kw": "8.5",
+      "pf": "0.9",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "HVAC 5 Ton",
+      "qty": "0",
+      "kw": "5.5",
+      "pf": "0.8",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "HVAC 5 Ton w/ Heat Strip",
+      "qty": "0",
+      "kw": "12",
+      "pf": "0.9",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "LED Work Light Tower",
+      "qty": "0",
+      "kw": "1.5",
+      "pf": "1",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Portable LED Work Light",
+      "qty": "0",
+      "kw": "0.2",
+      "pf": "1",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Portable Shower Pump",
+      "qty": "0",
+      "kw": "0.5",
+      "pf": "0.75",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Portable Sink Pump (Hygiene Station)",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "0.8",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Sump Pump (Hygiene Center)",
+      "qty": "0",
+      "kw": "0.5",
+      "pf": "0.75",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Tactical Stringable Lights",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "1",
+      "catId": "cat-hvac"
+    },
+    {
+      "name": "Water Pump (Hygiene Center)",
+      "qty": "0",
+      "kw": "0.3",
+      "pf": "0.75",
+      "catId": "cat-hvac"
+    }
+  ],
+  "schemaVersion": 1
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Start — Load Calculator (Pro)</title>
+  <style>
+    * { box-sizing: border-box; }
+    html { margin: 0; }
+    body {
+      margin: 0;
+      background: #fff;
+      color: #111827;
+      font-family: Arial, system-ui, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.5;
+    }
+    .doc-header {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 16px 24px;
+      width: 100%;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .doc-header-subtitle {
+      font-size: 9pt;
+      font-weight: normal;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .doc-header-title {
+      font-size: 14pt;
+      font-weight: 700;
+      margin: 0.35em 0 0.2em;
+      line-height: 1.25;
+    }
+    .doc-header-version {
+      font-size: 8pt;
+      color: rgba(255, 255, 255, 0.88);
+      margin: 0;
+    }
+    .doc-main {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.75in;
+    }
+    .doc-section-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid #1e3a5f;
+      padding-bottom: 0.35em;
+      margin: 1em 0 0.45em;
+    }
+    .doc-section-title:first-of-type { margin-top: 0; }
+    p { margin: 0 0 0.5em; }
+    ul, ol {
+      margin: 0 0 0.5em;
+      padding-left: 1.35em;
+    }
+    ul li, ol li { margin-bottom: 4px; }
+    .doc-footer { margin-top: 0.65em; }
+    .doc-footer-rule {
+      border: none;
+      border-top: 1px solid #1e3a5f;
+      margin: 0 0 0.45em;
+    }
+    .doc-footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1em;
+      font-size: 8pt;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+    .doc-footer-inner span:last-child { text-align: right; max-width: 55%; }
+    @media print {
+      @page { size: letter; margin: 0.75in; }
+      html, body {
+        height: auto !important;
+        min-height: 0 !important;
+      }
+      body { font-size: 9.5pt; }
+      .doc-header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background: #1e3a5f !important;
+        color: #fff !important;
+      }
+      .doc-main { padding: 0; max-width: none; margin: 0; }
+      .doc-section-title { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header class="doc-header">
+    <p class="doc-header-subtitle">Field Hospital Calculator Suite</p>
+    <p class="doc-header-title">Quick Start — Load Calculator (Pro)</p>
+    <p class="doc-header-version">Version 1.1.2</p>
+  </header>
+  <main class="doc-main">
+    <h2 class="doc-section-title">1. What this calculator does</h2>
+    <p>This calculator estimates <strong>electrical load</strong> for a field hospital–style site in more detail than the Basic version. It uses both <strong>kilowatts</strong> (useful power) and <strong>kilovolt-amperes</strong> (a common way generators are rated), lets you adjust <strong>how each item is modeled electrically</strong> where the form allows, estimates <strong>extra demand when large equipment first starts</strong>, suggests a <strong>generator size</strong> that considers both steady running load and that starting spike, and can estimate <strong>fuel runtime</strong>. You can adjust built-in equipment values and add custom rows. It is for <strong>planning and engineering review support</strong>, not as a substitute for a qualified electrical engineer’s final design.</p>
+
+    <h2 class="doc-section-title">2. Before you start</h2>
+    <ul>
+      <li>Rough <strong>equipment list</strong> and quantities, including any items not on the standard lists (you can add custom rows).</li>
+      <li>If known, the <strong>actual generator size</strong> you want to check against (in kVA).</li>
+      <li>Optional: <strong>fuel tank capacity</strong> and consumption assumptions for runtime.</li>
+      <li>A <strong>scenario name</strong> and <strong>notes</strong> if you plan to save versions.</li>
+    </ul>
+
+    <h2 class="doc-section-title">3. How to use it — step by step</h2>
+    <ol>
+      <li>Open the Load Pro calculator from the suite.</li>
+      <li>Go through each <strong>category</strong> and enter <strong>quantities</strong>. Where the table allows, adjust <strong>power draw per item</strong> and the <strong>power factor (PF) for each row</strong> if your equipment differs from the defaults.</li>
+      <li>Use <strong>Add custom row</strong> where needed, and remove rows you do not need.</li>
+      <li>Use <strong>search</strong> to focus the list; the sidebar shows <strong>totals for all equipment</strong> and, when searching, <strong>subtotals for visible rows</strong>.</li>
+      <li>Review the <strong>summary</strong>: running load, peak starting demand, recommended generator size, and the <strong>generator capacity check</strong> against the size you enter (including status such as adequate margin, tight, insufficient, or peak-start failure).</li>
+      <li>Optional: enter <strong>fuel</strong> information for approximate runtime.</li>
+      <li>Use category resets or full sheet reset tools if you need to start over.</li>
+      <li><strong>Save</strong>, <strong>export</strong>, or <strong>print</strong> when the plan is ready.</li>
+    </ol>
+
+    <h2 class="doc-section-title">4. Understanding the results</h2>
+    <p><strong>Running load</strong> describes steady operation. <strong>Peak starting</strong> reflects a conservative estimate of the worst moment when a large motor-type load starts while other equipment is already running — important for picking a generator that will not trip or overload. <strong>Recommended generator size</strong> takes the larger of that peak need and a standard continuous-load margin. The <strong>capacity check</strong> shows how your plan compares to a real generator you specify. <strong>Fuel runtime</strong> is a simple estimate from load and tank data. Together, these support <strong>sizing discussions and engineering review</strong>; they are not a code-compliant study by themselves.</p>
+
+    <h2 class="doc-section-title">5. Saving your work</h2>
+    <p>Save a <strong>named scenario</strong> with <strong>Save scenario</strong> when you want a version you can reload later in this browser. Use <strong>Export to file</strong> to keep a backup or send your plan to someone else. If something disappears from the screen, try <strong>Restore Autosave</strong> on the toolbar to recover the last automatically saved worksheet state.</p>
+  </main>
+  <footer class="doc-footer">
+    <hr class="doc-footer-rule">
+    <div class="doc-footer-inner">
+      <span>Field Hospital Calculator Suite v1.1.2</span>
+      <span>For planning use only. Verify all outputs with qualified personnel before deployment.</span>
+    </div>
+  </footer>
+</body>
+</html>

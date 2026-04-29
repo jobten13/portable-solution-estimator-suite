@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Start — Water Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    html { margin: 0; }
+    body {
+      margin: 0;
+      background: #fff;
+      color: #111827;
+      font-family: Arial, system-ui, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.5;
+    }
+    .doc-header {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 16px 24px;
+      width: 100%;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .doc-header-subtitle {
+      font-size: 9pt;
+      font-weight: normal;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .doc-header-title {
+      font-size: 14pt;
+      font-weight: 700;
+      margin: 0.35em 0 0.2em;
+      line-height: 1.25;
+    }
+    .doc-header-version {
+      font-size: 8pt;
+      color: rgba(255, 255, 255, 0.88);
+      margin: 0;
+    }
+    .doc-main {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.75in;
+    }
+    .doc-section-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid #1e3a5f;
+      padding-bottom: 0.35em;
+      margin: 1em 0 0.45em;
+    }
+    .doc-section-title:first-of-type { margin-top: 0; }
+    p { margin: 0 0 0.5em; }
+    ul, ol {
+      margin: 0 0 0.5em;
+      padding-left: 1.35em;
+    }
+    ul li, ol li { margin-bottom: 4px; }
+    .doc-footer { margin-top: 0.65em; }
+    .doc-footer-rule {
+      border: none;
+      border-top: 1px solid #1e3a5f;
+      margin: 0 0 0.45em;
+    }
+    .doc-footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1em;
+      font-size: 8pt;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+    .doc-footer-inner span:last-child { text-align: right; max-width: 55%; }
+    .water-doc .doc-section-title { margin-top: 0.72em; }
+    .water-doc .doc-section-title:first-of-type { margin-top: 0; }
+    .water-doc .doc-main p,
+    .water-doc .doc-main ul,
+    .water-doc .doc-main ol { margin-bottom: 0.38em; }
+    @media print {
+      @page { size: letter; margin: 0.75in; }
+      body { font-size: 9.5pt; }
+      .doc-header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background: #1e3a5f !important;
+        color: #fff !important;
+      }
+      .doc-main { padding: 0; max-width: none; margin: 0; }
+      .doc-section-title { page-break-after: avoid; }
+      .doc-section-title,
+      p,
+      ul,
+      ol { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body class="water-doc">
+  <header class="doc-header">
+    <p class="doc-header-subtitle">Field Hospital Calculator Suite</p>
+    <p class="doc-header-title">Quick Start — Water Calculator</p>
+    <p class="doc-header-version">Version 1.1.2</p>
+  </header>
+  <main class="doc-main">
+    <h2 class="doc-section-title">1. What this calculator does</h2>
+    <p>This calculator estimates <strong>potable (drinking and clinical) water demand</strong>, <strong>wastewater output</strong>, and how <strong>storage, delivery, and pickup</strong> might look over a deployment. It uses your expected length of operation, bed count, optional buffer, typical use per bed, and — if you enter them — tank or container sizes. It is for <strong>logistics, facilities, and clinical leadership</strong> planning water and sanitation support, not as a substitute for engineering sign-off.</p>
+
+    <h2 class="doc-section-title">2. Before you start</h2>
+    <ul>
+      <li><strong>How long</strong> you expect the facility to run (days).</li>
+      <li><strong>How many beds</strong> you are planning for.</li>
+      <li>Whether you want a <strong>buffer percentage</strong> added to water figures.</li>
+      <li>Whether you will report amounts in <strong>liters</strong> or <strong>gallons</strong> (you can switch in the tool).</li>
+      <li>Optional: container counts and capacities if you use tanks; whether supply is <strong>delivered</strong>, <strong>mains</strong>, or <strong>hybrid</strong>; and wastewater in tanks vs. sewer (if applicable).</li>
+    </ul>
+
+    <h2 class="doc-section-title">3. How to use it — step by step</h2>
+    <ol>
+      <li>Open the water calculator from the suite.</li>
+      <li>Enter <strong>deployment parameters</strong>: expected length of deployment, number of beds, and buffer if used.</li>
+      <li>In <strong>water use</strong>, choose units (liters or gallons), review or adjust typical <strong>potable</strong> and <strong>wastewater</strong> amounts per bed per day if your team uses different planning values, and optionally open the breakdown view if you want a simple split between “gray” and “black” wastewater for awareness.</li>
+      <li>Under <strong>storage configuration</strong>, enter container counts and capacities where you want delivery or pickup estimates; set <strong>supply and disposal mode</strong> (for example, delivered vs. connected to mains or sewer) so the results match your planned setup.</li>
+      <li>Read the <strong>results</strong> for total demand, daily demand, and any delivery or pickup guidance shown, plus the short note that intervals are estimates and real operations need a safety margin.</li>
+      <li>Use <strong>Reset to defaults</strong> if you want to clear inputs back to starting values.</li>
+      <li>Save or export when the plan is ready (see Saving your work).</li>
+    </ol>
+
+    <h2 class="doc-section-title">4. Understanding the results</h2>
+    <p>The calculator shows <strong>how much potable water</strong> you may need over the deployment and <strong>per day</strong>, and <strong>how much wastewater</strong> you may produce over the same period and per day. If you entered storage sizes, it suggests <strong>how often</strong> you might need water deliveries or wastewater pickups, or it describes status when connected to mains or sewer. Use these figures for <strong>logistics planning and discussion with water and waste vendors or engineers</strong>. The schedule note in the tool reminds you that timing is approximate — confirm with your team and local conditions.</p>
+
+    <h2 class="doc-section-title">5. Saving your work</h2>
+    <p>Save a <strong>named scenario</strong> with <strong>Save scenario</strong> when you want a version you can reload later in this browser. Use <strong>Export to file</strong> to keep a backup or send your plan to someone else. If something disappears from the screen, try <strong>Restore Autosave</strong> on the toolbar to recover the last automatically saved worksheet state.</p>
+  </main>
+  <footer class="doc-footer">
+    <hr class="doc-footer-rule">
+    <div class="doc-footer-inner">
+      <span>Field Hospital Calculator Suite v1.1.2</span>
+      <span>For planning use only. Verify all outputs with qualified personnel before deployment.</span>
+    </div>
+  </footer>
+</body>
+</html>

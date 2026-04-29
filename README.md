@@ -6,8 +6,8 @@ This folder (**Calcs Final**) is the **suite root**: five calculators plus an op
 
 | What | Where |
 |------|--------|
-| **Run the full suite (recommended)** | Open **`Calcs Shell/index.html`** in a browser (see [Calcs Shell README](Calcs%20Shell/README.md) for paths and hash navigation). |
-| **Run a calculator alone** | Open that subfolder’s **`index.html`** (e.g. `Load Calc Pro/index.html`). |
+| **Run the full suite (recommended)** | At the **suite root** (same folder as **`Calcs Shell`**), double-click **`0_START_HERE_Click_to_Open_Calculator.html`** — it opens **`Calcs Shell/index.html`**. If that file is missing or blocked, open **`Calcs Shell/index.html`** directly. See [Calcs Shell README](Calcs%20Shell/README.md) for hash navigation. One-pager: **[Quickstart Guides/01-quickstart-full-calculator-suite.html](Quickstart%20Guides/01-quickstart-full-calculator-suite.html)**. |
+| **Run a calculator alone** | Open that subfolder’s **`index.html`** (e.g. `Load Calc Pro/index.html`). Prefer the suite entry above when possible. |
 | **Suite version (build ID)** | **`version.json`** — single source of truth. **Do not** copy the version string into every README; it will drift. |
 | **How to bump a release & what testers report** | **[VERSIONING.md](VERSIONING.md)** |
 | **Daily pickup: todos, next steps, what’s done** | **[PROJECT_TRACKER.md](PROJECT_TRACKER.md)** |

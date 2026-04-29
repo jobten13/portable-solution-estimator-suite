@@ -8,8 +8,9 @@
 
 | Field | Value |
 |--------|--------|
-| **Last session** | **2026-03-27** — **Water:** footer disclaimer (Load Basic–style `footer.disclaimer` + typography; `Disclaimer:` prefix) in standalone + Shell Water panel. **Load Pro:** print CSS — categories may break across pages so HVAC (4th block) is not forced to a new page (`break-inside` on `.category` relaxed; `.category-header` keeps `break-after: avoid`). Commit `15e168b`. |
+| **Last session** | **2026-03-31** — Renamed suite folder **`docs/`** → **`Quickstart Guides/`**; updated README + tracker paths. |
 | **Next pickup** | **Soon** queue: **Consumables restore polish** (UCD Ward/ICU `.active` after restore), or **Standalone parity** when ready. *(**Now** backlog: only multi-tab warning, **on hold**.)* |
+| **Field handoff — open the suite** | At repo/zip root: **`0_START_HERE_Click_to_Open_Calculator.html`** → redirects to **`Calcs Shell/index.html`**. Fallback: open **`Calcs Shell/index.html`** directly. Operator one-pager: **`Quickstart Guides/01-quickstart-full-calculator-suite.html`**. |
 
 ---
 
@@ -29,6 +30,7 @@ Wrong assumptions here (e.g. treating export like an automatic browser save) dri
 
 Keep **at most 10** bullets here. When you record an 11th completion, move the **bottom** item to **Completed archive** (still **newest first** there). Not time-of-year based — purely “last 10” + archive.
 
+- [x] **Rename `docs/` → `Quickstart Guides/`** — Suite quickstart HTML now lives under **`Quickstart Guides/`**; **README** + **PROJECT_TRACKER** paths updated. Field zips show the clearer folder name at unzip root.
 - [x] **Water disclaimer footer + Load Pro print pagination** — Water: `<footer class="footer disclaimer">` + copy (engineer/logistics; `Disclaimer:`), Shell parity; `.water-calc .footer.disclaimer` matches Load Basic footer font/chrome. Load Pro: `@media print` allow category/table to split across pages so 4th category (HVAC) is not orphaned; header still `break-after: avoid`. (`Water Calc/index.html`, `Water Calc/styles.css`, `Calcs Shell/index.html`, `Load Calc Pro/styles.css` — commit `15e168b`.)
 - [x] **Suite harness: localStorage quota (Water / Consumables / Pharmaceuticals)** — Missing toast after quota simulation is recorded as **inconclusive — environment dependent** (not silent failure); HTML report **Test notes** explains browser quota limits for automation. Production autosave/toast treated as verified; issue closed.
 - [x] **Playwright suite harness (preflight + Load Pro target)** — `tests/reports/preflight-handoff.json` mirrors preflight results so guard tests don’t lose validation after worker reload; **Load Calc Pro (standalone)** replaced in `suite.spec.js` with **Calcs Shell (Load Pro panel)** for export/import guard (script expects `load-pro-*` IDs in Shell).
@@ -38,10 +40,10 @@ Keep **at most 10** bullets here. When you record an 11th completion, move the *
 - [x] **Unsaved worksheet guard (Load scenario / Import JSON)** — `scenarioLoadGuardDirty` stays true through successful autosave so confirm still fires; cleared on load, import, named save, restore, reset; scenario name/notes wired where needed. (`Load Calc Basic/script.js`, `Load Calc Pro/script.js`, `Water Calc/script.js`, `Consumables Calc/consumables.js`, `Medicines Calc/script.js`.)
 - [x] **Pre-deploy: export radio `name=` isolation** — Prevent cross-calc radio interference on export dialogs. (`Calcs Shell/index.html`.)
 - [x] **Pre-deploy: Shell print targets active panel** — `@media print` hides shell chrome and hidden panels so only current calc prints. (`Calcs Shell/shell.css`.)
-- [x] **Pre-deploy: destructive action confirmations** — `confirm(...)` before clear-all scenarios and reset-worksheet actions across calcs. (e.g. `Load Calc Basic/script.js`, `Load Calc Pro/script.js`, `Water Calc/script.js`, `Consumables Calc/consumables.js`, `Medicines Calc/script.js`.)
 
 ## Completed archive (older than the live 10 — newest first)
 
+- [x] **Pre-deploy: destructive action confirmations** — `confirm(...)` before clear-all scenarios and reset-worksheet actions across calcs. (e.g. `Load Calc Basic/script.js`, `Load Calc Pro/script.js`, `Water Calc/script.js`, `Consumables Calc/consumables.js`, `Medicines Calc/script.js`.)
 - [x] **Autosave parity (Consumables + Medicines)** — Dirty-gated saves, 3s debounce, 60s backup tick, blur flush for scenario text + filters. (`consumables.js`, `Medicines Calc/script.js` — e.g. commit `16ed255`.)
 - [x] **Shell pilot accents** — Consumables / Pharmaceuticals active-tab rails + left stripe (violet + cyan); print hides stripe. (`Calcs Shell/shell.css` — checkpoint `f8406c5` area.)
 - [x] **Crash-recovery autosave model (suite direction)** — Open fresh, **Restore last autosave**, timestamp line. *(Differs from older “5 min only” write-up in `NEXT_AUTOSAVE_REDESIGN.md`; implementation uses debounce + dirty + interval.)*

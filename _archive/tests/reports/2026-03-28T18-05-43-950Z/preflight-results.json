@@ -1,0 +1,42 @@
+{
+  "Calcs Shell (Load Basic panel)": {
+    "autosaveOk": true,
+    "loadOk": true,
+    "importOk": true,
+    "reachable": true
+  },
+  "Load Calc Basic (standalone)": {
+    "autosaveOk": true,
+    "loadOk": true,
+    "importOk": true,
+    "reachable": true
+  },
+  "Calcs Shell (Load Pro panel)": {
+    "autosaveOk": true,
+    "loadOk": true,
+    "importOk": true,
+    "reachable": true
+  },
+  "Water (standalone)": {
+    "autosaveOk": true,
+    "loadOk": true,
+    "importOk": true,
+    "reachable": true
+  },
+  "Consumables (standalone)": {
+    "autosaveOk": true,
+    "loadOk": true,
+    "importOk": true,
+    "reachable": true
+  },
+  "Medicines (standalone)": {
+    "autosaveOk": true,
+    "loadOk": true,
+    "importOk": true,
+    "reachable": true
+  },
+  "__meta": {
+    "reachableCount": 6,
+    "totalTargets": 6
+  }
+}

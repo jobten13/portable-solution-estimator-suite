@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Start — Consumables Calculator</title>
+  <style>
+    * { box-sizing: border-box; }
+    html { margin: 0; }
+    body {
+      margin: 0;
+      background: #fff;
+      color: #111827;
+      font-family: Arial, system-ui, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.5;
+    }
+    .doc-header {
+      background: #1e3a5f;
+      color: #fff;
+      padding: 16px 24px;
+      width: 100%;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .doc-header-subtitle {
+      font-size: 9pt;
+      font-weight: normal;
+      margin: 0;
+      line-height: 1.35;
+    }
+    .doc-header-title {
+      font-size: 14pt;
+      font-weight: 700;
+      margin: 0.35em 0 0.2em;
+      line-height: 1.25;
+    }
+    .doc-header-version {
+      font-size: 8pt;
+      color: rgba(255, 255, 255, 0.88);
+      margin: 0;
+    }
+    .doc-main {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.75in;
+    }
+    .doc-section-title {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid #1e3a5f;
+      padding-bottom: 0.35em;
+      margin: 1em 0 0.45em;
+    }
+    .doc-section-title:first-of-type { margin-top: 0; }
+    p { margin: 0 0 0.5em; }
+    ul, ol {
+      margin: 0 0 0.5em;
+      padding-left: 1.35em;
+    }
+    ul li, ol li { margin-bottom: 4px; }
+    .doc-footer { margin-top: 0.65em; }
+    .doc-footer-rule {
+      border: none;
+      border-top: 1px solid #1e3a5f;
+      margin: 0 0 0.45em;
+    }
+    .doc-footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1em;
+      font-size: 8pt;
+      color: #6b7280;
+      line-height: 1.35;
+    }
+    .doc-footer-inner span:last-child { text-align: right; max-width: 55%; }
+    @media print {
+      @page { size: letter; margin: 0.75in; }
+      body { font-size: 9.5pt; }
+      .doc-header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background: #1e3a5f !important;
+        color: #fff !important;
+      }
+      .doc-main { padding: 0; max-width: none; margin: 0; }
+      .doc-section-title { page-break-after: avoid; }
+      .doc-section-title,
+      p,
+      ul,
+      ol { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header class="doc-header">
+    <p class="doc-header-subtitle">Field Hospital Calculator Suite</p>
+    <p class="doc-header-title">Quick Start — Consumables Calculator</p>
+    <p class="doc-header-version">Version 1.1.2</p>
+  </header>
+  <main class="doc-main">
+    <h2 class="doc-section-title">1. What this calculator does</h2>
+    <p>This calculator helps you plan <strong>consumable supplies</strong> for a field hospital deployment. You can start from a built-in <strong>ward</strong> or <strong>intensive care (ICU)</strong> supply list, adjust it for your situation, and see estimated quantities. It is intended for <strong>clinical, nursing, and logistics staff</strong> doing deployment planning — not as a substitute for final procurement rules at your facility.</p>
+
+    <h2 class="doc-section-title">2. Before you start</h2>
+    <ul>
+      <li>Approximate <strong>length of deployment</strong> (how many days you expect to operate).</li>
+      <li><strong>Number of beds</strong> you are planning around.</li>
+      <li>Whether you want a <strong>safety buffer</strong> on top of calculated amounts (as a percentage), and what percentage makes sense for your team.</li>
+      <li>A sense of whether your operation is closer to a general <strong>ward</strong> or a higher-acuity <strong>ICU</strong> profile, so you pick the right starting list.</li>
+      <li>Optional: any items you already know you must add or remove for your specific mission.</li>
+    </ul>
+
+    <h2 class="doc-section-title">3. How to use it — step by step</h2>
+    <ol>
+      <li>Open the consumables calculator from the suite.</li>
+      <li>Choose <strong>Ward Consumables</strong> or <strong>ICU Consumables</strong> to load a baseline list. This replaces the current worksheet list with that standard list so you can tailor from a full starting point.</li>
+      <li>Enter <strong>deployment parameters</strong>: expected length of deployment (days), expected number of beds, and buffer percentage if you use one.</li>
+      <li>Review the <strong>requirements table</strong>: each row shows an item and its calculated quantity. Use search or sort if you need to find items or prioritize large quantities.</li>
+      <li>Remove rows you do not need, or use <strong>Add Item</strong> to include supplies that are not on the built-in list.</li>
+      <li>When the plan looks right, <strong>save a named scenario</strong> or <strong>export to a file</strong> for backup or sharing (see Saving your work).</li>
+      <li>Use <strong>Print</strong> if you need a paper copy of the worksheet view.</li>
+    </ol>
+
+    <h2 class="doc-section-title">4. Understanding the results</h2>
+    <p>The main outputs are the <strong>quantities per item</strong> in the table, based on your deployment settings and any buffer. Totals and counts reflect what you can <strong>see in the table</strong> after search or filters — hidden rows are not included in those summaries. Use these numbers to support <strong>ordering, packing, and resupply planning</strong>. The tool is a <strong>simplified estimator</strong>; always verify quantities and assumptions for your real-world context.</p>
+
+    <h2 class="doc-section-title">5. Saving your work</h2>
+    <p>Save a <strong>named scenario</strong> with <strong>Save scenario</strong> when you want a version you can reload later in this browser. Use <strong>Export to file</strong> to keep a backup or send your plan to someone else. If something disappears from the screen, try <strong>Restore Autosave</strong> on the toolbar to recover the last automatically saved worksheet state.</p>
+  </main>
+  <footer class="doc-footer">
+    <hr class="doc-footer-rule">
+    <div class="doc-footer-inner">
+      <span>Field Hospital Calculator Suite v1.1.2</span>
+      <span>For planning use only. Verify all outputs with qualified personnel before deployment.</span>
+    </div>
+  </footer>
+</body>
+</html>
