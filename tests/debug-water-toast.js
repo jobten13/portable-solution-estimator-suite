@@ -24,7 +24,7 @@ const WATER_LAST_SAVED_KEY = 'fieldHospitalWaterLastSaved';
     pageErrors.push({ type: 'pageerror', message: err.message, stack: err.stack });
   });
 
-  await page.goto('http://localhost:4173/Water%20Calc/index.html');
+  await page.goto('http://localhost:4173/FieldCalcs/index.html#water');
   await page.waitForLoadState('domcontentloaded');
 
   // Harness-aligned: remove Water autosave keys before fill (forces insert on next save, not update-in-place)

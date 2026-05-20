@@ -1,33 +1,33 @@
 # Field Hospital Calculator Suite
 
-This folder (**Calcs Final**) is the **suite root**: five calculators plus an optional **shell** that tabs between them.
+This folder (**Calcs Final**) is the **suite root**: five calculators in a single **FieldCalcs** shell with tab navigation.
 
 ## Start here (handoff)
 
 | What | Where |
 |------|--------|
-| **Run the full suite (recommended)** | At the **suite root** (same folder as **`Calcs Shell`**), double-click **`0_START_HERE_Click_to_Open_Calculator.html`** — it opens **`Calcs Shell/index.html`**. If that file is missing or blocked, open **`Calcs Shell/index.html`** directly. See [Calcs Shell README](Calcs%20Shell/README.md) for hash navigation. One-pager: **[Quickstart Guides/01-quickstart-full-calculator-suite.html](Quickstart%20Guides/01-quickstart-full-calculator-suite.html)**. |
-| **Run a calculator alone** | Open that subfolder’s **`index.html`** (e.g. `Load Calc Pro/index.html`). Prefer the suite entry above when possible. |
-| **Suite version (build ID)** | **`version.json`** — single source of truth. **Do not** copy the version string into every README; it will drift. |
+| **Run the full suite (recommended)** | At the **suite root**, double-click **`0_START_HERE_Click_to_Open_Calculator.html`** — it opens **`FieldCalcs/index.html`**. If that file is missing or blocked, open **`FieldCalcs/index.html`** directly. See [FieldCalcs README](FieldCalcs/README.md) for hash navigation. One-pager: **[Quickstart Guides/01-quickstart-full-calculator-suite.html](Quickstart%20Guides/01-quickstart-full-calculator-suite.html)**. |
+| **Deep links / bookmarks** | Open **`FieldCalcs/index.html#water`**, **`#consumables`**, **`#medicines`**, **`#load-basic`**, or **`#load-pro`**. Each calculator folder’s **`index.html`** redirects to the matching hash in the shell. |
+| **Suite version (build ID)** | **`FieldCalcs/version.json`** — single source of truth. **Do not** copy the version string into every README; it will drift. |
 | **How to bump a release & what testers report** | **[VERSIONING.md](VERSIONING.md)** |
-| **Daily pickup: todos, next steps, what’s done** | **[PROJECT_TRACKER.md](PROJECT_TRACKER.md)** |
-| **Shell integration & panel IDs** | **[Calcs Shell/README.md](Calcs%20Shell/README.md)** |
+| **Historical project tracker** | **`_archive/PROJECT_TRACKER.md`** (archived; not maintained in the active tree) |
+| **Shell integration & panel IDs** | **[FieldCalcs/README.md](FieldCalcs/README.md)** |
 
 Each calculator folder has its own **README.md** (behavior, tooltips / user-guide source). Those describe **that app**, not the suite build number.
 
 ### How work is preserved (operators)
 
-In every calculator (and in **Calcs Shell**), treat these as **three different paths**:
+In the **FieldCalcs** shell, treat these as **three different paths**:
 
 1. **Worksheet autosave** (toolbar **Autosaved:** timestamp + **Restore Autosave**, grey secondary button) — One **recovery** slot in this browser for the **current sheet** while you work. It is **not** a named row in the scenario dropdown. Timestamp format is **Autosaved: M/D h:mm AM/PM** (no year, no seconds).
 2. **Save / Load Scenario** — **Named** snapshots stored in this browser and listed in the scenario dropdown for planning inside the app.
 3. **Export / Import** — A **file** on disk (JSON for backup/re-import; CSV where offered as a human-readable report). Export does **not** by itself add a scenario to the browser list until you **Import** JSON or **Save Scenario**.
 
-Full handoff wording lives in **[PROJECT_TRACKER.md](PROJECT_TRACKER.md)** under **Suite concepts**.
+Full handoff wording lives in **`_archive/PROJECT_TRACKER.md`** under **Suite concepts**.
 
 ### Suite vs app version
 
-- **Suite version** — Shown in the UI as **Suite v…** (loaded from **`version.json`** via **`version-control.js`**). Use this in test reports.
+- **Suite version** — Shown in the UI as **Suite v…** (loaded from **`FieldCalcs/version.json`** via **`FieldCalcs/version-control.js`**). Use this in test reports.
 - **Per-calculator version** — Some footers also show an app-specific label (e.g. “Version 1.0.0”). That is separate from the suite version.
 
 ### Local server note

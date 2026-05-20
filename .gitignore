@@ -43,3 +43,6 @@ OLD/CURSOR_INSTRUCTIONS.md
 tests/node_modules/
 tests/reports/
 tests/package-lock.json
+
+# Historical snapshots and planning docs (kept on disk, not tracked)
+_archive/

@@ -1,7 +1,7 @@
 # Suite versioning
 
-**Canonical suite build ID:** **`version.json`** in this folder (**Calcs Final**).  
-**Loader:** **`version-control.js`** (same folder). Entry pages load it as **`../version-control.js`** and resolve **`version.json`** next to that script.
+**Canonical suite build ID:** **`FieldCalcs/version.json`**.  
+**Loader:** **`FieldCalcs/version-control.js`** (same folder). The shell loads it as **`version-control.js`** and resolves **`version.json`** next to that script.
 
 Handoff overview: **[README.md](README.md)**.
 
@@ -9,17 +9,17 @@ Handoff overview: **[README.md](README.md)**.
 
 ## Bump for a release
 
-1. Edit **`version.json`** — update **`version`**, **`lastUpdated`**, and **prepend** a **`changelog`** entry (newest first).
-2. **Calcs Shell `file://` fallback:** Update the **same** suite version in **`Calcs Shell/index.html`** wherever marked *“Fallback must match version.json”* — `meta name="suite-version"` and each panel footer **`[data-suite-version]`** (e.g. `Suite v1.1.1`). There is **no** separate shell bottom bar. When the page is served over **http**, **`version-control.js`** overwrites those spans and **`meta`** from **`version.json`**. Standalone calc pages use **`[data-suite-version]`** in their own **`index.html`** as well.
-3. Reload the app over **http**; shell panel footers and standalone **`Suite v…`** labels update from **`version.json`** automatically.
-4. **Do not** paste the new suite number into multiple **README** files — **`version.json`** remains the canonical **http** source; Shell HTML fallbacks are the exception above.
+1. Edit **`FieldCalcs/version.json`** — update **`version`**, **`lastUpdated`**, and **prepend** a **`changelog`** entry (newest first).
+2. **`FieldCalcs/index.html` `file://` fallback:** Update the **same** suite version wherever marked *“Fallback must match version.json”* — `meta name="suite-version"` and each panel footer **`[data-suite-version]`** (e.g. `Suite v1.1.1`). There is **no** separate shell bottom bar. When the page is served over **http**, **`version-control.js`** overwrites those spans and **`meta`** from **`version.json`**.
+3. Reload the app over **http**; shell panel footers update from **`version.json`** automatically.
+4. **Do not** paste the new suite number into multiple **README** files — **`version.json`** remains the canonical **http** source; shell HTML fallbacks are the exception above.
 
 ### Optional: PowerShell helper
 
-From **`Calcs Shell`**, run **`create-version.ps1`** — it updates **`..\version.json`** (suite root). Example:
+From **`FieldCalcs`**, run **`create-version.ps1`** — it updates **`version.json`** in the same directory. Example:
 
 ```powershell
-cd "Calcs Shell"
+cd FieldCalcs
 .\create-version.ps1 -VersionType "minor" -Changes "Phase note", "Another change"
 ```
 
@@ -47,7 +47,7 @@ New entries go **at the top** of the **`changelog`** array. Each entry:
 
 ## Testing reports
 
-Ask testers to copy the **suite** line from the shell footer or any calculator footer (**`Suite vX.Y.Z`**).
+Ask testers to copy the **suite** line from any calculator panel footer in the shell (**`Suite vX.Y.Z`**).
 
 ---
 
@@ -62,6 +62,4 @@ Opening HTML via **`file://`** may block **`fetch`** of **`version.json`** in so
 **`version-control.js`** loads **`version.json`** and sets:
 
 - **`meta[name="suite-version"]`**
-- Elements with **`[data-suite-version]`** (Calcs Shell: each panel footer; standalone: calc footer)
-
-Standalone calculator pages may show **`Suite v…`** together with a **per-app** version label in the footer; the suite number still comes from **`version.json`**.
+- Elements with **`[data-suite-version]`** (FieldCalcs shell: each panel footer)

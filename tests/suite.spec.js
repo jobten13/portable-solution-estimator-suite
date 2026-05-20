@@ -170,7 +170,7 @@ async function blurInput(page, selector) {
 }
 
 /**
- * Calcs Shell: calc panels start with hidden=true. Click the matching nav button,
+ * FieldCalcs shell: calc panels start with hidden=true. Click the matching nav button,
  * then wait until the panel is shown (not [hidden]) before any fill/click inside it.
  */
 async function ensureShellPanelActive(page, panelId) {
@@ -189,7 +189,7 @@ async function ensureShellPanelActive(page, panelId) {
 }
 
 async function prepareShellTargetPage(page, calc) {
-  if (calc.kind === 'shell' && calc.shellPanelId) {
+  if (calc.shellPanelId) {
     await ensureShellPanelActive(page, calc.shellPanelId);
   }
 }
@@ -990,10 +990,10 @@ function suiteUrl(pathAfterRoot) {
 const TARGETS = [
   // Shell: we test autosave stress on Load Basic panel inside the shell (plus state bleed separately).
   {
-    name: 'Calcs Shell (Load Basic panel)',
+    name: 'FieldCalcs (Load Basic panel)',
     kind: 'shell',
     shellPanelId: 'panel-load-calc',
-    url: suiteUrl('Calcs Shell/index.html'),
+    url: suiteUrl('FieldCalcs/index.html'),
     numericSelector: '#load-fuel-capacity',
     lastSavedSelector: '#load-load-basic-last-saved',
     scenarioNotesSelector: '#load-scenario-notes',
@@ -1008,29 +1008,29 @@ const TARGETS = [
     importFileInputSelector: '#load-scenario-file-input'
   },
   {
-    name: 'Load Calc Basic (standalone)',
+    name: 'Load Calc Basic (hash entry)',
     kind: 'standalone',
-    url: suiteUrl('Load Calc Basic/index.html'),
-    numericSelector: '#fuel-capacity',
-    lastSavedSelector: '#load-basic-last-saved',
-    scenarioNotesSelector: '#scenario-notes',
-    restoreButtonSelector: '#btn-clear-autosave',
-    scenarioNameSelector: '#scenario-name',
-    saveScenarioButtonSelector: '#btn-save',
-    scenarioSelectSelector: '#scenario-select',
-    loadButtonSelector: '#btn-load',
-    exportButtonSelector: '#btn-export',
-    exportConfirmSelector: '#export-format-confirm',
-    loadImportButtonSelector: '#btn-import',
-    importFileInputSelector: '#scenario-file-input'
+    shellPanelId: 'panel-load-calc',
+    url: suiteUrl('FieldCalcs/index.html#load-basic'),
+    numericSelector: '#load-fuel-capacity',
+    lastSavedSelector: '#load-load-basic-last-saved',
+    scenarioNotesSelector: '#load-scenario-notes',
+    restoreButtonSelector: '#load-btn-clear-autosave',
+    scenarioNameSelector: '#load-scenario-name',
+    saveScenarioButtonSelector: '#load-btn-save',
+    scenarioSelectSelector: '#load-scenario-select',
+    loadButtonSelector: '#load-btn-load',
+    exportButtonSelector: '#load-btn-export',
+    exportConfirmSelector: '#load-export-format-confirm',
+    loadImportButtonSelector: '#load-btn-import',
+    importFileInputSelector: '#load-scenario-file-input'
   },
-  // Load Pro script wires `load-pro-*` IDs (Calcs Shell). Standalone index uses different ids, so export/import
-  // would not complete; test the embedded panel here for the same UX paths.
+  // Load Pro uses `load-pro-*` IDs in the shell only; hash entry opens the embedded panel.
   {
-    name: 'Calcs Shell (Load Pro panel)',
+    name: 'FieldCalcs (Load Pro panel)',
     kind: 'shell',
     shellPanelId: 'panel-load-pro',
-    url: suiteUrl('Calcs Shell/index.html'),
+    url: suiteUrl('FieldCalcs/index.html'),
     numericSelector: '#load-pro-fuel-capacity',
     lastSavedSelector: '#load-pro-last-saved',
     scenarioNotesSelector: '#load-pro-scenario-notes',
@@ -1045,9 +1045,10 @@ const TARGETS = [
     importFileInputSelector: '#load-pro-load-scenario-file'
   },
   {
-    name: 'Water (standalone)',
+    name: 'Water (hash entry)',
     kind: 'standalone',
-    url: suiteUrl('Water Calc/index.html'),
+    shellPanelId: 'panel-water',
+    url: suiteUrl('FieldCalcs/index.html#water'),
     numericSelector: '#water-beds',
     lastSavedSelector: '#water-last-saved',
     scenarioNotesSelector: '#water-scenario-notes',
@@ -1062,9 +1063,10 @@ const TARGETS = [
     importFileInputSelector: '#water-file-input'
   },
   {
-    name: 'Consumables (standalone)',
+    name: 'Consumables (hash entry)',
     kind: 'standalone',
-    url: suiteUrl('Consumables Calc/index.html'),
+    shellPanelId: 'panel-consumables',
+    url: suiteUrl('FieldCalcs/index.html#consumables'),
     numericSelector: '#cons-days',
     lastSavedSelector: '#cons-last-saved',
     scenarioNotesSelector: '#cons-scenario-notes',
@@ -1081,11 +1083,12 @@ const TARGETS = [
     loadGuardPrerequisiteReadySelector: '#cons-consumables-container .data-table tbody tr'
   },
   {
-    name: 'Medicines (standalone)',
+    name: 'Medicines (hash entry)',
     kind: 'standalone',
-    url: suiteUrl('Medicines Calc/index.html'),
+    shellPanelId: 'panel-medications',
+    url: suiteUrl('FieldCalcs/index.html#medicines'),
     numericSelector: '#meds-days',
-    lastSavedSelector: '#medicines-last-saved',
+    lastSavedSelector: '#meds-last-saved',
     scenarioNotesSelector: '#meds-scenario-notes',
     restoreButtonSelector: '#meds-btn-clear-autosave',
     scenarioNameSelector: '#meds-scenario-name',
@@ -1102,15 +1105,15 @@ const TARGETS = [
 ];
 
 /**
- * Calcs Shell: exercise localStorage-full autosave observation on every embedded panel
+ * FieldCalcs shell: exercise localStorage-full autosave observation on every embedded panel
  * (Load Basic, Load Pro, Water, Consumables, Pharmaceuticals).
  */
 const SHELL_STORAGE_PANELS = [
-  { reportName: 'Calcs Shell / Load Basic', shellPanelId: 'panel-load-calc', numericSelector: '#load-fuel-capacity', lastSavedSelector: '#load-load-basic-last-saved', restoreButtonSelector: '#load-btn-clear-autosave' },
-  { reportName: 'Calcs Shell / Load Pro', shellPanelId: 'panel-load-pro', numericSelector: '#load-pro-fuel-capacity', lastSavedSelector: '#load-pro-last-saved', restoreButtonSelector: '#load-pro-btn-clear-autosave' },
-  { reportName: 'Calcs Shell / Water', shellPanelId: 'panel-water', numericSelector: '#water-beds', lastSavedSelector: '#water-last-saved', restoreButtonSelector: '#water-btn-clear-autosave' },
-  { reportName: 'Calcs Shell / Consumables', shellPanelId: 'panel-consumables', numericSelector: '#cons-days', lastSavedSelector: '#cons-last-saved', restoreButtonSelector: '#cons-clear-autosave-btn' },
-  { reportName: 'Calcs Shell / Pharmaceuticals', shellPanelId: 'panel-medications', numericSelector: '#meds-days', lastSavedSelector: '#meds-last-saved', restoreButtonSelector: '#meds-btn-clear-autosave' }
+  { reportName: 'FieldCalcs / Load Basic', shellPanelId: 'panel-load-calc', numericSelector: '#load-fuel-capacity', lastSavedSelector: '#load-load-basic-last-saved', restoreButtonSelector: '#load-btn-clear-autosave' },
+  { reportName: 'FieldCalcs / Load Pro', shellPanelId: 'panel-load-pro', numericSelector: '#load-pro-fuel-capacity', lastSavedSelector: '#load-pro-last-saved', restoreButtonSelector: '#load-pro-btn-clear-autosave' },
+  { reportName: 'FieldCalcs / Water', shellPanelId: 'panel-water', numericSelector: '#water-beds', lastSavedSelector: '#water-last-saved', restoreButtonSelector: '#water-btn-clear-autosave' },
+  { reportName: 'FieldCalcs / Consumables', shellPanelId: 'panel-consumables', numericSelector: '#cons-days', lastSavedSelector: '#cons-last-saved', restoreButtonSelector: '#cons-clear-autosave-btn' },
+  { reportName: 'FieldCalcs / Pharmaceuticals', shellPanelId: 'panel-medications', numericSelector: '#meds-days', lastSavedSelector: '#meds-last-saved', restoreButtonSelector: '#meds-btn-clear-autosave' }
 ];
 
 async function newHarnessContext(browser) {
