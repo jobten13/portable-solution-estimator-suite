@@ -7,9 +7,9 @@
   const STORAGE_KEY = 'fieldHospitalWaterScenarios';
   const WATER_AUTOSAVE_KEY = 'fieldHospitalWaterAutosave';
   const LAST_SAVED_KEY = 'fieldHospitalWaterLastSaved';
-  const L_PER_GAL = 3.78541;
-  const baseLiterValues = { potable: 80, wastewater: 65 };
   const GRAY_RATIO = 0.77; // Estimated ~77% gray water, ~23% black water
+  const DEFAULT_POTABLE_GAL_PER_BED = 22;
+  const DEFAULT_WASTEWATER_GAL_PER_BED = 18;
 
   // Toast styles target `.water-calc .toast-container` (see styles.css). In Calcs Shell, append inside `#panel-water`
   // so fixed positioning applies; standalone gets `.water-calc` on the main wrapper for the same CSS.
@@ -135,11 +135,6 @@
     return result.valid;
   }
 
-  function isGallons() {
-    const radio = document.querySelector('input[name="water-unit"]:checked');
-    return radio && radio.value === 'G';
-  }
-
   function getPotableSupplyMode() {
     const el = g('water-potable-supply-mode');
     return el ? el.value : 'self';
@@ -159,38 +154,22 @@
     }
   }
 
-  function updateUnitLabels() {
-    const unit = isGallons() ? 'G' : 'L';
-    const waterSpans = document.querySelectorAll('.water-unit');
-    waterSpans.forEach(span => span.textContent = unit);
-    const bladderSpans = document.querySelectorAll('.bladder-capacity-unit');
-    bladderSpans.forEach(span => span.textContent = unit);
-    const resultSpans = document.querySelectorAll('.result-unit');
-    resultSpans.forEach(span => span.textContent = unit);
-  }
-
   function getState() {
-    let days = getNum(g('water-days'), 0);
-    let beds = getNum(g('water-beds'), 0);
-    let buffer = getNum(g('water-buffer'), 0) / 100;
-    let potableRate = getNum(g('water-potable-rate'), 80);
-    let wastewaterRate = getNum(g('water-wastewater-rate'), 65);
-    if (isGallons()) {
-      potableRate *= L_PER_GAL;
-      wastewaterRate *= L_PER_GAL;
-    }
+    const days = getNum(g('water-days'), 0);
+    const beds = getNum(g('water-beds'), 0);
+    const buffer = getNum(g('water-buffer'), 0) / 100;
+    const potableRate = getNum(g('water-potable-rate'), DEFAULT_POTABLE_GAL_PER_BED);
+    const wastewaterRate = getNum(g('water-wastewater-rate'), DEFAULT_WASTEWATER_GAL_PER_BED);
     const potableCount = getNum(g('water-potable-count'), 0);
     const potableCap = getNum(g('water-potable-capacity'), 0);
     const wastewaterCount = getNum(g('water-wastewater-count'), 0);
     const wastewaterCap = getNum(g('water-wastewater-capacity'), 0);
-    const mainsFlowVal = getNum(g('water-mains-flow-rate'), 0);
-    const mainsFlowLhr = isGallons() ? mainsFlowVal * L_PER_GAL : mainsFlowVal;
+    const mainsFlowRate = getNum(g('water-mains-flow-rate'), 0);
 
     return {
       days,
       beds,
       bufferPercent: buffer * 100,
-      waterUnit: isGallons() ? 'G' : 'L',
       scenarioName: g('water-scenario-name') ? g('water-scenario-name').value : '',
       scenarioNotes: g('water-scenario-notes') ? g('water-scenario-notes').value : '',
       potablePerBedPerDay: potableRate,
@@ -201,39 +180,29 @@
       wastewaterContainerCapacity: wastewaterCap,
       potableSupplyMode: getPotableSupplyMode(),
       wastewaterDisposalMode: getWastewaterDisposalMode(),
-      mainsFlowRate: mainsFlowLhr
+      mainsFlowRate
     };
   }
 
   function applyState(s) {
     if (!s) return;
-    // Clear any existing validation errors
     Object.keys(VALIDATION_RULES).forEach(id => clearValidationError(id));
-    
+
     if (g('water-days')) g('water-days').value = s.days != null ? s.days : 0;
     if (g('water-beds')) g('water-beds').value = s.beds != null ? s.beds : 0;
     if (g('water-buffer')) g('water-buffer').value = s.bufferPercent != null ? s.bufferPercent : 0;
     if (g('water-scenario-name')) g('water-scenario-name').value = s.scenarioName != null ? s.scenarioName : '';
     if (g('water-scenario-notes')) g('water-scenario-notes').value = s.scenarioNotes != null ? s.scenarioNotes : '';
-    const unit = (s.waterUnit === 'G') ? 'G' : 'L';
-    const radioGal = document.querySelector('input[name="water-unit"][value="G"]');
-    const radioL = document.querySelector('input[name="water-unit"][value="L"]');
-    if (radioGal && radioL) {
-      if (unit === 'G') radioGal.checked = true; else radioL.checked = true;
+    if (g('water-potable-rate')) {
+      g('water-potable-rate').value = s.potablePerBedPerDay != null ? s.potablePerBedPerDay : DEFAULT_POTABLE_GAL_PER_BED;
     }
-    const potableL = s.potablePerBedPerDay != null ? s.potablePerBedPerDay : 80;
-    const wastewaterL = s.wastewaterPerBedPerDay != null ? s.wastewaterPerBedPerDay : (s.grayWaterPerBedPerDay != null && s.blackWaterPerBedPerDay != null ? (s.grayWaterPerBedPerDay + s.blackWaterPerBedPerDay) : 65);
-    // Store liter values
-    baseLiterValues.potable = potableL;
-    baseLiterValues.wastewater = wastewaterL;
-    // Display based on unit
-    if (g('water-potable-rate')) g('water-potable-rate').value = unit === 'G' ? Math.ceil(potableL / L_PER_GAL) : potableL;
-    if (g('water-wastewater-rate')) g('water-wastewater-rate').value = unit === 'G' ? Math.ceil(wastewaterL / L_PER_GAL) : wastewaterL;
-    updateUnitLabels();
-    if (g('water-potable-count')) g('water-potable-count').value = s.potableContainerCount ?? s.potableBladderCount ?? 0;
-    if (g('water-potable-capacity')) g('water-potable-capacity').value = s.potableContainerCapacity ?? s.potableBladderCapacity ?? 0;
-    if (g('water-wastewater-count')) g('water-wastewater-count').value = s.wastewaterContainerCount ?? s.wastewaterBladderCount ?? s.grayBladderCount ?? 0;
-    if (g('water-wastewater-capacity')) g('water-wastewater-capacity').value = s.wastewaterContainerCapacity ?? s.wastewaterBladderCapacity ?? s.grayBladderCapacity ?? 0;
+    if (g('water-wastewater-rate')) {
+      g('water-wastewater-rate').value = s.wastewaterPerBedPerDay != null ? s.wastewaterPerBedPerDay : DEFAULT_WASTEWATER_GAL_PER_BED;
+    }
+    if (g('water-potable-count')) g('water-potable-count').value = s.potableContainerCount != null ? s.potableContainerCount : 0;
+    if (g('water-potable-capacity')) g('water-potable-capacity').value = s.potableContainerCapacity != null ? s.potableContainerCapacity : 0;
+    if (g('water-wastewater-count')) g('water-wastewater-count').value = s.wastewaterContainerCount != null ? s.wastewaterContainerCount : 0;
+    if (g('water-wastewater-capacity')) g('water-wastewater-capacity').value = s.wastewaterContainerCapacity != null ? s.wastewaterContainerCapacity : 0;
     if (g('water-potable-supply-mode')) {
       g('water-potable-supply-mode').value = s.potableSupplyMode || 'self';
     }
@@ -241,40 +210,12 @@
       g('water-wastewater-disposal-mode').value = s.wastewaterDisposalMode || 'containers';
     }
     if (g('water-mains-flow-rate')) {
-      const mainsFlowLhr = s.mainsFlowRate != null ? s.mainsFlowRate : 0;
-      g('water-mains-flow-rate').value = isGallons() ? Math.round(mainsFlowLhr / L_PER_GAL) : mainsFlowLhr;
+      g('water-mains-flow-rate').value = s.mainsFlowRate != null ? s.mainsFlowRate : 0;
     }
     updateSupplyModeUI();
     updateBreakdown();
-    
-    // Validate loaded values
-    Object.keys(VALIDATION_RULES).forEach(id => validateAndShow(id));
-  }
 
-  function onUnitChange() {
-    const potableEl = g('water-potable-rate');
-    const wastewaterEl = g('water-wastewater-rate');
-    if (!potableEl || !wastewaterEl) return;
-    const nowGal = isGallons();
-    // Get current displayed values
-    const p = getNum(potableEl, 0);
-    const w = getNum(wastewaterEl, 0);
-    
-    if (nowGal) {
-      // Switching TO gallons: current inputs are in liters, store them and display gallons (rounded up)
-      baseLiterValues.potable = p;
-      baseLiterValues.wastewater = w;
-      potableEl.value = Math.ceil(baseLiterValues.potable / L_PER_GAL);
-      wastewaterEl.value = Math.ceil(baseLiterValues.wastewater / L_PER_GAL);
-    } else {
-      // Switching TO liters: restore stored liter values (preserve original whole numbers)
-      potableEl.value = baseLiterValues.potable;
-      wastewaterEl.value = baseLiterValues.wastewater;
-    }
-    updateUnitLabels();
-    updateBreakdown();
-    notifyWorksheetChanged();
-    recalc();
+    Object.keys(VALIDATION_RULES).forEach(id => validateAndShow(id));
   }
 
   function formatNum(n) {
@@ -287,18 +228,11 @@
   function updateBreakdown() {
     const wastewaterEl = g('water-wastewater-rate');
     if (!wastewaterEl) return;
-    let wastewater = getNum(wastewaterEl, 0);
-    if (isGallons()) wastewater *= L_PER_GAL;
+    const wastewater = getNum(wastewaterEl, DEFAULT_WASTEWATER_GAL_PER_BED);
     const grayEst = Math.round(wastewater * GRAY_RATIO);
     const blackEst = Math.round(wastewater * (1 - GRAY_RATIO));
-    const u = isGallons() ? ' G' : ' L';
-    if (isGallons()) {
-      setText('breakdown-gray', `${formatNum(Math.ceil(grayEst / L_PER_GAL))}${u}`);
-      setText('breakdown-black', `${formatNum(Math.ceil(blackEst / L_PER_GAL))}${u}`);
-    } else {
-      setText('breakdown-gray', `${formatNum(grayEst)}${u}`);
-      setText('breakdown-black', `${formatNum(blackEst)}${u}`);
-    }
+    setText('breakdown-gray', `${formatNum(grayEst)} Gal`);
+    setText('breakdown-black', `${formatNum(blackEst)} Gal`);
   }
 
   function recalc() {
@@ -442,38 +376,36 @@
 
     // Potable: mains adequacy check
     if (showMains) {
-      const mainsFlowLhr = st.mainsFlowRate || 0;
-      const peakDemandLhr = potablePerDay / 16;
-      const displayFlow = isGallons()
-        ? Math.round(mainsFlowLhr / L_PER_GAL) + ' Gal/hr'
-        : Math.round(mainsFlowLhr) + ' L/hr';
+      const mainsFlowGalHr = st.mainsFlowRate || 0;
+      const peakDemandGalHr = potablePerDay / 16;
+      const displayFlow = Math.round(mainsFlowGalHr) + ' Gal/hr';
       let rowTier = 'neutral';
       let pillTier = 'neutral';
       let pillLabel = '—';
       let detailText = '';
-      if (mainsFlowLhr <= 0) {
+      if (mainsFlowGalHr <= 0) {
         pillLabel = 'NEEDS INPUT';
         detailText = 'Enter mains flow rate above';
       } else if (potablePerDay <= 0) {
         pillLabel = 'NEEDS INPUT';
         detailText = 'Enter beds and daily rate to check';
-      } else if (mainsFlowLhr >= peakDemandLhr * 1.25) {
-        const peakDisp = isGallons() ? Math.round(peakDemandLhr / L_PER_GAL) : Math.round(peakDemandLhr);
+      } else if (mainsFlowGalHr >= peakDemandGalHr * 1.25) {
+        const peakDisp = Math.round(peakDemandGalHr);
         rowTier = 'ok';
         pillTier = 'ok';
         pillLabel = 'ADEQUATE';
-        detailText = `${displayFlow} supply vs. ${peakDisp} ${isGallons() ? 'Gal' : 'L'}/hr peak demand`;
-      } else if (mainsFlowLhr >= peakDemandLhr) {
+        detailText = `${displayFlow} supply vs. ${peakDisp} Gal/hr peak demand`;
+      } else if (mainsFlowGalHr >= peakDemandGalHr) {
         rowTier = 'warn';
         pillTier = 'warn';
         pillLabel = 'MARGINAL';
         detailText = `${displayFlow} supply — limited safety margin`;
       } else {
-        const peakDisp = isGallons() ? Math.round(peakDemandLhr / L_PER_GAL) : Math.round(peakDemandLhr);
+        const peakDisp = Math.round(peakDemandGalHr);
         rowTier = 'danger';
         pillTier = 'danger';
         pillLabel = 'INSUFFICIENT';
-        detailText = `${displayFlow} supply cannot meet ${peakDisp} ${isGallons() ? 'Gal' : 'L'}/hr peak demand`;
+        detailText = `${displayFlow} supply cannot meet ${peakDisp} Gal/hr peak demand`;
       }
       if (mainsPill) {
         mainsPill.textContent = pillLabel;
@@ -485,12 +417,9 @@
         else mainsDetail.setAttribute('aria-hidden', 'true');
       }
       if (mainsRow) setMainsRowTier(mainsRow, rowTier);
-      const bufferL = potablePerDay * 2;
-      const bufferDisplay = isGallons()
-        ? Math.ceil(bufferL / L_PER_GAL).toLocaleString()
-        : Math.round(bufferL).toLocaleString();
-      setText('out-potable-buffer', bufferL > 0 ? bufferDisplay + ' (for 48 hours if mains supply is interrupted)' : '—');
-      document.querySelectorAll('.result-unit').forEach(span => { span.textContent = isGallons() ? 'Gal' : 'L'; });
+      const bufferGal = potablePerDay * 2;
+      const bufferDisplay = Math.round(bufferGal).toLocaleString();
+      setText('out-potable-buffer', bufferGal > 0 ? bufferDisplay + ' (for 48 hours if mains supply is interrupted)' : '—');
     }
 
     // Wastewater: container collection (uses buffered daily output)
@@ -985,16 +914,15 @@
     lines.push(`${toCsvCell('Deployment (days)')},${toCsvCell(state.days != null ? state.days : '')}`);
     lines.push(`${toCsvCell('Beds')},${toCsvCell(state.beds != null ? state.beds : '')}`);
     lines.push(`${toCsvCell('Buffer (%)')},${toCsvCell(state.bufferPercent != null ? state.bufferPercent : '')}`);
-    lines.push(`${toCsvCell('Unit')},${toCsvCell(state.waterUnit || '')}`);
-    lines.push(`${toCsvCell('Potable (per bed/day, L)')},${toCsvCell(state.potablePerBedPerDay != null ? state.potablePerBedPerDay : '')}`);
-    lines.push(`${toCsvCell('Wastewater (per bed/day, L)')},${toCsvCell(state.wastewaterPerBedPerDay != null ? state.wastewaterPerBedPerDay : '')}`);
+    lines.push(`${toCsvCell('Potable (per bed/day, Gal)')},${toCsvCell(state.potablePerBedPerDay != null ? state.potablePerBedPerDay : '')}`);
+    lines.push(`${toCsvCell('Wastewater (per bed/day, Gal)')},${toCsvCell(state.wastewaterPerBedPerDay != null ? state.wastewaterPerBedPerDay : '')}`);
     lines.push(`${toCsvCell('Potable containers (count)')},${toCsvCell(state.potableContainerCount != null ? state.potableContainerCount : '')}`);
-    lines.push(`${toCsvCell('Potable capacity per container')},${toCsvCell(state.potableContainerCapacity != null ? state.potableContainerCapacity : '')}`);
+    lines.push(`${toCsvCell('Potable capacity per container (Gal)')},${toCsvCell(state.potableContainerCapacity != null ? state.potableContainerCapacity : '')}`);
     lines.push(`${toCsvCell('Wastewater containers (count)')},${toCsvCell(state.wastewaterContainerCount != null ? state.wastewaterContainerCount : '')}`);
-    lines.push(`${toCsvCell('Wastewater capacity per container')},${toCsvCell(state.wastewaterContainerCapacity != null ? state.wastewaterContainerCapacity : '')}`);
+    lines.push(`${toCsvCell('Wastewater capacity per container (Gal)')},${toCsvCell(state.wastewaterContainerCapacity != null ? state.wastewaterContainerCapacity : '')}`);
     lines.push(`${toCsvCell('Potable supply mode')},${toCsvCell(state.potableSupplyMode || '')}`);
     lines.push(`${toCsvCell('Wastewater disposal mode')},${toCsvCell(state.wastewaterDisposalMode || '')}`);
-    lines.push(`${toCsvCell('Mains flow rate (L/hr)')},${toCsvCell(state.mainsFlowRate != null ? state.mainsFlowRate : '')}`);
+    lines.push(`${toCsvCell('Mains flow rate (Gal/hr)')},${toCsvCell(state.mainsFlowRate != null ? state.mainsFlowRate : '')}`);
     lines.push(`${toCsvCell('Exported At')},${toCsvCell(new Date().toLocaleString())}`);
     return lines.join('\n');
   }
@@ -1099,14 +1027,7 @@
 
   function resetToDefaults() {
     if (!confirm('Reset to defaults? This will restore all water inputs, modes, and capacities to baseline values.')) return;
-    if (typeof WATER_DEFAULTS === 'undefined') {
-      applyState({
-        days: 0, beds: 0, bufferPercent: 0,
-        potablePerBedPerDay: 80, wastewaterPerBedPerDay: 65,
-        potableContainerCount: 0, potableContainerCapacity: 0,
-        wastewaterContainerCount: 0, wastewaterContainerCapacity: 0
-      });
-    } else {
+    if (typeof WATER_DEFAULTS !== 'undefined') {
       applyState(WATER_DEFAULTS);
     }
     recalc();
@@ -1134,20 +1055,6 @@
   function printReport() {
     window.print();
     showFeedback('Print preview opened.', 'success');
-  }
-
-  function updateBaseLiterValues() {
-    const potableEl = g('water-potable-rate');
-    const wastewaterEl = g('water-wastewater-rate');
-    if (isGallons()) {
-      // User edited in gallons mode: convert to liters and store
-      if (potableEl) baseLiterValues.potable = getNum(potableEl, 0) * L_PER_GAL;
-      if (wastewaterEl) baseLiterValues.wastewater = getNum(wastewaterEl, 0) * L_PER_GAL;
-    } else {
-      // User edited in liters mode: store directly
-      if (potableEl) baseLiterValues.potable = getNum(potableEl, baseLiterValues.potable);
-      if (wastewaterEl) baseLiterValues.wastewater = getNum(wastewaterEl, baseLiterValues.wastewater);
-    }
   }
 
   function toggleBreakdown() {
@@ -1210,13 +1117,11 @@
         if (id === 'water-mains-flow-rate') el.addEventListener('blur', () => validateAndShow('water-mains-flow-rate'));
       }
     });
-    // Water rate inputs: update base values and recalc
     ['water-potable-rate', 'water-wastewater-rate'].forEach(id => {
       const el = g(id);
       if (el) {
         el.addEventListener('input', () => {
           notifyWorksheetChanged();
-          updateBaseLiterValues();
           recalc();
         });
       }
@@ -1328,9 +1233,6 @@
     const fileInput = g('water-file-input');
     if (fileInput) fileInput.addEventListener('change', onFileSelected);
 
-    const unitRadios = document.querySelectorAll('input[name="water-unit"]');
-    unitRadios.forEach(radio => radio.addEventListener('change', onUnitChange));
-
     ['water-potable-supply-mode', 'water-wastewater-disposal-mode'].forEach(id => {
       const el = g(id);
       if (el) el.addEventListener('change', () => {
@@ -1357,16 +1259,10 @@
     setScenarioListLine({ kind: 'none' });
     if (typeof WATER_DEFAULTS !== 'undefined') {
       applyState(WATER_DEFAULTS);
-    } else {
-      const potableEl = g('water-potable-rate');
-      const wastewaterEl = g('water-wastewater-rate');
-      if (potableEl && !isGallons()) baseLiterValues.potable = getNum(potableEl, baseLiterValues.potable);
-      if (wastewaterEl && !isGallons()) baseLiterValues.wastewater = getNum(wastewaterEl, baseLiterValues.wastewater);
     }
     try {
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
     } catch (e) { /* ignore */ }
-    updateUnitLabels();
     updateSupplyModeUI();
     updateScenarioDropdown();
     recalc();
