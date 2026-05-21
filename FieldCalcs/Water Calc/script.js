@@ -512,6 +512,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     } catch (e) {
       console.error('Failed to save scenarios:', e);
+      throw e;
     }
   }
 

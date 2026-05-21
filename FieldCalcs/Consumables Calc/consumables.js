@@ -1177,6 +1177,8 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     } catch (e) {
       console.error('Failed to save scenarios:', e);
+      showFeedback('Could not delete scenario. Storage may be full.', 'error');
+      return;
     }
     updateScenarioDropdown();
     showFeedback(`Scenario "${scenario.name}" deleted successfully!`, 'success');

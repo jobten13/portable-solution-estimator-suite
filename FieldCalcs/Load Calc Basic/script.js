@@ -239,6 +239,7 @@
       return list.map(migrateScenario).filter(Boolean);
     } catch (e) {
       console.error('Failed to read saved scenarios:', e);
+      showToast('Could not read saved scenarios. Data may be corrupted.', 'error', 4000);
       return [];
     }
   }
