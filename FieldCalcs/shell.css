@@ -143,15 +143,6 @@ body {
   display: block;
 }
 
-/* Placeholder when a calc is not yet loaded */
-.shell-panel-placeholder {
-  padding: 2rem;
-  text-align: center;
-  color: #666;
-  background: #fff;
-  border-radius: 8px;
-  border: 1px dashed #ccc;
-}
 
 /* Suite build line in each calc panel footer (FieldCalcs only — light type) */
 .shell-main .shell-suite-build[data-suite-version] {

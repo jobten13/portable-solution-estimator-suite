@@ -13,7 +13,6 @@
   let currentSortKey = 'name-asc';
 
   const CONSTANTS = {
-    LITERS_PER_GALLON: 3.78541,
     SAFETY_FACTOR: 1.25,
     FUEL_RATES_BY_LOAD_PERCENT_GAL_PER_KW: [
       { maxUtil: 25, rateGalHrPerKw: 0.35 / 3.78541 },
@@ -737,10 +736,6 @@
       if (data.fuelTankCapacityGallons != null) {
         const capacityGallons = parseFloat(data.fuelTankCapacityGallons) || 0;
         fuelEl.value = capacityGallons !== 0 ? capacityGallons : '';
-      } else if (data.fuelTankCapacityLiters != null) {
-        const capacityL = parseFloat(data.fuelTankCapacityLiters) || 0;
-        const capacityGallons = capacityL / CONSTANTS.LITERS_PER_GALLON;
-        fuelEl.value = capacityGallons !== 0 ? capacityGallons : '';
       }
     }
 
@@ -1032,18 +1027,6 @@
       } else {
         cleaned.fuelTankCapacityGallons = fuelCapacityGallons;
       }
-    } else if (data.fuelTankCapacityLiters != null) {
-      const fuelCapacityL = Number(data.fuelTankCapacityLiters);
-      if (!Number.isFinite(fuelCapacityL) || fuelCapacityL < 0) {
-        issues.push(`Fuel tank capacity (liters): invalid value "${data.fuelTankCapacityLiters}" replaced with 0.`);
-        cleaned.fuelTankCapacityGallons = 0;
-      } else {
-        cleaned.fuelTankCapacityGallons = fuelCapacityL / CONSTANTS.LITERS_PER_GALLON;
-        issues.push(`Fuel tank capacity (liters): converted "${data.fuelTankCapacityLiters}" liters to gallons for this calculator.`);
-      }
-    }
-    if (data.fuelUnit != null && String(data.fuelUnit).toUpperCase() !== 'G') {
-      issues.push(`Fuel unit: "${data.fuelUnit}" normalized to "G" for this gallons-based calculator.`);
     }
 
     const equipment = Array.isArray(data.equipment) ? data.equipment : [];

@@ -66,4 +66,4 @@ Only one panel is visible at a time. Each panel has a class for CSS scoping (e.g
 
 ## Review packet (for external AI review)
 
-If you need to share a minimal set of files with another AI for assessment, see the `Review_Packet/` folder at the project root. It contains the shell + spec + contract docs and a full “Load Calc Pro” sample.
+If you need to share a minimal set of files with another AI for assessment, see the `Review_Packet/` (removed) folder at the project root. It contains the shell + spec + contract docs and a full “Load Calc Pro” sample.

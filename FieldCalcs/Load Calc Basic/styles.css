@@ -47,11 +47,6 @@
   margin: 0;
 }
 
-.load-basic-calc .version-info {
-  font-size: 0.85em;
-  opacity: 0.85;
-  margin: 4px 0 0;
-}
 
 /* Primary toolbar – suite alignment (Load Calc Pro / Water) */
 .load-basic-calc .toolbar-wrap {
@@ -73,9 +68,6 @@
   font-size: 0.85em;
 }
 
-.load-basic-calc .toolbar #btn-clear-autosave {
-  margin-right: 0;
-}
 
 .load-basic-calc .toolbar-last-saved {
   font-size: 0.8em;
@@ -249,12 +241,6 @@
   font-size: 0.85em;
 }
 
-.load-basic-calc .scenario-storage-note {
-  font-size: 0.8em;
-  color: #6b7280;
-  margin: 0 0 8px;
-  font-style: italic;
-}
 
 .load-basic-calc .scenario-meta {
   display: grid;
@@ -299,13 +285,6 @@
 .load-basic-calc .section-heading-row h2,
 .load-basic-calc .section-heading-row h3 { margin: 0; }
 
-.load-basic-calc .equipment-list-heading {
-  padding: 10px 20px 0;
-}
-
-.load-basic-calc .equipment-list-heading .scenario-section-title {
-  margin: 0;
-}
 
 .load-basic-calc .help-icon {
   display: inline-flex;
@@ -527,11 +506,6 @@
 
 .load-basic-calc .category.collapsed .chevron { transform: rotate(-90deg); }
 
-/* Standalone: root is .app, not .load-basic-calc */
-.app .category-head { cursor: pointer; }
-.app .category-head:hover { background: #e5e7eb; }
-.app .category.collapsed .category-body { display: none; }
-.app .category.collapsed .chevron { transform: rotate(-90deg); }
 
 .load-basic-calc .category-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
@@ -674,12 +648,6 @@
   border-top: 1px solid #e5e7eb;
 }
 
-.load-basic-calc .last-saved {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.78rem;
-  color: #6b7280;
-}
 
 .load-basic-calc .version-label {
   display: block;

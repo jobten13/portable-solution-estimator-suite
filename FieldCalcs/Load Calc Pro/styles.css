@@ -78,9 +78,6 @@
   font-size: 0.85em;
 }
 
-.load-pro-calc .toolbar #btn-clear-autosave {
-  margin-right: 0;
-}
 
 .load-pro-calc .toolbar-last-saved {
   font-size: 0.8em;
@@ -307,12 +304,6 @@
   border-color: #3b82f6;
 }
 
-.load-pro-calc .scenario-storage-note {
-  font-size: 0.8em;
-  color: #6b7280;
-  margin: 0 0 12px;
-  font-style: italic;
-}
 
 .load-pro-calc .filter-notice {
   background: #fef3c7;
@@ -670,7 +661,7 @@
 .load-pro-calc .note { font-size: 0.75rem; color: var(--color-muted); margin-top: 6px; }
 .load-pro-calc .footer-note { margin-top: 14px; font-size: 0.75rem; color: #6b7280; }
 .load-pro-calc .disclaimer { margin-top: 20px; font-size: 0.75rem; color: #6b7280; }
-.load-pro-calc .autosave-timestamp { margin-top: 6px; font-size: 0.8rem; color: #6b7280; }
+
 .load-pro-calc .version-label { display: block; font-size: 0.75em; color: #d1d5db; margin-top: 4px; text-align: center; }
 
 /* Export format dialog (radio choice) */

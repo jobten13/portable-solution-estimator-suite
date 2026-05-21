@@ -1230,13 +1230,11 @@
   function restoreAutosavedState() {
     if (!localStorage.getItem(STORAGE_KEY)) {
       acknowledge('load-pro-btn-clear-autosave', 'No autosave');
-      acknowledge('btn-clear-autosave', 'No autosave');
       showToast('No autosaved worksheet state to restore.', 'info', 2500);
       return;
     }
     if (!loadWorksheetState()) {
       acknowledge('load-pro-btn-clear-autosave', 'Restore failed');
-      acknowledge('btn-clear-autosave', 'Restore failed');
       showToast('Could not restore autosave.', 'error', 2500);
       return;
     }
@@ -1290,14 +1288,6 @@
       const tsEl = $('#load-pro-print-timestamp');
       if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
       window.print();
-    }
-    // Standalone: `print-summary-btn`
-    const printBtnStandalone = $('#print-summary-btn');
-    if (printBtnStandalone) {
-      printBtnStandalone.addEventListener('click', () => {
-        acknowledge('print-summary-btn', 'Printing...');
-        doLoadProPrint();
-      });
     }
     // Shell panel: `load-pro-print-summary-btn`
     const printBtnShell = $('#load-pro-print-summary-btn');
