@@ -85,6 +85,27 @@
     return result.valid;
   }
 
+  function toFiniteNumber(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function clampNumber(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function sanitizeDays(value) {
+    return clampNumber(toFiniteNumber(value), 0, VALIDATION_RULES.days.max);
+  }
+
+  function sanitizeBeds(value) {
+    return clampNumber(toFiniteNumber(value), 0, VALIDATION_RULES.beds.max);
+  }
+
+  function sanitizeBuffer(value) {
+    return clampNumber(toFiniteNumber(value), 0, VALIDATION_RULES.buffer.max);
+  }
+
   let allConsumables = [];
   let filteredConsumables = [];
   let deploymentDays = 0;
@@ -284,7 +305,7 @@
       const daysEl = g('meds-days');
       setupPlaceholderBehavior(daysEl);
       daysEl.addEventListener('input', function () {
-        deploymentDays = parseFloat(this.value) || 0;
+        deploymentDays = sanitizeDays(parseFloat(this.value));
         calculateAndDisplay();
         notifyWorksheetChanged();
       });
@@ -294,7 +315,7 @@
       const bedsEl = g('meds-beds');
       setupPlaceholderBehavior(bedsEl);
       bedsEl.addEventListener('input', function () {
-        deploymentBeds = parseFloat(this.value) || 0;
+        deploymentBeds = sanitizeBeds(parseFloat(this.value));
         calculateAndDisplay();
         notifyWorksheetChanged();
       });
@@ -304,7 +325,7 @@
       const bufferEl = g('meds-buffer');
       setupPlaceholderBehavior(bufferEl);
       bufferEl.addEventListener('input', function () {
-        bufferPercentage = parseFloat(this.value) || 0;
+        bufferPercentage = sanitizeBuffer(parseFloat(this.value));
         calculateAndDisplay();
         notifyWorksheetChanged();
       });
@@ -708,8 +729,12 @@
   }
 
   function calculateItemQuantity(usagePerDayPerBed) {
-    const baseQuantity = deploymentDays * deploymentBeds * usagePerDayPerBed;
-    const bufferMultiplier = 1 + (bufferPercentage / 100);
+    const safeDays = sanitizeDays(deploymentDays);
+    const safeBeds = sanitizeBeds(deploymentBeds);
+    const safeRate = Math.max(0, toFiniteNumber(usagePerDayPerBed));
+    const safeBuffer = sanitizeBuffer(bufferPercentage);
+    const baseQuantity = safeDays * safeBeds * safeRate;
+    const bufferMultiplier = 1 + (safeBuffer / 100);
     return baseQuantity * bufferMultiplier;
   }
 
@@ -919,17 +944,17 @@
       allConsumables = scenario.consumables;
     }
     if (scenario.deploymentDays != null) {
-      deploymentDays = scenario.deploymentDays;
+      deploymentDays = sanitizeDays(scenario.deploymentDays);
       const de = g('meds-days');
       if (de) de.value = (deploymentDays !== 0) ? deploymentDays : '';
     }
     if (scenario.deploymentBeds != null) {
-      deploymentBeds = scenario.deploymentBeds;
+      deploymentBeds = sanitizeBeds(scenario.deploymentBeds);
       const be = g('meds-beds');
       if (be) be.value = (deploymentBeds !== 0) ? deploymentBeds : '';
     }
     if (scenario.bufferPercentage !== undefined) {
-      bufferPercentage = scenario.bufferPercentage;
+      bufferPercentage = sanitizeBuffer(scenario.bufferPercentage);
       const bu = g('meds-buffer');
       if (bu) bu.value = (bufferPercentage !== 0) ? bufferPercentage : '';
     }
@@ -1311,14 +1336,14 @@
     if (nonzeroEl) nonzeroEl.checked = savedNonzeroOnly === '1';
 
     if (savedDays !== null) {
-      deploymentDays = parseFloat(savedDays) || 0;
+      deploymentDays = sanitizeDays(parseFloat(savedDays));
       if (de) de.value = deploymentDays !== 0 ? String(deploymentDays) : '';
     } else {
       deploymentDays = 0;
       if (de) de.value = '';
     }
     if (savedBeds !== null) {
-      deploymentBeds = parseFloat(savedBeds) || 0;
+      deploymentBeds = sanitizeBeds(parseFloat(savedBeds));
       if (be) be.value = deploymentBeds !== 0 ? String(deploymentBeds) : '';
     } else {
       deploymentBeds = 0;
@@ -1326,7 +1351,7 @@
     }
 
     if (savedBuffer !== null) {
-      bufferPercentage = parseFloat(savedBuffer) || 0;
+      bufferPercentage = sanitizeBuffer(parseFloat(savedBuffer));
       const bu = g('meds-buffer');
       if (bu) bu.value = (bufferPercentage !== 0) ? String(bufferPercentage) : '';
     } else {

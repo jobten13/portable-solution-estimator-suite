@@ -747,6 +747,14 @@
             if (ev.target) ev.target.value = '';
             return;
           }
+          if (data.scenarioName != null) {
+            const el = g('scenario-name');
+            if (el) el.value = data.scenarioName;
+          }
+          if (data.scenarioNotes != null) {
+            const el = g('scenario-notes');
+            if (el) el.value = data.scenarioNotes;
+          }
           if (data.consumables && Array.isArray(data.consumables)) {
             allConsumables = sanitizeImportedConsumables(data.consumables, issues);
             currentListType = 'custom';
