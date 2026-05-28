@@ -832,22 +832,6 @@
     if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
   }
 
-  function setupPlaceholderBehavior(input) {
-    if (!input) return;
-    input.addEventListener('focus', function() {
-      if (this.value === '0' || this.value === '0.0') {
-        this.value = '';
-      }
-      /* Do not call select() here: applySort() restores focus after reordering,
-         which re-fires focus and would select the current value, so the next
-         keypress would replace it (e.g. "1" becomes "2" instead of "12"). */
-    });
-    input.addEventListener('blur', function() {
-      if (this.value.trim() === '') {
-        this.value = '';
-      }
-    });
-  }
 
   function onResetQuantities() {
     if (!confirm('Reset all equipment quantities to zero? Scenario name, notes, and capacities are kept.')) return;
@@ -1402,7 +1386,7 @@
   }
 
   function onGenFuelBlur(e) {
-    const name = e.target.id || '';
+    const name = (e.target.id || '').replace(PREFIX, '');
     if (SIDEBAR_RULES[name]) validateAndShowSidebar(name);
     calculateLoad();
     notifyWorksheetChanged();
@@ -1448,7 +1432,6 @@
         calculateLoad();
         notifyWorksheetChanged();
       });
-      setupPlaceholderBehavior(inp);
     });
     const gen = $(id('gen-capacity'));
     const fuel = $(id('fuel-capacity'));
@@ -1463,7 +1446,6 @@
       inp.removeEventListener('blur', onGenFuelBlur);
       inp.addEventListener('focus', onQtyFocus);
       inp.addEventListener('blur', onGenFuelBlur);
-      setupPlaceholderBehavior(inp);
     });
     const btnPrint = $(id('btn-print'));
     const btnReset = $(id('btn-reset-qty'));
