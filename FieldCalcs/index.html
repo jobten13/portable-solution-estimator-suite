@@ -1076,6 +1076,18 @@
     </main>
 
     <div id="shell-toast" class="shell-toast" role="status" aria-live="polite" hidden></div>
+
+    <div id="shell-modal-overlay" class="shell-modal-overlay" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="shell-modal-title">
+      <div class="shell-modal-panel">
+        <p id="shell-modal-title" class="shell-modal-title"></p>
+        <p id="shell-modal-message" class="shell-modal-message"></p>
+        <input id="shell-modal-input" class="shell-modal-input" type="text" hidden>
+        <div class="shell-modal-actions">
+          <button id="shell-modal-cancel" class="shell-modal-btn shell-modal-btn--cancel" type="button">Cancel</button>
+          <button id="shell-modal-ok" class="shell-modal-btn shell-modal-btn--ok" type="button">OK</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1106,6 +1118,7 @@
     })();
   </script>
   <script src="shell.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
+  <script src="shell-modal.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="Load Calc Basic/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="Load Calc Pro/equipment-data.js" onerror="window.reportShellScriptLoadError(this.src)"></script>
   <script src="Load Calc Pro/script.js" onerror="window.reportShellScriptLoadError(this.src)"></script>

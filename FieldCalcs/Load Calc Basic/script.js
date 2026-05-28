@@ -301,14 +301,14 @@
   const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
   const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
 
-  function confirmOverwriteIfDirty() {
+  async function confirmOverwriteIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_LOAD_OVERWRITE_DIRTY);
   }
 
-  function confirmImportIfDirty() {
+  async function confirmImportIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_IMPORT_OVERWRITE_DIRTY);
   }
 
   function notifyWorksheetChanged() {
@@ -826,16 +826,16 @@
   }
 
 
-  function onResetQuantities() {
-    if (!confirm('Reset all equipment quantities to zero? Scenario name, notes, and capacities are kept.')) return;
+  async function onResetQuantities() {
+    if (!(await shellConfirm('Reset all equipment quantities to zero? Scenario name, notes, and capacities are kept.'))) return;
     $$('.qty-input').forEach(inp => { if (inp) inp.value = ''; });
     calculateLoad();
     scenarioLoadGuardDirty = false;
     showToast('Quantities reset', 'success', 2000);
   }
 
-  function onFullReset() {
-    if (!confirm('Full sheet reset? This clears quantities, capacities, scenario name/notes, and removes all custom equipment.')) return;
+  async function onFullReset() {
+    if (!(await shellConfirm('Full sheet reset? This clears quantities, capacities, scenario name/notes, and removes all custom equipment.'))) return;
     $$('.qty-input').forEach(inp => { if (inp) inp.value = ''; });
     const gen = $(id('gen-capacity'));
     const fuel = $(id('fuel-capacity'));
@@ -855,7 +855,7 @@
     showToast('Full sheet reset complete', 'success', 2000);
   }
 
-  function onSave() {
+  async function onSave() {
     let hasErrors = false;
     Object.keys(SIDEBAR_RULES).forEach(name => {
       if (!validateAndShowSidebar(name)) hasErrors = true;
@@ -867,7 +867,7 @@
     const data = getCurrentWorksheetData();
     let scenarioName = (data.scenarioName && data.scenarioName.trim()) || '';
     if (!scenarioName) {
-      scenarioName = prompt('Enter a name for this scenario:', `Scenario ${new Date().toLocaleDateString()}`);
+      scenarioName = await shellPrompt('Enter a name for this scenario:', `Scenario ${new Date().toLocaleDateString()}`);
       if (!scenarioName || !scenarioName.trim()) {
         acknowledgeClick($(id('btn-save')), 'Cancelled', 1200);
         return;
@@ -882,7 +882,7 @@
     const savedScenario = { id: String(savedAt.getTime()), displayName, baseName, savedAt: savedAt.toISOString(), data: scenarioData };
     const existingIndex = list.findIndex(s => (s.baseName || '').trim() === baseName);
     if (existingIndex >= 0) {
-      if (!confirm(`A scenario named "${baseName}" already exists. Overwrite it?`)) return;
+      if (!(await shellConfirm(`A scenario named "${baseName}" already exists. Overwrite it?`))) return;
       list[existingIndex] = savedScenario;
     } else {
       list.push(savedScenario);
@@ -904,7 +904,7 @@
     scenarioLoadGuardDirty = false;
   }
 
-  function onLoad() {
+  async function onLoad() {
     const sel = $(id('scenario-select'));
     if (!sel || sel.value === '') {
       showToast('Select a scenario from the dropdown to load', 'warning', 3000);
@@ -916,7 +916,7 @@
       showToast('Scenario not found', 'error', 2000);
       return;
     }
-    if (!confirmOverwriteIfDirty()) return;
+    if (!(await confirmOverwriteIfDirty())) return;
     applyScenarioData(scenario.data);
     const nameEl = $(id('scenario-name'));
     if (nameEl) nameEl.value = scenario.baseName || scenario.data.scenarioName || '';
@@ -930,7 +930,7 @@
     saveWorksheetState();
   }
 
-  function onDeleteScenario() {
+  async function onDeleteScenario() {
     const sel = $(id('scenario-select'));
     if (!sel || sel.value === '') {
       showToast('Select a scenario to delete', 'warning', 3000);
@@ -940,7 +940,7 @@
     const idx = list.findIndex(s => String(s.id) === sel.value);
     const scenario = idx >= 0 ? list[idx] : null;
     if (!scenario) return;
-    if (!confirm(`Delete scenario "${scenario.baseName || scenario.displayName}"?`)) return;
+    if (!(await shellConfirm(`Delete scenario "${scenario.baseName || scenario.displayName}"?`))) return;
     list.splice(idx, 1);
     try {
       saveScenariosToStorage(list);
@@ -953,13 +953,13 @@
     showToast('Scenario deleted', 'success', 2000);
   }
 
-  function onClearAllScenarios() {
+  async function onClearAllScenarios() {
     const list = getSavedScenarios();
     if (list.length === 0) {
       showToast('No scenarios to clear', 'info', 2000);
       return;
     }
-    if (!confirm(`Clear all ${list.length} scenarios? This cannot be undone.`)) return;
+    if (!(await shellConfirm(`Clear all ${list.length} scenarios? This cannot be undone.`))) return;
     try {
       saveScenariosToStorage([]);
     } catch (e) {
@@ -1104,7 +1104,7 @@
     if (!file) return;
     const sourceFileName = file.name;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const issues = [];
         const parsed = JSON.parse(reader.result);
@@ -1124,7 +1124,7 @@
             ev.target.value = '';
             return;
           }
-          if (!confirmImportIfDirty()) {
+          if (!(await confirmImportIfDirty())) {
             ev.target.value = '';
             return;
           }
@@ -1228,8 +1228,8 @@
     showToast('Category quantities reset', 'success', 2000);
   }
 
-  function onDeleteRow(e) {
-    if (!confirm('Delete this custom item?')) return;
+  async function onDeleteRow(e) {
+    if (!(await shellConfirm('Delete this custom item?'))) return;
     const row = e.target.closest('.equipment-row');
     if (row) {
       row.remove();

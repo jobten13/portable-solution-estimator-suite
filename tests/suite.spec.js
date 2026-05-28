@@ -145,13 +145,27 @@ async function waitForToastText(page, predicate, timeoutMs) {
   return '';
 }
 
-async function waitForConfirmDialog(page, timeoutMs) {
+async function waitForShellModal(page, timeoutMs) {
   try {
-    const dialogPromise = page.waitForEvent('dialog', { timeout: timeoutMs });
-    return await dialogPromise;
+    await page.waitForSelector('#shell-modal-overlay:not([hidden])', { timeout: timeoutMs || 5000 });
+    return true;
   } catch (e) {
-    return null;
+    return false;
   }
+}
+
+async function getShellModalMessage(page) {
+  return page.$eval('#shell-modal-message', el => el.textContent || '');
+}
+
+async function dismissShellModal(page) {
+  await page.click('#shell-modal-cancel');
+  await page.waitForSelector('#shell-modal-overlay[hidden]', { timeout: 3000 }).catch(() => {});
+}
+
+async function acceptShellModal(page) {
+  await page.click('#shell-modal-ok');
+  await page.waitForSelector('#shell-modal-overlay[hidden]', { timeout: 3000 }).catch(() => {});
 }
 
 async function getInputValue(page, selector) {
@@ -585,89 +599,79 @@ async function runLoadScenarioGuardTest(page, calc) {
   await blurInput(page, numericSelector);
   await page.waitForTimeout(250);
 
-  // Native confirm(): must be handled or the page blocks. First dialog = Cancel (dismiss), second = OK (accept).
-  // Await dismiss/accept — fire-and-forget promises can leave Playwright waiting on the click action.
-  let dialogStep = 0;
-  let cancelMsg = '';
-  let okMsg = '';
-  const onLoadDialog = async (dialog) => {
-    dialogStep += 1;
-    if (dialogStep === 1) {
-      cancelMsg = dialog.message();
-      await dialog.dismiss();
-    } else {
-      okMsg = dialog.message();
-      await dialog.accept();
-    }
-  };
-  page.on('dialog', onLoadDialog);
-  try {
-    await page.click(loadButtonSelector, { timeout: 15000 });
-    await page.waitForTimeout(750);
-    const afterCancelVal = await getInputValue(page, numericSelector);
-    if (dialogStep < 1) {
-      recordSilentFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: load scenario guard should warn on dirty sheet (Cancel path)`,
-        whatHappened: 'Load scenario attempted while dirty, but no confirm dialog appeared.',
-        expectedFeedback: 'Confirm dialog warning about unsaved changes.',
-        observedFeedback: 'No confirm dialog before Cancel path completed.',
-        screenshotPath: null
-      });
-      return;
-    }
-    if (Number(afterCancelVal) !== scenarioBValue) {
-      recordVisibleFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: Cancel should preserve dirty values`,
-        whatHappened: 'State changed even after Cancel.',
-        expectedFeedback: cancelMsg,
-        observedFeedback: cancelMsg,
-        screenshotPath: null
-      });
-      return;
-    }
-
-    await page.click(loadButtonSelector, { timeout: 15000 });
-    await page.waitForTimeout(900);
-    if (dialogStep < 2) {
-      recordSilentFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: load scenario guard should warn on dirty sheet (OK path)`,
-        whatHappened: 'Load scenario attempted while dirty, but no confirm dialog appeared (OK path).',
-        expectedFeedback: 'Confirm dialog warning about unsaved changes.',
-        observedFeedback: 'No second confirm dialog before OK path completed.',
-        screenshotPath: null
-      });
-      return;
-    }
-    const afterOkVal = await getInputValue(page, numericSelector);
-    if (Number(afterOkVal) !== scenarioAValue) {
-      recordVisibleFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: OK should apply saved scenario values`,
-        whatHappened: `Numeric field not restored to scenario A. Expected ${scenarioAValue}, saw ${afterOkVal}.`,
-        expectedFeedback: okMsg,
-        observedFeedback: okMsg,
-        screenshotPath: null
-      });
-      return;
-    }
-
-    recordFinding({
+  // Cancel path: click load, wait for DOM modal, dismiss it.
+  await page.click(loadButtonSelector, { timeout: 15000 });
+  const modalAppeared1 = await waitForShellModal(page, 5000);
+  if (!modalAppeared1) {
+    recordSilentFailure({
       category: 'Load scenario / Import JSON',
       calc: name,
-      step: `${kind}: Load scenario guard (Cancel + OK)`,
-      resultText: 'Dirty sheet prompted and Cancel/OK behavior matched expectations.',
-      detailsText: 'Cancel kept dirty values; OK applied saved scenario values.'
+      step: `${kind}: load scenario guard should warn on dirty sheet (Cancel path)`,
+      whatHappened: 'Load scenario attempted while dirty, but no confirm modal appeared.',
+      expectedFeedback: 'Confirm modal warning about unsaved changes.',
+      observedFeedback: 'No confirm modal before Cancel path completed.',
+      screenshotPath: null
     });
-  } finally {
-    page.off('dialog', onLoadDialog);
+    return;
   }
+  const cancelMsg = await getShellModalMessage(page);
+  await dismissShellModal(page);
+  await page.waitForTimeout(300);
+
+  const afterCancelVal = await getInputValue(page, numericSelector);
+  if (Number(afterCancelVal) !== scenarioBValue) {
+    recordVisibleFailure({
+      category: 'Load scenario / Import JSON',
+      calc: name,
+      step: `${kind}: Cancel should preserve dirty values`,
+      whatHappened: 'State changed even after Cancel.',
+      expectedFeedback: cancelMsg,
+      observedFeedback: cancelMsg,
+      screenshotPath: null
+    });
+    return;
+  }
+
+  // OK path: click load again, wait for DOM modal, accept it.
+  await page.click(loadButtonSelector, { timeout: 15000 });
+  const modalAppeared2 = await waitForShellModal(page, 5000);
+  if (!modalAppeared2) {
+    recordSilentFailure({
+      category: 'Load scenario / Import JSON',
+      calc: name,
+      step: `${kind}: load scenario guard should warn on dirty sheet (OK path)`,
+      whatHappened: 'Load scenario attempted while dirty, but no confirm modal appeared (OK path).',
+      expectedFeedback: 'Confirm modal warning about unsaved changes.',
+      observedFeedback: 'No confirm modal before OK path completed.',
+      screenshotPath: null
+    });
+    return;
+  }
+  const okMsg = await getShellModalMessage(page);
+  await acceptShellModal(page);
+  await page.waitForTimeout(500);
+
+  const afterOkVal = await getInputValue(page, numericSelector);
+  if (Number(afterOkVal) !== scenarioAValue) {
+    recordVisibleFailure({
+      category: 'Load scenario / Import JSON',
+      calc: name,
+      step: `${kind}: OK should apply saved scenario values`,
+      whatHappened: `Numeric field not restored to scenario A. Expected ${scenarioAValue}, saw ${afterOkVal}.`,
+      expectedFeedback: okMsg,
+      observedFeedback: okMsg,
+      screenshotPath: null
+    });
+    return;
+  }
+
+  recordFinding({
+    category: 'Load scenario / Import JSON',
+    calc: name,
+    step: `${kind}: Load scenario guard (Cancel + OK)`,
+    resultText: 'Dirty sheet prompted and Cancel/OK behavior matched expectations.',
+    detailsText: 'Cancel kept dirty values; OK applied saved scenario values.'
+  });
 }
 
 async function runImportScenarioGuardTest(page, calc) {
@@ -706,90 +710,81 @@ async function runImportScenarioGuardTest(page, calc) {
   await blurInput(page, numericSelector);
   await page.waitForTimeout(250);
 
-  // Native confirm(): must be handled or the page blocks. First dialog = Cancel (dismiss), second = OK (accept).
-  let dialogStep = 0;
-  let cancelMsg = '';
-  let okMsg = '';
-  const onImportDialog = async (dialog) => {
-    dialogStep += 1;
-    if (dialogStep === 1) {
-      cancelMsg = dialog.message();
-      await dialog.dismiss();
-    } else {
-      okMsg = dialog.message();
-      await dialog.accept();
-    }
-  };
-  page.on('dialog', onImportDialog);
-  try {
-    await page.click(loadImportButtonSelector, { timeout: 15000 });
-    await page.setInputFiles(importFileInputSelector, jsonPath);
-    await page.waitForTimeout(750);
-    if (dialogStep < 1) {
-      recordSilentFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: Import JSON guard should warn on dirty sheet (Cancel path)`,
-        whatHappened: 'Import attempted while dirty, but no confirm dialog appeared.',
-        expectedFeedback: 'Confirm dialog warning about unsaved changes.',
-        observedFeedback: 'No confirm dialog before Cancel path completed.',
-        screenshotPath: null
-      });
-      return;
-    }
-    const afterCancelVal = await getInputValue(page, numericSelector);
-    if (Number(afterCancelVal) !== 7) {
-      recordVisibleFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: Import Cancel should preserve dirty values`,
-        whatHappened: 'State changed even after Cancel during import.',
-        expectedFeedback: cancelMsg,
-        observedFeedback: cancelMsg,
-        screenshotPath: null
-      });
-      return;
-    }
-
-    await page.click(loadImportButtonSelector, { timeout: 15000 });
-    await page.setInputFiles(importFileInputSelector, jsonPath);
-    await page.waitForTimeout(900);
-    if (dialogStep < 2) {
-      recordSilentFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: Import JSON guard should warn on dirty sheet (OK path)`,
-        whatHappened: 'Import attempted while dirty, but no confirm dialog appeared (OK path).',
-        expectedFeedback: 'Confirm dialog warning about unsaved changes.',
-        observedFeedback: 'No second confirm dialog before OK path completed.',
-        screenshotPath: null
-      });
-      return;
-    }
-    const afterOkVal = await getInputValue(page, numericSelector);
-    if (Number(afterOkVal) !== 3) {
-      recordVisibleFailure({
-        category: 'Load scenario / Import JSON',
-        calc: name,
-        step: `${kind}: Import OK should apply exported scenario values`,
-        whatHappened: `Numeric field not restored to scenario A. Expected 3, saw ${afterOkVal}.`,
-        expectedFeedback: okMsg,
-        observedFeedback: okMsg,
-        screenshotPath: null
-      });
-      return;
-    }
-
-    recordFinding({
+  // Cancel path: trigger import, wait for DOM modal, dismiss it.
+  await page.click(loadImportButtonSelector, { timeout: 15000 });
+  await page.setInputFiles(importFileInputSelector, jsonPath);
+  const modalAppeared1 = await waitForShellModal(page, 5000);
+  if (!modalAppeared1) {
+    recordSilentFailure({
       category: 'Load scenario / Import JSON',
       calc: name,
-      step: `${kind}: Import JSON guard (Cancel + OK)`,
-      resultText: 'Dirty sheet prompted and Cancel/OK behavior matched expectations.',
-      detailsText: 'Cancel kept dirty values; OK applied exported scenario values.'
+      step: `${kind}: Import JSON guard should warn on dirty sheet (Cancel path)`,
+      whatHappened: 'Import attempted while dirty, but no confirm modal appeared.',
+      expectedFeedback: 'Confirm modal warning about unsaved changes.',
+      observedFeedback: 'No confirm modal before Cancel path completed.',
+      screenshotPath: null
     });
-  } finally {
-    page.off('dialog', onImportDialog);
+    return;
   }
+  const cancelMsg = await getShellModalMessage(page);
+  await dismissShellModal(page);
+  await page.waitForTimeout(300);
+
+  const afterCancelVal = await getInputValue(page, numericSelector);
+  if (Number(afterCancelVal) !== 7) {
+    recordVisibleFailure({
+      category: 'Load scenario / Import JSON',
+      calc: name,
+      step: `${kind}: Import Cancel should preserve dirty values`,
+      whatHappened: 'State changed even after Cancel during import.',
+      expectedFeedback: cancelMsg,
+      observedFeedback: cancelMsg,
+      screenshotPath: null
+    });
+    return;
+  }
+
+  // OK path: trigger import again, wait for DOM modal, accept it.
+  await page.click(loadImportButtonSelector, { timeout: 15000 });
+  await page.setInputFiles(importFileInputSelector, jsonPath);
+  const modalAppeared2 = await waitForShellModal(page, 5000);
+  if (!modalAppeared2) {
+    recordSilentFailure({
+      category: 'Load scenario / Import JSON',
+      calc: name,
+      step: `${kind}: Import JSON guard should warn on dirty sheet (OK path)`,
+      whatHappened: 'Import attempted while dirty, but no confirm modal appeared (OK path).',
+      expectedFeedback: 'Confirm modal warning about unsaved changes.',
+      observedFeedback: 'No confirm modal before OK path completed.',
+      screenshotPath: null
+    });
+    return;
+  }
+  const okMsg = await getShellModalMessage(page);
+  await acceptShellModal(page);
+  await page.waitForTimeout(500);
+
+  const afterOkVal = await getInputValue(page, numericSelector);
+  if (Number(afterOkVal) !== 3) {
+    recordVisibleFailure({
+      category: 'Load scenario / Import JSON',
+      calc: name,
+      step: `${kind}: Import OK should apply exported scenario values`,
+      whatHappened: `Numeric field not restored to scenario A. Expected 3, saw ${afterOkVal}.`,
+      expectedFeedback: okMsg,
+      observedFeedback: okMsg,
+      screenshotPath: null
+    });
+    return;
+  }
+
+  recordFinding({
+    category: 'Load scenario / Import JSON',
+    calc: name,
+    step: `${kind}: Import JSON guard (Cancel + OK)`,
+    resultText: 'Dirty sheet prompted and Cancel/OK behavior matched expectations.',
+    detailsText: 'Cancel kept dirty values; OK applied exported scenario values.'
+  });
 }
 
 async function validateSelectorList(page, requiredSelectors) {

@@ -194,7 +194,112 @@ body {
   color: #fff;
 }
 
+/* --- Shell modal dialog --- */
+.shell-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1rem;
+}
+
+.shell-modal-overlay[hidden] { display: none !important; }
+
+.shell-modal-panel {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  padding: 22px 26px 18px;
+  min-width: 320px;
+  max-width: 480px;
+  width: 100%;
+  animation: shell-modal-enter 0.15s ease-out;
+}
+
+@keyframes shell-modal-enter {
+  from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.shell-modal-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e3a5f;
+}
+
+.shell-modal-message {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #334155;
+  word-wrap: break-word;
+}
+
+.shell-modal-input {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.shell-modal-input:focus {
+  border-color: #1e3a5f;
+  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.15);
+}
+
+.shell-modal-input[hidden] { display: none !important; }
+
+.shell-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.shell-modal-btn {
+  padding: 7px 18px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.shell-modal-btn--cancel {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.shell-modal-btn--cancel:hover { background: #e2e8f0; }
+
+.shell-modal-btn--ok {
+  background: #1e3a5f;
+  color: #fff;
+}
+
+.shell-modal-btn--ok:hover { background: #163050; }
+.shell-modal-btn--ok:focus-visible { box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.4); }
+
+@media (max-width: 480px) {
+  .shell-modal-panel { min-width: auto; padding: 18px 16px 14px; }
+  .shell-modal-actions { flex-direction: column-reverse; }
+  .shell-modal-btn { width: 100%; text-align: center; }
+}
+
 @media print {
+  .shell-modal-overlay { display: none !important; }
   .shell-header,
   .shell-toast { display: none !important; }
 

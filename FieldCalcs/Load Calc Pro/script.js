@@ -354,12 +354,12 @@
       applySort();
     }
   }
-  function onDeleteRow(e) {
+  async function onDeleteRow(e) {
     const row = e.target.closest('.equipment-row');
     if (!row) return;
     const nameCell = row.querySelector('td:first-child');
     const name = nameCell ? nameCell.textContent.trim() : 'this row';
-    if (!confirm(`Delete "${name}" from the list?`)) return;
+    if (!(await shellConfirm(`Delete "${name}" from the list?`))) return;
     row.remove();
     recalc();
   }
@@ -709,14 +709,14 @@
   const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
   const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
 
-  function confirmOverwriteIfDirty() {
+  async function confirmOverwriteIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_LOAD_OVERWRITE_DIRTY);
   }
 
-  function confirmImportIfDirty() {
+  async function confirmImportIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_IMPORT_OVERWRITE_DIRTY);
   }
 
   function notifyWorksheetChanged() {
@@ -964,7 +964,7 @@
     return cleaned;
   }
 
-  function saveScenario() {
+  async function saveScenario() {
     let hasErrors = false;
     Object.keys(SIDEBAR_RULES).forEach(id => {
       if (!validateAndShowSidebar(id)) hasErrors = true;
@@ -976,7 +976,7 @@
     const data = getScenarioData();
     let scenarioName = (data.name && data.name.trim()) ? data.name.trim() : '';
     if (!scenarioName) {
-      scenarioName = prompt('Enter a name for this scenario:', `Scenario ${new Date().toLocaleDateString()}`);
+      scenarioName = await shellPrompt('Enter a name for this scenario:', `Scenario ${new Date().toLocaleDateString()}`);
       if (!scenarioName || !scenarioName.trim()) {
         acknowledge('load-pro-save-scenario-btn', 'Cancelled');
         return;
@@ -992,7 +992,7 @@
     const scenarios = getSavedScenarios();
     const existingIndex = scenarios.findIndex(s => s.name === scenario.name);
     if (existingIndex >= 0) {
-      if (!confirm(`A scenario named "${scenario.name}" already exists. Overwrite it?`)) return;
+      if (!(await shellConfirm(`A scenario named "${scenario.name}" already exists. Overwrite it?`))) return;
       scenarios[existingIndex] = scenario;
     } else {
       scenarios.push(scenario);
@@ -1012,7 +1012,7 @@
     acknowledge('load-pro-save-scenario-btn', 'Saved!');
   }
 
-  function loadSelectedScenario() {
+  async function loadSelectedScenario() {
     const select = getScenarioSelectEl();
     const scenarioId = select ? select.value : '';
     if (!scenarioId) {
@@ -1025,7 +1025,7 @@
       acknowledge('load-pro-load-scenario-btn', 'Not found');
       return;
     }
-    if (!confirmOverwriteIfDirty()) return;
+    if (!(await confirmOverwriteIfDirty())) return;
     applyScenarioData(scenario.data);
     updateAutosaveTimestampDisplay(scenario.timestamp || '');
     updateSavedDisplay(scenario.timestamp || null);
@@ -1034,7 +1034,7 @@
     acknowledge('load-pro-load-scenario-btn', 'Loaded!');
   }
 
-  function deleteSelectedScenario() {
+  async function deleteSelectedScenario() {
     const select = getScenarioSelectEl();
     const scenarioId = select ? select.value : '';
     if (!scenarioId) {
@@ -1044,7 +1044,7 @@
     const scenarios = getSavedScenarios();
     const scenario = scenarios.find(s => s.id === scenarioId);
     if (!scenario) return;
-    if (!confirm(`Delete scenario "${scenario.name}"?`)) return;
+    if (!(await shellConfirm(`Delete scenario "${scenario.name}"?`))) return;
     const updated = scenarios.filter(s => s.id !== scenarioId);
     try {
       localStorage.setItem(STORAGE_SCENARIOS, JSON.stringify(updated));
@@ -1053,13 +1053,13 @@
     acknowledge('load-pro-delete-scenario-btn', 'Deleted');
   }
 
-  function clearAllScenarios() {
+  async function clearAllScenarios() {
     const scenarios = getSavedScenarios();
     if (scenarios.length === 0) {
       acknowledge('load-pro-clear-scenarios-btn', 'None saved');
       return;
     }
-    if (!confirm(`Delete all ${scenarios.length} saved scenarios? This cannot be undone.`)) return;
+    if (!(await shellConfirm(`Delete all ${scenarios.length} saved scenarios? This cannot be undone.`))) return;
     try { localStorage.removeItem(STORAGE_SCENARIOS); } catch (e) {}
     updateScenarioDropdown();
     updateAutosaveTimestampDisplay('');
@@ -1071,7 +1071,7 @@
     if (!file) return;
     const sourceFileName = file.name;
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const payload = JSON.parse(e.target.result);
         const issues = [];
@@ -1079,7 +1079,7 @@
         if (!cleaned) {
           throw new Error('Invalid file');
         }
-        if (!confirmImportIfDirty()) return;
+        if (!(await confirmImportIfDirty())) return;
         applyScenarioData(cleaned);
         saveWorksheetState();
         scenarioLoadGuardDirty = false;
@@ -1181,16 +1181,16 @@
     }, 1500);
   }
 
-  function resetAllQuantities() {
-    if (!confirm('Reset all quantities to 0 and remove custom rows? Current scenario is not saved first.')) return;
+  async function resetAllQuantities() {
+    if (!(await shellConfirm('Reset all quantities to 0 and remove custom rows? Current scenario is not saved first.'))) return;
     $$('.qty-input').forEach(inp => { inp.value = ''; });
     $$('.equipment-row.custom').forEach(row => row.remove());
     recalc();
     scenarioLoadGuardDirty = false;
   }
 
-  function clearSheet() {
-    if (!confirm('Reset worksheet? This will restore the original equipment list, clear all quantities, remove custom rows, and reset generator/fuel inputs. This cannot be undone.')) return;
+  async function clearSheet() {
+    if (!(await shellConfirm('Reset worksheet? This will restore the original equipment list, clear all quantities, remove custom rows, and reset generator/fuel inputs. This cannot be undone.'))) return;
     // Restore full table from baseline (restores any deleted rows)
     buildCategories();
     // Re-attach per-category Reset Qty buttons (new DOM from buildCategories)

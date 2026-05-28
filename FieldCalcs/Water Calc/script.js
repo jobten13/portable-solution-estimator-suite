@@ -552,14 +552,14 @@
   const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
   const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
 
-  function confirmOverwriteIfDirty() {
+  async function confirmOverwriteIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_LOAD_OVERWRITE_DIRTY);
   }
 
-  function confirmImportIfDirty() {
+  async function confirmImportIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_IMPORT_OVERWRITE_DIRTY);
   }
 
   function notifyWorksheetChanged() {
@@ -748,7 +748,7 @@
   }
 
 
-  function saveScenario() {
+  async function saveScenario() {
     // Validate all inputs before saving
     let hasErrors = false;
     Object.keys(VALIDATION_RULES).forEach(id => {
@@ -761,7 +761,7 @@
     const state = getState();
     let name = (state.scenarioName || '').trim();
     if (!name) {
-      name = prompt('Enter a name for this scenario:', `Water ${new Date().toLocaleDateString()}`);
+      name = await shellPrompt('Enter a name for this scenario:', `Water ${new Date().toLocaleDateString()}`);
       if (!name || !name.trim()) {
         showFeedback('Save cancelled. Name required.', 'info');
         return;
@@ -778,7 +778,7 @@
     };
     const list = getSavedScenarios();
     const idx = list.findIndex(s => s.name === scenario.name);
-    if (idx >= 0 && !confirm(`Overwrite existing scenario "${scenario.name}"?`)) {
+    if (idx >= 0 && !(await shellConfirm(`Overwrite existing scenario "${scenario.name}"?`))) {
       showFeedback('Save cancelled.', 'info');
       return;
     }
@@ -798,7 +798,7 @@
     showFeedback(`Scenario "${scenario.name}" saved.`, 'success');
   }
 
-  function loadSelectedScenario() {
+  async function loadSelectedScenario() {
     const select = g('water-scenario-select');
     const id = select ? select.value : '';
     if (!id) {
@@ -811,7 +811,7 @@
       showFeedback('Scenario not found or invalid.', 'info');
       return;
     }
-    if (!confirmOverwriteIfDirty()) return;
+    if (!(await confirmOverwriteIfDirty())) return;
     applyState(scenario.state);
     if (g('water-scenario-name')) g('water-scenario-name').value = scenario.name || (scenario.state && scenario.state.scenarioName) || '';
     setScenarioListLine({
@@ -825,7 +825,7 @@
     acknowledge('water-load-btn', 'Loaded!');
   }
 
-  function deleteSelectedScenario() {
+  async function deleteSelectedScenario() {
     const select = g('water-scenario-select');
     const id = select ? select.value : '';
     if (!id) {
@@ -834,7 +834,7 @@
     }
     const list = getSavedScenarios();
     const scenario = list.find(s => s.id === id);
-    if (!scenario || !confirm(`Delete "${scenario.name || ''}"?`)) return;
+    if (!scenario || !(await shellConfirm(`Delete "${scenario.name || ''}"?`))) return;
     const filtered = list.filter(s => s.id !== id);
     try {
       setSavedScenarios(filtered);
@@ -847,13 +847,13 @@
     showFeedback('Scenario deleted.', 'success');
   }
 
-  function clearAllScenarios() {
+  async function clearAllScenarios() {
     const list = getSavedScenarios();
     if (list.length === 0) {
       showFeedback('No scenarios to clear.', 'info');
       return;
     }
-    if (!confirm(`Delete all ${list.length} scenarios? This cannot be undone.`)) return;
+    if (!(await shellConfirm(`Delete all ${list.length} scenarios? This cannot be undone.`))) return;
     try {
       setSavedScenarios([]);
     } catch (e) {
@@ -963,13 +963,13 @@
     const file = ev.target && ev.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const data = JSON.parse(reader.result);
         const state = data.state;
         if (state.days != null || state.beds != null) {
           if (!state.scenarioName && data.name) state.scenarioName = data.name;
-          if (!confirmImportIfDirty()) {
+          if (!(await confirmImportIfDirty())) {
             ev.target.value = '';
             return;
           }
@@ -998,8 +998,8 @@
     reader.readAsText(file);
   }
 
-  function resetToDefaults() {
-    if (!confirm('Reset to defaults? This will restore all water inputs, modes, and capacities to baseline values.')) return;
+  async function resetToDefaults() {
+    if (!(await shellConfirm('Reset to defaults? This will restore all water inputs, modes, and capacities to baseline values.'))) return;
     if (typeof WATER_DEFAULTS !== 'undefined') {
       applyState(WATER_DEFAULTS);
     }

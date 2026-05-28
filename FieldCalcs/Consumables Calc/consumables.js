@@ -109,14 +109,14 @@
   const MSG_LOAD_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Load this scenario anyway? Unsaved edits may be lost.';
   const MSG_IMPORT_OVERWRITE_DIRTY = 'You have unsaved changes on this worksheet. Import this file anyway? Unsaved edits may be lost.';
 
-  function confirmOverwriteIfDirty() {
+  async function confirmOverwriteIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_LOAD_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_LOAD_OVERWRITE_DIRTY);
   }
 
-  function confirmImportIfDirty() {
+  async function confirmImportIfDirty() {
     if (!scenarioLoadGuardDirty) return true;
-    return confirm(MSG_IMPORT_OVERWRITE_DIRTY);
+    return shellConfirm(MSG_IMPORT_OVERWRITE_DIRTY);
   }
 
   function notifyWorksheetChanged() {
@@ -586,7 +586,7 @@
     }
   }
 
-  function onConsumablesTableClick(event) {
+  async function onConsumablesTableClick(event) {
     const target = event.target;
     if (!target || !target.matches('.btn-delete-item[data-item-id]')) return;
     const itemId = target.getAttribute('data-item-id');
@@ -598,7 +598,7 @@
       return;
     }
     const removedName = allConsumables[idx].name || 'Item';
-    if (!confirm(`Delete "${removedName}" from the list?`)) return;
+    if (!(await shellConfirm(`Delete "${removedName}" from the list?`))) return;
     allConsumables.splice(idx, 1);
     filterItems();
     calculateAndDisplay();
@@ -731,12 +731,12 @@
     if (!file) return;
     const sourceFileName = file.name;
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       try {
         const issues = [];
         const data = JSON.parse(reader.result);
         if (data && (data.consumables || data.deploymentDays != null || data.deploymentBeds != null)) {
-          if (!confirmImportIfDirty()) {
+          if (!(await confirmImportIfDirty())) {
             if (ev.target) ev.target.value = '';
             return;
           }
@@ -970,7 +970,7 @@
     window.print();
   }
 
-  function saveScenario() {
+  async function saveScenario() {
     if (allConsumables.length === 0) {
       showFeedback('No data to save. Please load Ward Consumables or ICU Consumables first.', 'info');
       return;
@@ -986,7 +986,7 @@
     const notesEl = g('scenario-notes');
     let baseName = nameEl ? nameEl.value.trim() : '';
     if (!baseName) {
-      const promptedName = prompt('Enter a scenario name:');
+      const promptedName = await shellPrompt('Enter a scenario name:');
       if (promptedName === null) {
         showFeedback('Save cancelled.', 'info');
         return;
@@ -1020,7 +1020,7 @@
     const scenarios = getSavedScenarios();
     const existingIndex = scenarios.findIndex(s => s.baseName === baseName);
     if (existingIndex >= 0) {
-      if (!confirm(`A scenario named "${baseName}" already exists. Overwrite it?`)) return;
+      if (!(await shellConfirm(`A scenario named "${baseName}" already exists. Overwrite it?`))) return;
       scenarios[existingIndex] = scenario;
     } else {
       scenarios.push(scenario);
@@ -1098,7 +1098,7 @@
     syncScenarioSelectTitle();
   }
 
-  function loadSelectedScenario() {
+  async function loadSelectedScenario() {
     const select = g('scenario-select');
     const scenarioId = select ? select.value : '';
 
@@ -1115,7 +1115,7 @@
       return;
     }
 
-    if (!confirmOverwriteIfDirty()) return;
+    if (!(await confirmOverwriteIfDirty())) return;
 
     ['days', 'beds', 'buffer'].forEach(clearValidationError);
     if (scenario.consumables && Array.isArray(scenario.consumables)) {
@@ -1159,7 +1159,7 @@
     acknowledge('load-btn', 'Loaded!');
   }
 
-  function deleteSelectedScenario() {
+  async function deleteSelectedScenario() {
     const select = g('scenario-select');
     const scenarioId = select ? select.value : '';
     if (!scenarioId) {
@@ -1172,7 +1172,7 @@
       showFeedback('Scenario not found.', 'error');
       return;
     }
-    if (!confirm(`Are you sure you want to delete "${scenario.name}"?`)) return;
+    if (!(await shellConfirm(`Are you sure you want to delete "${scenario.name}"?`))) return;
     const updated = scenarios.filter(s => s.id !== scenarioId);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -1185,13 +1185,13 @@
     showFeedback(`Scenario "${scenario.name}" deleted successfully!`, 'success');
   }
 
-  function clearAllScenarios() {
+  async function clearAllScenarios() {
     const scenarios = getSavedScenarios();
     if (scenarios.length === 0) {
       showFeedback('No scenarios to clear.', 'info');
       return;
     }
-    if (!confirm(`Are you sure you want to delete all ${scenarios.length} saved scenarios? This cannot be undone.`)) return;
+    if (!(await shellConfirm(`Are you sure you want to delete all ${scenarios.length} saved scenarios? This cannot be undone.`))) return;
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch (e) {}
@@ -1417,12 +1417,12 @@
     }, 3000);
   }
 
-  function clearAllItems() {
+  async function clearAllItems() {
     if (allConsumables.length === 0) {
       showFeedback('No items to clear.', 'info');
       return;
     }
-    if (!confirm(`Are you sure you want to clear all ${allConsumables.length} items?`)) return;
+    if (!(await shellConfirm(`Are you sure you want to clear all ${allConsumables.length} items?`))) return;
 
     allConsumables = [];
     filteredConsumables = [];
