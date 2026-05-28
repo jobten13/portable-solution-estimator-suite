@@ -21,7 +21,7 @@ Single app shell for the five calculators: Consumables, Pharmaceuticals, Water, 
 ## Contents
 
 - **index.html** – Shell layout: header, nav tabs, five panels, footer, shell toast.
-- **shell.js** – Panel switching; URL hash sync (`#consumables`, `#medicines`, `#water`, `#load-basic`, `#load-pro`); default panel Consumables; `window.ShellAPI = { showToast }`.
+- **shell.js** – Panel switching; URL hash sync (`#consumables`, `#medicines`, `#water`, `#load-basic`, `#load-pro`); default panel Consumables.
 - **shell.css** – Shell-only styles (header, nav, panels, footer, toast). Includes shared `.btn-ucd` (UC Davis blue/gold) for Consumables and Pharmaceuticals. Calc styles are loaded separately and scoped per panel.
 - **version.json** – Suite version and changelog (see [Version control](#version-control)).
 - **version-control.js** – Loads `version.json` and updates `meta[name="suite-version"]` and all `[data-suite-version]` elements.

@@ -116,8 +116,8 @@
     }
   };
 
-  const ROOT = document.getElementById('panel-load-calc') || document.documentElement;
-  const PREFIX = document.getElementById('panel-load-calc') ? 'load-' : '';
+  const ROOT = document.getElementById('panel-load-calc');
+  const PREFIX = 'load-';
   const id = (name) => `#${PREFIX}${name}`;
   const $ = (sel, el) => (el || ROOT).querySelector(sel);
   const $$ = (sel, el) => Array.from((el || ROOT).querySelectorAll(sel));
@@ -382,10 +382,6 @@
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          // Normalize older autosave payloads that used placeholder naming.
-          if (parsed.scenarioName === 'Unnamed scenario') {
-            parsed.scenarioName = '';
-          }
           applyScenarioData(parsed);
           calculateLoad();
           loadAutosaveDirty = false;
@@ -420,10 +416,7 @@
   }
 
   function showToast(message, type = 'info', duration = 3000) {
-    const host =
-      document.getElementById('panel-load-calc') ||
-      document.querySelector('.load-basic-calc') ||
-      document.body;
+    const host = document.getElementById('panel-load-calc');
     let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
@@ -1121,17 +1114,9 @@
           parsed.data != null && typeof parsed.data === 'object' && !Array.isArray(parsed.data)
             ? parsed.data
             : parsed;
-        const state = rootPayload.state || rootPayload.data || rootPayload;
-        let data = null;
-        if (state.data) {
-          data = state.data;
-        } else if (state.scenarioName != null || state.equipment != null) {
-          data = state;
-        } else if (Array.isArray(state.scenarios) && state.scenarios[0] && state.scenarios[0].data) {
-          data = state.scenarios[0].data;
-        } else if (Array.isArray(state) && state[0] && state[0].data) {
-          data = state[0].data;
-        }
+        const data = (rootPayload.scenarioName != null || rootPayload.equipment != null)
+          ? rootPayload
+          : null;
         if (data) {
           const sanitized = sanitizeImportedScenarioData(data, issues);
           if (!sanitized) {

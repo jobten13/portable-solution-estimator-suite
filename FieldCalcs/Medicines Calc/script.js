@@ -177,7 +177,7 @@
   }
 
   function updateInventoryHelpRateLabel() {
-    const pop = document.getElementById('meds-help-popover-inventory') || document.getElementById('help-popover-inventory');
+    const pop = document.getElementById('meds-help-popover-inventory');
     if (!pop) return;
     const firstLi = pop.querySelector('ul li:first-child');
     if (!firstLi) return;
@@ -191,25 +191,9 @@
     rateEl.placeholder = getRatePlaceholder(currentListType);
   }
 
-  function setupPlaceholderBehavior(input) {
-    if (!input) return;
-    input.addEventListener('focus', function() {
-      const v = this.value.trim();
-      if (v === '' || v === '0' || v === '0.0') {
-        this.value = '';
-      }
-      this.select();
-    });
-    input.addEventListener('blur', function() {
-      if (this.value.trim() === '') {
-        this.value = '';
-      }
-    });
-  }
-
   function setupHelpPopovers() {
-    var ROOT = document.getElementById('panel-medications') || document.documentElement;
-    var helpPopoverIdPrefix = document.getElementById('panel-medications') ? 'meds-help-popover-' : 'help-popover-';
+    var ROOT = document.getElementById('panel-medications');
+    var helpPopoverIdPrefix = 'meds-help-popover-';
     var helpButtons = Array.from(ROOT.querySelectorAll('.help-icon[data-help]'));
     if (!helpButtons.length) return;
 
@@ -303,7 +287,6 @@
 
     if (g('meds-days')) {
       const daysEl = g('meds-days');
-      setupPlaceholderBehavior(daysEl);
       daysEl.addEventListener('input', function () {
         deploymentDays = sanitizeDays(parseFloat(this.value));
         calculateAndDisplay();
@@ -313,7 +296,6 @@
     }
     if (g('meds-beds')) {
       const bedsEl = g('meds-beds');
-      setupPlaceholderBehavior(bedsEl);
       bedsEl.addEventListener('input', function () {
         deploymentBeds = sanitizeBeds(parseFloat(this.value));
         calculateAndDisplay();
@@ -323,7 +305,6 @@
     }
     if (g('meds-buffer')) {
       const bufferEl = g('meds-buffer');
-      setupPlaceholderBehavior(bufferEl);
       bufferEl.addEventListener('input', function () {
         bufferPercentage = sanitizeBuffer(parseFloat(this.value));
         calculateAndDisplay();
@@ -1209,8 +1190,7 @@
   }
 
   function updateAutosaveTimestampDisplay(tsIsoString) {
-    const lastSavedId = document.getElementById('panel-medications') ? 'meds-last-saved' : 'medicines-last-saved';
-    const el = document.getElementById(lastSavedId);
+    const el = document.getElementById('meds-last-saved');
     if (!el) return;
     if (!tsIsoString || typeof tsIsoString !== 'string') {
       el.textContent = '';
@@ -1248,10 +1228,7 @@
   function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 3000;
-    const host =
-      document.getElementById('panel-medications') ||
-      document.querySelector('.meds-calc') ||
-      document.body;
+    const host = document.getElementById('panel-medications');
     let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');

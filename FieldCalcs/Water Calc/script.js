@@ -11,14 +11,6 @@
   const DEFAULT_POTABLE_GAL_PER_BED = 22;
   const DEFAULT_WASTEWATER_GAL_PER_BED = 18;
 
-  // Toast styles target `.water-calc .toast-container` (see styles.css). In FieldCalcs, append inside `#panel-water`
-  // so fixed positioning applies; standalone gets `.water-calc` on the main wrapper for the same CSS.
-  (function ensureWaterCalcRootForToasts() {
-    if (document.getElementById('panel-water')) return;
-    const root = document.querySelector('.water-calc') || document.querySelector('.container');
-    if (root && !root.classList.contains('water-calc')) root.classList.add('water-calc');
-  })();
-
   function g(id) {
     const fullId = (id && id.startsWith('water-')) ? id : 'water-' + (id || '');
     return document.getElementById(fullId);
@@ -48,6 +40,27 @@
 
   function roundCoverDays(x) {
     return Math.round(x * 10) / 10;
+  }
+
+  function applyContainerTierWarning(daysCover, warnRow, pill, detailEl, dangerSuffix) {
+    let tier = 'danger';
+    if (daysCover >= 2) tier = 'ok';
+    else if (daysCover >= 1) tier = 'warn';
+    const x = roundCoverDays(daysCover);
+    const detailBase = `Containers cover ~${x} days at current demand`;
+    const detailText = tier === 'danger' ? detailBase + ' — ' + dangerSuffix : detailBase;
+    const pillLabel = tier === 'ok' ? 'ADEQUATE' : tier === 'warn' ? 'MARGINAL' : 'INSUFFICIENT';
+    if (warnRow) warnRow.style.display = '';
+    setMainsRowTier(warnRow, tier);
+    if (pill) {
+      pill.textContent = pillLabel;
+      setWaterStatusPill(pill, tier);
+      pill.setAttribute('role', 'status');
+    }
+    if (detailEl) {
+      detailEl.textContent = detailText;
+      detailEl.removeAttribute('aria-hidden');
+    }
   }
 
   function getNum(el, def) {
@@ -348,29 +361,10 @@
         potablePerDayBuffered <= 0 ||
         typeof daysPerDelivery !== 'number';
       if (!skipPotableStorageWarn) {
-        const daysCover = daysPerDelivery;
-        let tier = 'danger';
-        if (daysCover >= 2) tier = 'ok';
-        else if (daysCover >= 1) tier = 'warn';
-        const x = roundCoverDays(daysCover);
-        const detailBase = `Containers cover ~${x} days at current demand`;
-        const detailText =
-          tier === 'danger'
-            ? detailBase + ' — expect more than one delivery per day'
-            : detailBase;
-        const pillLabel = tier === 'ok' ? 'ADEQUATE' : tier === 'warn' ? 'MARGINAL' : 'INSUFFICIENT';
-        const potStorageDetail = document.getElementById('water-out-potable-storage-detail');
-        if (potableStorageWarnRow) potableStorageWarnRow.style.display = '';
-        setMainsRowTier(potableStorageWarnRow, tier);
-        if (potableStoragePill) {
-          potableStoragePill.textContent = pillLabel;
-          setWaterStatusPill(potableStoragePill, tier);
-          potableStoragePill.setAttribute('role', 'status');
-        }
-        if (potStorageDetail) {
-          potStorageDetail.textContent = detailText;
-          potStorageDetail.removeAttribute('aria-hidden');
-        }
+        applyContainerTierWarning(
+          daysPerDelivery, potableStorageWarnRow, potableStoragePill,
+          potableStorageDetailEl, 'expect more than one delivery per day'
+        );
       }
     }
 
@@ -448,29 +442,10 @@
         wastewaterPerDayBuffered <= 0 ||
         typeof daysPerFill !== 'number';
       if (!skipWastewaterStorageWarn) {
-        const daysCover = daysPerFill;
-        let tier = 'danger';
-        if (daysCover >= 2) tier = 'ok';
-        else if (daysCover >= 1) tier = 'warn';
-        const x = roundCoverDays(daysCover);
-        const detailBase = `Containers cover ~${x} days at current demand`;
-        const detailText =
-          tier === 'danger'
-            ? detailBase + ' — expect more than one pickup per day'
-            : detailBase;
-        const pillLabel = tier === 'ok' ? 'ADEQUATE' : tier === 'warn' ? 'MARGINAL' : 'INSUFFICIENT';
-        const wwStorageDetail = document.getElementById('water-out-wastewater-storage-detail');
-        if (wastewaterStorageWarnRow) wastewaterStorageWarnRow.style.display = '';
-        setMainsRowTier(wastewaterStorageWarnRow, tier);
-        if (wastewaterStoragePill) {
-          wastewaterStoragePill.textContent = pillLabel;
-          setWaterStatusPill(wastewaterStoragePill, tier);
-          wastewaterStoragePill.setAttribute('role', 'status');
-        }
-        if (wwStorageDetail) {
-          wwStorageDetail.textContent = detailText;
-          wwStorageDetail.removeAttribute('aria-hidden');
-        }
+        applyContainerTierWarning(
+          daysPerFill, wastewaterStorageWarnRow, wastewaterStoragePill,
+          wastewaterStorageDetailEl, 'expect more than one pickup per day'
+        );
       }
     }
 
@@ -546,10 +521,7 @@
   function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 3000;
-    const host =
-      document.getElementById('panel-water') ||
-      document.querySelector('.water-calc') ||
-      document.body;
+    const host = document.getElementById('panel-water');
     let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
@@ -994,7 +966,7 @@
     reader.onload = () => {
       try {
         const data = JSON.parse(reader.result);
-        const state = data.state || data;
+        const state = data.state;
         if (state.days != null || state.beds != null) {
           if (!state.scenarioName && data.name) state.scenarioName = data.name;
           if (!confirmImportIfDirty()) {
@@ -1133,8 +1105,8 @@
     }
 
     // Section-level help: hover for quick glance; click to pin open (scoped to Water panel in Shell)
-    const helpROOT = document.getElementById('panel-water') || document.documentElement;
-    const helpPopoverIdPrefix = document.getElementById('panel-water') ? 'water-help-popover-' : 'help-popover-';
+    const helpROOT = document.getElementById('panel-water');
+    const helpPopoverIdPrefix = 'water-help-popover-';
     let helpHoverHideTimeout = null;
     function getPopoverForBtn(btn) {
       const id = btn.getAttribute('data-help');

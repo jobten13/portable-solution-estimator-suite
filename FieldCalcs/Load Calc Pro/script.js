@@ -11,19 +11,17 @@
   const SORT_STORAGE_KEY = 'loadCalcProSort';
   const MOTOR_START_FACTOR = 4.0;
   const CONTINUOUS_SAFETY_FACTOR = 0.8;
-  const IMPORT_SCHEMA_VERSION = 1;
   let currentSortKey = 'name-asc';
 
   // Important: in FieldCalcs, multiple calc panels exist in the same DOM.
   // Both Load Basic and Load Pro use shared ids like `cat-standard` and shared row classnames like
   // `.equipment-row`, so we must scope DOM operations to the Pro panel.
-  const PRO_ROOT = document.getElementById('panel-load-pro') || document;
+  const PRO_ROOT = document.getElementById('panel-load-pro');
   const $ = (sel, root) => (root || PRO_ROOT).querySelector(sel);
   const $$ = (sel, root) => Array.from((root || PRO_ROOT).querySelectorAll(sel));
 
-  /** Shell: `#load-pro-scenario-select`; standalone HTML: `#scenario-select`. */
   function getScenarioSelectEl() {
-    return $('#load-pro-scenario-select') || $('#scenario-select');
+    return $('#load-pro-scenario-select');
   }
 
   function escapeHtml(s) {
@@ -166,7 +164,6 @@
           </div>
           <div class="category-actions">
             <button type="button" class="btn btn-sm" data-reset-target="${catId}">Reset Qty</button>
-            ${config.badge ? `<span class="badge badge-info">${escapeHtml(config.badge)}</span>` : ''}
           </div>
         </div>
         <div class="category-body">
@@ -427,6 +424,11 @@
     tbody.insertBefore(tr, tbody.firstChild);
     attachRowHandlers(tr);
     recalc();
+  }
+
+  function updatePrintTimestamp() {
+    const tsEl = $('#load-pro-print-timestamp');
+    if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
   }
 
   // --- Core calculation ---
@@ -746,10 +748,7 @@
   }
 
   function showToast(message, type = 'info', duration = 3000) {
-    const host =
-      document.querySelector('#panel-load-pro .calc-app') ||
-      document.querySelector('.load-pro-calc') ||
-      document.body;
+    const host = document.querySelector('#panel-load-pro .calc-app');
     let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
@@ -869,7 +868,6 @@
     lines.push('Load Calc Pro - Import Sanitization Report');
     lines.push(`Generated: ${new Date().toLocaleString()}`);
     lines.push(`Source file: ${sourceFileName || 'Unknown'}`);
-    lines.push(`Schema version: ${IMPORT_SCHEMA_VERSION}`);
     lines.push('');
     lines.push('Issues detected during import:');
     issues.forEach((issue, idx) => lines.push(`${idx + 1}. ${issue}`));
@@ -1158,7 +1156,6 @@
       acknowledge('load-pro-export-file-btn', 'Exported!');
       return;
     }
-    data.schemaVersion = IMPORT_SCHEMA_VERSION;
     const json = JSON.stringify(data, null, 2);
     downloadTextFile(json, 'application/json', 'load-calc-pro-scenario.json');
     acknowledge('load-pro-export-file-btn', 'Exported!');
@@ -1248,13 +1245,9 @@
       updateAutosaveTimestampDisplay(localStorage.getItem(LAST_SAVED_KEY));
     } catch (e) {}
     applySort();
-    // Ensure the timestamp line is populated right before the print snapshot is generated.
     if (!document._loadProBeforePrintBound) {
       document._loadProBeforePrintBound = true;
-      window.addEventListener('beforeprint', () => {
-        const tsEl = $('#load-pro-print-timestamp');
-        if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
-      });
+      window.addEventListener('beforeprint', updatePrintTimestamp);
     }
 
     const kvaEl = $('#load-pro-available-kva');
@@ -1285,8 +1278,7 @@
     $('#load-pro-clear-sheet-btn').addEventListener('click', clearSheet);
     $('#load-pro-save-scenario-btn').addEventListener('click', saveScenario);
     function doLoadProPrint() {
-      const tsEl = $('#load-pro-print-timestamp');
-      if (tsEl) tsEl.textContent = `Printed: ${new Date().toLocaleString()}`;
+      updatePrintTimestamp();
       window.print();
     }
     // Shell panel: `load-pro-print-summary-btn`
@@ -1369,8 +1361,8 @@
     });
 
     (function initHelpPopovers() {
-      const ROOT = document.getElementById('panel-load-pro') || document.documentElement;
-      const PREFIX = document.getElementById('panel-load-pro') ? 'load-pro-' : '';
+      const ROOT = document.getElementById('panel-load-pro');
+      const PREFIX = 'load-pro-';
       const helpPopoverIdPrefix = PREFIX + 'help-popover-';
       let helpHoverHideTimeout = null;
       function getPopoverForBtn(btn) {

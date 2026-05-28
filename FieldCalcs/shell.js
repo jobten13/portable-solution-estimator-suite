@@ -1,12 +1,9 @@
 /**
  * Field Hospital Calculator Suite – Shell.
- * Panel switching, URL hash sync, optional shell toast.
+ * Panel switching, URL hash sync.
  */
 (function () {
   'use strict';
-
-  const TOAST_DURATION_MS = 4000;
-  let toastTimeout = null;
 
   const HASH_TO_PANEL = {
     'load-basic': 'panel-load-calc',
@@ -60,22 +57,6 @@
     }
     showPanel('panel-consumables');
   }
-
-  function showShellToast(message, type) {
-    type = type || 'info';
-    var el = document.getElementById('shell-toast');
-    if (!el) return;
-    el.textContent = message;
-    el.className = 'shell-toast shell-toast--' + type;
-    el.hidden = false;
-    if (toastTimeout) clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(function () {
-      el.hidden = true;
-      toastTimeout = null;
-    }, TOAST_DURATION_MS);
-  }
-
-  window.ShellAPI = { showToast: showShellToast };
 
   document.querySelectorAll('.shell-nav-btn[data-panel]').forEach(function (btn) {
     btn.addEventListener('click', function () {

@@ -22,13 +22,6 @@
     return document.getElementById(`cons-${id}`);
   }
 
-  // Toast styles target `.cons-calc .toast-container`. In Shell, keep the container inside `#panel-consumables`.
-  (function ensureConsCalcRootForToasts() {
-    if (document.getElementById('panel-consumables')) return;
-    const root = document.querySelector('.cons-calc') || document.querySelector('.calc-app');
-    if (root && !root.classList.contains('cons-calc')) root.classList.add('cons-calc');
-  })();
-
   const VALIDATION_RULES = {
     days: { min: 0, max: 3650, message: 'Days must be between 0 and 3650' },
     beds: { min: 0, max: 10000, message: 'Beds must be between 0 and 10,000' },
@@ -312,8 +305,8 @@
     }
 
     (function initHelpPopovers() {
-      const helpROOT = document.getElementById('panel-consumables') || document.documentElement;
-      const helpPopoverIdPrefix = document.getElementById('panel-consumables') ? 'cons-help-popover-' : 'help-popover-';
+      const helpROOT = document.getElementById('panel-consumables');
+      const helpPopoverIdPrefix = 'cons-help-popover-';
       let helpHoverHideTimeout = null;
       function getPopoverForBtn(btn) {
         const id = btn.getAttribute('data-help');
@@ -450,7 +443,7 @@
   }
 
   function updateInventoryHelpRateLabel() {
-    const pop = document.getElementById('cons-help-popover-inventory') || document.getElementById('help-popover-inventory');
+    const pop = document.getElementById('cons-help-popover-inventory');
     if (!pop) return;
     const firstLi = pop.querySelector('ul li:first-child');
     if (!firstLi) return;
@@ -1248,10 +1241,7 @@
   function showToast(message, type, duration) {
     type = type || 'info';
     duration = duration || 3000;
-    const host =
-      document.getElementById('panel-consumables') ||
-      document.querySelector('.cons-calc') ||
-      document.body;
+    const host = document.getElementById('panel-consumables');
     let container = host.querySelector(':scope > .toast-container');
     if (!container) {
       container = document.createElement('div');
