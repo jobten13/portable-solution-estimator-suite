@@ -115,7 +115,7 @@
   }
 }
 
-.water-calc .main-content { padding: 24px 30px; }
+.water-calc .main-content { padding: 20px 24px 28px; }
 
 .water-calc .section { margin-bottom: 24px; }
 
@@ -123,7 +123,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
@@ -132,8 +132,8 @@
 }
 
 .water-calc .section h3 {
-  color: #2563eb;
-  font-size: 1.25em;
+  color: #495057;
+  font-size: 1.1em;
 }
 
 .water-calc .section-heading-row + .help-popover { margin-top: -8px; margin-bottom: 12px; }
@@ -384,7 +384,6 @@
   padding: 16px 20px;
   border-radius: 8px;
   border: 2px solid #059669;
-  box-sizing: border-box;
 }
 
 .water-calc .scenario-section-title {
@@ -437,7 +436,7 @@
   display: block;
   margin-bottom: 4px;
   font-size: 0.8rem;
-  color: #4b5563;
+  color: #374151;
   font-weight: 600;
 }
 
@@ -495,6 +494,15 @@
 .water-calc .scenario-actions .btn {
   padding: 8px 12px;
   font-size: 0.85em;
+}
+
+.water-calc select.scenario-select:disabled,
+.water-calc select.scenario-select:disabled:hover,
+.water-calc select.scenario-select:disabled:focus,
+.water-calc select.scenario-select:disabled:invalid {
+  border-color: #e5e7eb;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 /* Print: blue */

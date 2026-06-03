@@ -127,6 +127,7 @@ body {
   flex: 1;
   padding: 1rem;
   overflow: auto;
+  scrollbar-gutter: stable;
 }
 
 .calc-panel {

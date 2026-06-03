@@ -148,6 +148,12 @@
   padding: 8px 10px;
   margin: -8px -10px;
   border-radius: 6px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cons-calc .scenario-meta .field:hover {
+  background: rgba(59, 130, 246, 0.08);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
 }
 
 .cons-calc .scenario-meta .field label {
@@ -378,13 +384,6 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  align-items: center;
-}
-
-.cons-calc .load-scenario-group {
-  display: flex;
-  gap: 6px;
-  flex-wrap: nowrap;
   align-items: center;
 }
 
