@@ -1000,11 +1000,12 @@
 
   async function resetToDefaults() {
     if (!(await shellConfirm('Reset to defaults? This will restore all water inputs, modes, and capacities to baseline values.'))) return;
+    if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
+    waterAutosaveDirty = false;
     if (typeof WATER_DEFAULTS !== 'undefined') {
       applyState(WATER_DEFAULTS);
     }
     recalc();
-    saveWorksheetState();
     setScenarioListLine({ kind: 'none' });
     scenarioLoadGuardDirty = false;
     showFeedback('Reset to defaults.', 'success');

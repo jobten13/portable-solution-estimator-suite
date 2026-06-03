@@ -1445,10 +1445,6 @@
     if (nameEl) nameEl.value = '';
     if (notesEl) notesEl.value = '';
     updateSavedDisplay(null);
-    try {
-      localStorage.removeItem(STORAGE_CONSUMABLES);
-      localStorage.removeItem(STORAGE_FILENAME);
-    } catch (e) {}
 
     const wb = g('ward-list-btn');
     const ib = g('icu-list-btn');
@@ -1458,7 +1454,8 @@
 
     filterItems();
     calculateAndDisplay();
-    saveData();
+    if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
+    consAutosaveDirty = false;
     scenarioLoadGuardDirty = false;
     showFeedback('All items cleared successfully!', 'success');
   }

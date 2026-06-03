@@ -1183,6 +1183,8 @@
 
   async function resetAllQuantities() {
     if (!(await shellConfirm('Reset all quantities to 0 and remove custom rows? Current scenario is not saved first.'))) return;
+    if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
+    loadProAutosaveDirty = false;
     $$('.qty-input').forEach(inp => { inp.value = ''; });
     $$('.equipment-row.custom').forEach(row => row.remove());
     recalc();
@@ -1206,11 +1208,17 @@
     if (rateEl) rateEl.value = '';
     const searchEl = $('#load-pro-search-equipment');
     if (searchEl) searchEl.value = '';
+    const scenNameEl = $('#load-pro-scenario-name');
+    const scenNotesEl = $('#load-pro-scenario-notes');
+    if (scenNameEl) scenNameEl.value = '';
+    if (scenNotesEl) scenNotesEl.value = '';
+    const scenSelect = getScenarioSelectEl();
+    if (scenSelect) { scenSelect.value = ''; syncScenarioSelectTitle(); }
     filterEquipmentSearch();
     updateSavedDisplay(null);
     recalc();
-    notifyWorksheetChanged();
-    tryAutosaveOnBlur();
+    if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
+    loadProAutosaveDirty = false;
     scenarioLoadGuardDirty = false;
   }
 

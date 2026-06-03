@@ -828,6 +828,8 @@
 
   async function onResetQuantities() {
     if (!(await shellConfirm('Reset all equipment quantities to zero? Scenario name, notes, and capacities are kept.'))) return;
+    if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
+    loadAutosaveDirty = false;
     $$('.qty-input').forEach(inp => { if (inp) inp.value = ''; });
     calculateLoad();
     scenarioLoadGuardDirty = false;
@@ -836,6 +838,8 @@
 
   async function onFullReset() {
     if (!(await shellConfirm('Full sheet reset? This clears quantities, capacities, scenario name/notes, and removes all custom equipment.'))) return;
+    if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
+    loadAutosaveDirty = false;
     $$('.qty-input').forEach(inp => { if (inp) inp.value = ''; });
     const gen = $(id('gen-capacity'));
     const fuel = $(id('fuel-capacity'));
@@ -849,7 +853,6 @@
     if (searchInput) searchInput.value = '';
     $$('.custom-item-row').forEach(row => row.remove());
     filterEquipmentSearch();
-    updateAutosaveTimestampDisplay('');
     updateSavedDisplay(null);
     scenarioLoadGuardDirty = false;
     showToast('Full sheet reset complete', 'success', 2000);

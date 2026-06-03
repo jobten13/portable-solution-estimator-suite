@@ -1408,12 +1408,6 @@
     filteredConsumables = [];
     currentFileName = null;
     currentListType = null;
-    try {
-      localStorage.removeItem(STORAGE_CONSUMABLES);
-      localStorage.removeItem(STORAGE_FILENAME);
-    } catch (e) {
-      showFeedback('Items cleared; storage preference could not be updated.', 'info');
-    }
 
     const pb = g('meds-pharma-list-btn');
     if (pb) pb.classList.remove('active');
@@ -1443,7 +1437,8 @@
     updateSavedDisplay(null);
     filterItems();
     calculateAndDisplay();
-    saveData();
+    if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
+    medsAutosaveDirty = false;
     scenarioLoadGuardDirty = false;
     showFeedback('All items cleared successfully!', 'success');
   }
