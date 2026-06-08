@@ -114,7 +114,7 @@
   let currentFileName = null;
   /** 'ward' | 'icu' | 'custom' | null. null = no list / cleared; 'custom' = list present but not a known Ward/ICU list; 'ward'/'icu' = known list. Drives rate column label (Per Ward Bed / Per ICU Bed / Per Bed). */
   let currentListType = null;
-  let currentSortKey = 'name-asc';
+  let currentSortKey = 'source-asc';
   let customItemCounter = 1;
 
   const AUTOSAVE_INTERVAL_MS = 1 * 60 * 1000;
@@ -500,7 +500,8 @@
       const rate = Number(item.usagePerDayPerBed);
       const safeRate = Number.isFinite(rate) && rate >= 0 ? rate : 0;
       const totalQty = calculateItemQuantity(safeRate);
-      html += '<tr>';
+      const sourceOrder = getItemSourceOrder(item);
+      html += `<tr data-source-order="${sourceOrder}">`;
       html += `<td>${escapeHtml(item.name)}</td>`;
       html += `<td class="number-cell">${safeRate.toFixed(3)}</td>`;
       html += `<td class="number-cell highlight-cell">${Math.ceil(totalQty)}</td>`;
@@ -524,6 +525,28 @@
     return parseInt(cells[2].textContent, 10) || 0;
   }
 
+  function getItemSourceOrder(item) {
+    if (item && item.id != null && Number.isFinite(Number(item.id))) return Number(item.id);
+    const idx = allConsumables.indexOf(item);
+    return idx >= 0 ? 1000000 + idx : 2000000;
+  }
+
+  function getRowSourceOrder(row) {
+    const v = row.getAttribute('data-source-order');
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) ? n : 2000000;
+  }
+
+  /** After loading Ward/ICU pharmaceuticals data, show rows in source order (not Name A–Z). */
+  function setSortToUcdSourceOrder() {
+    currentSortKey = 'source-asc';
+    const sortSel = g('meds-sort-equipment');
+    if (sortSel) sortSel.value = 'source-asc';
+    try {
+      localStorage.setItem(SORT_STORAGE_KEY, 'source-asc');
+    } catch (e) { /* ignore */ }
+  }
+
   function applySort() {
     const container = g('meds-consumables-container');
     if (!container) return;
@@ -542,6 +565,7 @@
     currentSortKey = key;
 
     rows.sort((a, b) => {
+      if (key === 'source-asc') return getRowSourceOrder(a) - getRowSourceOrder(b);
       if (key === 'name-asc') return getRowSortName(a).localeCompare(getRowSortName(b));
       if (key === 'name-desc') return getRowSortName(b).localeCompare(getRowSortName(a));
       const qA = getRowSortQty(a);
@@ -1471,6 +1495,7 @@
     if (pb) pb.classList.add('active');
     if (psb) psb.classList.remove('active');
 
+    setSortToUcdSourceOrder();
     filterItems();
     displayConsumables();
     updateItemsInfo();
@@ -1507,6 +1532,7 @@
     if (pb) pb.classList.remove('active');
     if (psb) psb.classList.add('active');
 
+    setSortToUcdSourceOrder();
     filterItems();
     displayConsumables();
     updateItemsInfo();
@@ -1516,14 +1542,21 @@
   }
 
   function init() {
+    const sortSel = g('meds-sort-equipment');
+    const validSorts = ['source-asc', 'name-asc', 'name-desc', 'qty-desc', 'qty-asc'];
     try {
       const saved = localStorage.getItem(SORT_STORAGE_KEY);
-      if (saved && ['name-asc', 'name-desc', 'qty-desc', 'qty-asc'].includes(saved)) {
+      if (saved && validSorts.includes(saved)) {
         currentSortKey = saved;
-        const sel = g('meds-sort-equipment');
-        if (sel) sel.value = saved;
+        if (sortSel) sortSel.value = saved;
+      } else {
+        currentSortKey = 'source-asc';
+        if (sortSel) sortSel.value = 'source-asc';
       }
-    } catch (e) {}
+    } catch (e) {
+      currentSortKey = 'source-asc';
+      if (sortSel) sortSel.value = 'source-asc';
+    }
 
     setupEventListeners();
     medsAutosaveDirty = false;
