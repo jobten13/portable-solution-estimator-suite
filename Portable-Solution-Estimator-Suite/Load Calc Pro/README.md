@@ -1,6 +1,6 @@
 # Load Calculator Pro
 
-Part of the **Field Hospital Calculator** suite. Estimates generator load (kW/kVA), peak starting kVA, and fuel runtime for field hospital and similar sites. Supports editable equipment lists, custom rows, and capacity checking against an actual generator size.
+Part of the **Portable Solution Estimator Suite**. Estimates generator load (kW/kVA), peak starting kVA, and fuel runtime for field hospital and similar sites. Supports editable equipment lists, custom rows, and capacity checking against an actual generator size.
 
 ## Suite versioning
 

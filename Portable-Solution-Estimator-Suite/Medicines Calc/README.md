@@ -1,6 +1,6 @@
 # Pharmaceuticals Supply List Calculator (Ward-ICU-Pharma)
 
-Part of the **Field Hospital Calculator** suite. Manages pharmaceuticals requirements for field hospital deployments: load the pre-built **Ward Meds** or **ICU Meds** list, set deployment parameters (days, beds, buffer), add custom items, and save/load scenarios. Sort and search filter the list.
+Part of the **Portable Solution Estimator Suite**. Manages pharmaceuticals requirements for field hospital deployments: load the pre-built **Ward Meds** or **ICU Meds** list, set deployment parameters (days, beds, buffer), add custom items, and save/load scenarios. Sort and search filter the list.
 
 ## Suite versioning
 

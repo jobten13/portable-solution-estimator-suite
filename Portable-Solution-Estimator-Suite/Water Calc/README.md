@@ -1,6 +1,6 @@
 # Water Requirements Calculator
 
-Part of the **Field Hospital Calculator** suite. Estimates potable water demand, wastewater output, and delivery/pickup schedules for a field hospital based on deployment length, bed count, and storage configuration. All volumes are in **US gallons (Gal)**.
+Part of the **Portable Solution Estimator Suite**. Estimates potable water demand, wastewater output, and delivery/pickup schedules for a field hospital based on deployment length, bed count, and storage configuration. All volumes are in **US gallons (Gal)**.
 
 ## Suite versioning
 

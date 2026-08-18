@@ -1,6 +1,6 @@
 # Consumables Supply List Calculator
 
-Part of the **Field Hospital Calculator** suite. **Standalone module:** this folder is self-contained and can be used independently (e.g. deployed alone, or given to a different team). It does not depend on the Pharmaceuticals calc or any shared code. Manages consumables requirements for field hospital deployments: load pre-built Ward Consumables or ICU Consumables lists, set deployment parameters (days, beds, buffer), and save/load scenarios. Sort and search filter the list.
+Part of the **Portable Solution Estimator Suite**. **Standalone module:** this folder is self-contained and can be used independently (e.g. deployed alone, or given to a different team). It does not depend on the Pharmaceuticals calc or any shared code. Manages consumables requirements for field hospital deployments: load pre-built Ward Consumables or ICU Consumables lists, set deployment parameters (days, beds, buffer), and save/load scenarios. Sort and search filter the list.
 
 ## Suite versioning
 

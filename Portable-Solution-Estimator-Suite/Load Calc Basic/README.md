@@ -1,6 +1,6 @@
 # Load Calculator Basic
 
-Part of the **Field Hospital Calculator** suite. Estimates generator load (kW only) for field hospital and similar sites. Uses fixed kW per item; supports scenario name/notes, sort, search, and capacity checking against an available generator size. Simpler than Load Calc Pro (no kVA, PF, or peak starting logic).
+Part of the **Portable Solution Estimator Suite**. Estimates generator load (kW only) for field hospital and similar sites. Uses fixed kW per item; supports scenario name/notes, sort, search, and capacity checking against an available generator size. Simpler than Load Calc Pro (no kVA, PF, or peak starting logic).
 
 ## Suite versioning
 
