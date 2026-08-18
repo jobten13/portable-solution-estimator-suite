@@ -1,4 +1,4 @@
-# AGENTS.md — working contract for the Field Hospital Calculator Suite
+# AGENTS.md — working contract for the Portable Solution Estimator Suite
 
 This file encodes the discipline this repo already practices. Every coder /
 auditor / overseer session inherits it. Read it before starting work.

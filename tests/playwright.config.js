@@ -1,5 +1,5 @@
 /**
- * Playwright configuration for the Field Hospital Calculator Suite test harness.
+ * Playwright configuration for the Portable Solution Estimator Suite test harness.
  *
  * Notes:
  * - We use a single worker (workers: 1) to make HTML report generation deterministic.

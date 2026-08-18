@@ -1,5 +1,5 @@
 /**
- * Field Hospital Calculator Suite – Shared modal dialogs.
+ * Portable Solution Estimator Suite – Shared modal dialogs.
  * Replaces native confirm() / prompt() / alert() with styled, accessible modals.
  *
  * API (all return Promises):

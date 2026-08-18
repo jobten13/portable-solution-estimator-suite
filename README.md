@@ -1,4 +1,4 @@
-# Field Hospital Calculator Suite
+# Portable Solution Estimator Suite
 
 This folder (**Calcs Final**) is the **suite root**: five calculators in a single **Portable-Solution-Estimator-Suite** shell with tab navigation.
 

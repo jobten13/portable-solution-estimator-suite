@@ -1118,7 +1118,7 @@ async function newHarnessContext(browser) {
   });
 }
 
-test.describe('Field Hospital Calculator Suite - stress + guard + silent failure checks', () => {
+test.describe('Portable Solution Estimator Suite - stress + guard + silent failure checks', () => {
   // Do not use describe serial mode: if one test fails, Playwright skips all following tests in that group.
   // workers: 1 in playwright.config.js keeps execution order without that cascade.
   let VALIDATION_BY_TARGET = {};
@@ -1378,7 +1378,7 @@ test.describe('Field Hospital Calculator Suite - stress + guard + silent failure
   </style>
 </head>
 <body>
-  <h1>Field Hospital Calculator Suite — Test Matrix Report <span class="badge">Run ${htmlEscape(RUN_ID)}</span></h1>
+  <h1>Portable Solution Estimator Suite — Test Matrix Report <span class="badge">Run ${htmlEscape(RUN_ID)}</span></h1>
 
   <section class="box" style="margin-bottom: 18px; background: #f8fafc;">
     <h2>Test notes</h2>

@@ -1,4 +1,4 @@
-# Field Hospital Calculator Suite — Playwright Test Harness
+# Portable Solution Estimator Suite — Playwright Test Harness
 
 This harness runs **Chrome-first** browser tests against the real suite UI:
 - **Portable-Solution-Estimator-Suite** shell (panel switching/state bleed)

@@ -1,5 +1,5 @@
 /**
- * Field Hospital Calculator Suite — suite version (single source: version.json next to this file).
+ * Portable Solution Estimator Suite — suite version (single source: version.json next to this file).
  * Updates: meta[name="suite-version"] and all [data-suite-version] (Portable-Solution-Estimator-Suite panel footers + standalone calc pages).
  */
 (function () {
@@ -14,7 +14,7 @@
   function applyVersion(data) {
     if (!data || typeof data !== 'object') return;
     var v = data.version != null ? String(data.version).trim() : '';
-    var suiteName = (data.suiteName && String(data.suiteName).trim()) || 'Field Hospital Calculator Suite';
+    var suiteName = (data.suiteName && String(data.suiteName).trim()) || 'Portable Solution Estimator Suite';
     if (!v) return;
 
     var meta = document.querySelector('meta[name="suite-version"]');

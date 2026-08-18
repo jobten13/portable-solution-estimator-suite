@@ -1,5 +1,5 @@
 /**
- * Comprehensive functional test suite for the Field Hospital Calculator Suite.
+ * Comprehensive functional test suite for the Portable Solution Estimator Suite.
  * Covers: autosave, autosave-reset protection, scenarios, import/export,
  * reset, calculation, input validation, cross-tab state, and modals.
  */

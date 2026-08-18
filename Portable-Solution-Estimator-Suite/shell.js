@@ -1,5 +1,5 @@
 /**
- * Field Hospital Calculator Suite – Shell.
+ * Portable Solution Estimator Suite – Shell.
  * Panel switching, URL hash sync.
  */
 (function () {

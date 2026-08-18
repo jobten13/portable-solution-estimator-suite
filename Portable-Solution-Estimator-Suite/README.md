@@ -1,4 +1,4 @@
-# Field Hospital Calculator Suite – Shell
+# Portable Solution Estimator Suite – Shell
 
 Single app shell for the five calculators: Consumables, Pharmaceuticals, Water, Load Basic, Load Pro (tab order left to right).
 
