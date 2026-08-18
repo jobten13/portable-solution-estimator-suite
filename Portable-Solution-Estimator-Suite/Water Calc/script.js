@@ -4,9 +4,9 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'fieldHospitalWaterScenarios';
-  const WATER_AUTOSAVE_KEY = 'fieldHospitalWaterAutosave';
-  const LAST_SAVED_KEY = 'fieldHospitalWaterLastSaved';
+  const STORAGE_KEY = 'pseWaterScenarios';
+  const WATER_AUTOSAVE_KEY = 'pseWaterAutosave';
+  const LAST_SAVED_KEY = 'pseWaterLastSaved';
   const GRAY_RATIO = 0.77; // Estimated ~77% gray water, ~23% black water
   const DEFAULT_POTABLE_GAL_PER_BED = 22;
   const DEFAULT_WASTEWATER_GAL_PER_BED = 18;

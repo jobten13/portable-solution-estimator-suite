@@ -261,40 +261,40 @@ function getAutosaveLocalStorageKeysForCalc(calc) {
     return ['loadCalcProScenario', 'load-pro-lastSaved'];
   }
   if (id === 'panel-water' || name.includes('Water')) {
-    return ['fieldHospitalWaterAutosave', 'fieldHospitalWaterLastSaved'];
+    return ['pseWaterAutosave', 'pseWaterLastSaved'];
   }
   if (id === 'panel-consumables' || name.includes('Consumables')) {
     return [
-      'cons-fieldHospitalScenarios',
-      'cons-fieldHospitalBuffer',
-      'cons-fieldHospitalConsumables',
-      'cons-fieldHospitalFileName',
-      'cons-fieldHospitalDays',
-      'cons-fieldHospitalBeds',
-      'cons-fieldHospitalScenarioName',
-      'cons-fieldHospitalScenarioNotes',
-      'cons-fieldHospitalSearch',
-      'cons-fieldHospitalMinQtyFilter',
-      'cons-fieldHospitalNonzeroOnly',
-      'cons-lastSaved',
-      'cons-fieldHospitalSort'
+      'cons-pseScenarios',
+      'cons-pseBuffer',
+      'cons-pseConsumables',
+      'cons-pseFileName',
+      'cons-pseDays',
+      'cons-pseBeds',
+      'cons-pseScenarioName',
+      'cons-pseScenarioNotes',
+      'cons-pseSearch',
+      'cons-pseMinQtyFilter',
+      'cons-pseNonzeroOnly',
+      'cons-pseLastSaved',
+      'cons-pseSort'
     ];
   }
   if (id === 'panel-medications' || name.includes('Medicines')) {
     return [
-      'fieldHospitalPharmaScenarios',
-      'fieldHospitalPharmaBuffer',
-      'fieldHospitalPharmaConsumables',
-      'fieldHospitalPharmaFileName',
-      'fieldHospitalPharmaDays',
-      'fieldHospitalPharmaBeds',
-      'fieldHospitalPharmaScenarioName',
-      'fieldHospitalPharmaScenarioNotes',
-      'fieldHospitalPharmaSearch',
-      'fieldHospitalPharmaMinQtyFilter',
-      'fieldHospitalPharmaNonzeroOnly',
-      'fieldHospitalPharmaLastSaved',
-      'fieldHospitalPharmaSort'
+      'psePharmaScenarios',
+      'psePharmaBuffer',
+      'psePharmaConsumables',
+      'psePharmaFileName',
+      'psePharmaDays',
+      'psePharmaBeds',
+      'psePharmaScenarioName',
+      'psePharmaScenarioNotes',
+      'psePharmaSearch',
+      'psePharmaMinQtyFilter',
+      'psePharmaNonzeroOnly',
+      'psePharmaLastSaved',
+      'psePharmaSort'
     ];
   }
   return [];

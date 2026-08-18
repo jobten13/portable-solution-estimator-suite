@@ -80,7 +80,7 @@ Capacity drives how often deliveries (potable) and pickups (wastewater) are need
 ## Technical notes
 
 - **State:** All inputs (storage config and supply/disposal mode) are captured in `getState()` and restored in `applyState()` for scenarios and reset. Values are stored and calculated in US gallons; there is no unit conversion.
-- **Storage:** Scenarios are stored in `localStorage` under `fieldHospitalWaterScenarios`. Export/import use JSON files.
+- **Storage:** Scenarios are stored in `localStorage` under `pseWaterScenarios`. Export/import use JSON files.
 
 ---
 

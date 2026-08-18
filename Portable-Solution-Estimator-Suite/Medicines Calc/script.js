@@ -5,19 +5,19 @@
 (function () {
   'use strict';
 
-  const STORAGE_SCENARIOS = 'fieldHospitalPharmaScenarios';
-  const STORAGE_BUFFER = 'fieldHospitalPharmaBuffer';
-  const STORAGE_CONSUMABLES = 'fieldHospitalPharmaConsumables';
-  const STORAGE_FILENAME = 'fieldHospitalPharmaFileName';
-  const STORAGE_DAYS = 'fieldHospitalPharmaDays';
-  const STORAGE_BEDS = 'fieldHospitalPharmaBeds';
-  const STORAGE_SCENARIO_NAME = 'fieldHospitalPharmaScenarioName';
-  const STORAGE_SCENARIO_NOTES = 'fieldHospitalPharmaScenarioNotes';
-  const STORAGE_SEARCH = 'fieldHospitalPharmaSearch';
-  const STORAGE_MIN_QTY_FILTER = 'fieldHospitalPharmaMinQtyFilter';
-  const STORAGE_NONZERO_ONLY = 'fieldHospitalPharmaNonzeroOnly';
-  const LAST_SAVED_KEY = 'fieldHospitalPharmaLastSaved';
-  const SORT_STORAGE_KEY = 'fieldHospitalPharmaSort';
+  const STORAGE_SCENARIOS = 'psePharmaScenarios';
+  const STORAGE_BUFFER = 'psePharmaBuffer';
+  const STORAGE_CONSUMABLES = 'psePharmaConsumables';
+  const STORAGE_FILENAME = 'psePharmaFileName';
+  const STORAGE_DAYS = 'psePharmaDays';
+  const STORAGE_BEDS = 'psePharmaBeds';
+  const STORAGE_SCENARIO_NAME = 'psePharmaScenarioName';
+  const STORAGE_SCENARIO_NOTES = 'psePharmaScenarioNotes';
+  const STORAGE_SEARCH = 'psePharmaSearch';
+  const STORAGE_MIN_QTY_FILTER = 'psePharmaMinQtyFilter';
+  const STORAGE_NONZERO_ONLY = 'psePharmaNonzeroOnly';
+  const LAST_SAVED_KEY = 'psePharmaLastSaved';
+  const SORT_STORAGE_KEY = 'psePharmaSort';
 
   function g(id) {
     return document.getElementById(id);

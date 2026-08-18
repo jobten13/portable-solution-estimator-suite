@@ -5,18 +5,18 @@
 (function () {
   'use strict';
 
-  const STORAGE_KEY = 'cons-fieldHospitalScenarios';
-  const STORAGE_BUFFER = 'cons-fieldHospitalBuffer';
-  const STORAGE_CONSUMABLES = 'cons-fieldHospitalConsumables';
-  const STORAGE_FILENAME = 'cons-fieldHospitalFileName';
-  const STORAGE_DAYS = 'cons-fieldHospitalDays';
-  const STORAGE_BEDS = 'cons-fieldHospitalBeds';
-  const STORAGE_SCENARIO_NAME = 'cons-fieldHospitalScenarioName';
-  const STORAGE_SCENARIO_NOTES = 'cons-fieldHospitalScenarioNotes';
-  const STORAGE_SEARCH = 'cons-fieldHospitalSearch';
-  const STORAGE_MIN_QTY_FILTER = 'cons-fieldHospitalMinQtyFilter';
-  const STORAGE_NONZERO_ONLY = 'cons-fieldHospitalNonzeroOnly';
-  const SORT_STORAGE_KEY = 'cons-fieldHospitalSort';
+  const STORAGE_KEY = 'cons-pseScenarios';
+  const STORAGE_BUFFER = 'cons-pseBuffer';
+  const STORAGE_CONSUMABLES = 'cons-pseConsumables';
+  const STORAGE_FILENAME = 'cons-pseFileName';
+  const STORAGE_DAYS = 'cons-pseDays';
+  const STORAGE_BEDS = 'cons-pseBeds';
+  const STORAGE_SCENARIO_NAME = 'cons-pseScenarioName';
+  const STORAGE_SCENARIO_NOTES = 'cons-pseScenarioNotes';
+  const STORAGE_SEARCH = 'cons-pseSearch';
+  const STORAGE_MIN_QTY_FILTER = 'cons-pseMinQtyFilter';
+  const STORAGE_NONZERO_ONLY = 'cons-pseNonzeroOnly';
+  const SORT_STORAGE_KEY = 'cons-pseSort';
 
   function g(id) {
     return document.getElementById(`cons-${id}`);
@@ -1200,7 +1200,7 @@
     showFeedback('All scenarios cleared successfully!', 'success');
   }
 
-  const LAST_SAVED_KEY = 'cons-lastSaved';
+  const LAST_SAVED_KEY = 'cons-pseLastSaved';
 
   function updateAutosaveTimestampDisplay(tsIsoString) {
     const el = document.getElementById('cons-last-saved');
