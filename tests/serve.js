@@ -67,7 +67,7 @@ const server = http.createServer((req, res) => {
 
   // Friendly default for "/" (optional).
   if (requestPath === '/' || requestPath === '') {
-    const shellIndex = path.join(ROOT_DIR, 'FieldCalcs', 'index.html');
+    const shellIndex = path.join(ROOT_DIR, 'Portable-Solution-Estimator-Suite', 'index.html');
     try {
       const body = fs.readFileSync(shellIndex);
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

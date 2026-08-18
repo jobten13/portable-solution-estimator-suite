@@ -28,7 +28,7 @@ Single app shell for the five calculators: Consumables, Pharmaceuticals, Water, 
 
 ## How to run
 
-Open **FieldCalcs/index.html** in Chrome or Edge (or use **`0_START_HERE_Click_to_Open_Calculator.html`** at the suite root). Use the nav buttons to switch between calculators. The URL hash updates so you can bookmark a specific calc.
+Open **Portable-Solution-Estimator-Suite/index.html** in Chrome or Edge (or use **`0_START_HERE_Click_to_Open_Calculator.html`** at the suite root). Use the nav buttons to switch between calculators. The URL hash updates so you can bookmark a specific calc.
 
 **Operator note — three preservation paths:** Toolbar **Restore Autosave** (grey; restores the browser recovery slot for the current sheet) with **Autosaved: M/D h:mm AM/PM** when a timestamp exists, **Save / Load Scenario** (named list in this browser), and **Export / Import** (files on disk — export does not add a scenario row by itself). See **`../README.md`** and **`../_archive/PROJECT_TRACKER.md`** (*Suite concepts*).
 

@@ -145,7 +145,7 @@ body {
 }
 
 
-/* Suite build line in each calc panel footer (FieldCalcs only — light type) */
+/* Suite build line in each calc panel footer (Portable-Solution-Estimator-Suite only — light type) */
 .shell-main .shell-suite-build[data-suite-version] {
   display: block;
   margin-top: 0.5rem;

@@ -13,7 +13,7 @@
   const CONTINUOUS_SAFETY_FACTOR = 0.8;
   let currentSortKey = 'name-asc';
 
-  // Important: in FieldCalcs, multiple calc panels exist in the same DOM.
+  // Important: in Portable-Solution-Estimator-Suite, multiple calc panels exist in the same DOM.
   // Both Load Basic and Load Pro use shared ids like `cat-standard` and shared row classnames like
   // `.equipment-row`, so we must scope DOM operations to the Pro panel.
   const PRO_ROOT = document.getElementById('panel-load-pro');

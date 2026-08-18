@@ -7,13 +7,13 @@ auditor / overseer session inherits it. Read it before starting work.
 
 ## Repo facts (ground truth)
 
-- **Canonical version:** `FieldCalcs/version.json` (`version` + `changelog[]`).
-  Loader is `FieldCalcs/version-control.js`. Bump rules: `VERSIONING.md`.
+- **Canonical version:** `Portable-Solution-Estimator-Suite/version.json` (`version` + `changelog[]`).
+  Loader is `Portable-Solution-Estimator-Suite/version-control.js`. Bump rules: `VERSIONING.md`.
 - **Entry page (front door):** `0_START_HERE_Click_to_Open_Calculator.html` at
   the repo root — a standalone launcher that meta-refresh redirects to
-  `FieldCalcs/index.html` (with a manual fallback link). It is separate from the
+  `Portable-Solution-Estimator-Suite/index.html` (with a manual fallback link). It is separate from the
   shell and holds no calculator content.
-- **Shell:** `FieldCalcs/index.html` holds exactly five `calc-panel`s, all in
+- **Shell:** `Portable-Solution-Estimator-Suite/index.html` holds exactly five `calc-panel`s, all in
   this one file (not in the per-calc folders): `panel-consumables` (`cons-calc`),
   `panel-medications` (`meds-calc`), `panel-water` (`water-calc`),
   `panel-load-calc` (`load-basic-calc`, Load Basic), `panel-load-pro`

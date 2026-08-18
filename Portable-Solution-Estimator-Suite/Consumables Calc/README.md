@@ -10,7 +10,7 @@ Part of the **Field Hospital Calculator** suite. **Standalone module:** this fol
 
 ## How to run
 
-Open this folder’s **`index.html`** — it redirects to **`../index.html#consumables`** in the FieldCalcs shell. No server required. Works offline.
+Open this folder’s **`index.html`** — it redirects to **`../index.html#consumables`** in the Portable-Solution-Estimator-Suite shell. No server required. Works offline.
 
 **Dependencies:** `consumables.js` (main logic), `consumables-lists.js` (Ward/ICU consumables list data), `styles.css`.
 

@@ -184,7 +184,7 @@ async function blurInput(page, selector) {
 }
 
 /**
- * FieldCalcs shell: calc panels start with hidden=true. Click the matching nav button,
+ * Portable-Solution-Estimator-Suite shell: calc panels start with hidden=true. Click the matching nav button,
  * then wait until the panel is shown (not [hidden]) before any fill/click inside it.
  */
 async function ensureShellPanelActive(page, panelId) {
@@ -985,10 +985,10 @@ function suiteUrl(pathAfterRoot) {
 const TARGETS = [
   // Shell: we test autosave stress on Load Basic panel inside the shell (plus state bleed separately).
   {
-    name: 'FieldCalcs (Load Basic panel)',
+    name: 'Portable-Solution-Estimator-Suite (Load Basic panel)',
     kind: 'shell',
     shellPanelId: 'panel-load-calc',
-    url: suiteUrl('FieldCalcs/index.html'),
+    url: suiteUrl('Portable-Solution-Estimator-Suite/index.html'),
     numericSelector: '#load-fuel-capacity',
     lastSavedSelector: '#load-load-basic-last-saved',
     scenarioNotesSelector: '#load-scenario-notes',
@@ -1006,7 +1006,7 @@ const TARGETS = [
     name: 'Load Calc Basic (hash entry)',
     kind: 'standalone',
     shellPanelId: 'panel-load-calc',
-    url: suiteUrl('FieldCalcs/index.html#load-basic'),
+    url: suiteUrl('Portable-Solution-Estimator-Suite/index.html#load-basic'),
     numericSelector: '#load-fuel-capacity',
     lastSavedSelector: '#load-load-basic-last-saved',
     scenarioNotesSelector: '#load-scenario-notes',
@@ -1022,10 +1022,10 @@ const TARGETS = [
   },
   // Load Pro uses `load-pro-*` IDs in the shell only; hash entry opens the embedded panel.
   {
-    name: 'FieldCalcs (Load Pro panel)',
+    name: 'Portable-Solution-Estimator-Suite (Load Pro panel)',
     kind: 'shell',
     shellPanelId: 'panel-load-pro',
-    url: suiteUrl('FieldCalcs/index.html'),
+    url: suiteUrl('Portable-Solution-Estimator-Suite/index.html'),
     numericSelector: '#load-pro-fuel-capacity',
     lastSavedSelector: '#load-pro-last-saved',
     scenarioNotesSelector: '#load-pro-scenario-notes',
@@ -1043,7 +1043,7 @@ const TARGETS = [
     name: 'Water (hash entry)',
     kind: 'standalone',
     shellPanelId: 'panel-water',
-    url: suiteUrl('FieldCalcs/index.html#water'),
+    url: suiteUrl('Portable-Solution-Estimator-Suite/index.html#water'),
     numericSelector: '#water-beds',
     lastSavedSelector: '#water-last-saved',
     scenarioNotesSelector: '#water-scenario-notes',
@@ -1061,7 +1061,7 @@ const TARGETS = [
     name: 'Consumables (hash entry)',
     kind: 'standalone',
     shellPanelId: 'panel-consumables',
-    url: suiteUrl('FieldCalcs/index.html#consumables'),
+    url: suiteUrl('Portable-Solution-Estimator-Suite/index.html#consumables'),
     numericSelector: '#cons-days',
     lastSavedSelector: '#cons-last-saved',
     scenarioNotesSelector: '#cons-scenario-notes',
@@ -1081,7 +1081,7 @@ const TARGETS = [
     name: 'Medicines (hash entry)',
     kind: 'standalone',
     shellPanelId: 'panel-medications',
-    url: suiteUrl('FieldCalcs/index.html#medicines'),
+    url: suiteUrl('Portable-Solution-Estimator-Suite/index.html#medicines'),
     numericSelector: '#meds-days',
     lastSavedSelector: '#meds-last-saved',
     scenarioNotesSelector: '#meds-scenario-notes',
@@ -1100,15 +1100,15 @@ const TARGETS = [
 ];
 
 /**
- * FieldCalcs shell: exercise localStorage-full autosave observation on every embedded panel
+ * Portable-Solution-Estimator-Suite shell: exercise localStorage-full autosave observation on every embedded panel
  * (Load Basic, Load Pro, Water, Consumables, Pharmaceuticals).
  */
 const SHELL_STORAGE_PANELS = [
-  { reportName: 'FieldCalcs / Load Basic', shellPanelId: 'panel-load-calc', numericSelector: '#load-fuel-capacity', lastSavedSelector: '#load-load-basic-last-saved', restoreButtonSelector: '#load-btn-clear-autosave' },
-  { reportName: 'FieldCalcs / Load Pro', shellPanelId: 'panel-load-pro', numericSelector: '#load-pro-fuel-capacity', lastSavedSelector: '#load-pro-last-saved', restoreButtonSelector: '#load-pro-btn-clear-autosave' },
-  { reportName: 'FieldCalcs / Water', shellPanelId: 'panel-water', numericSelector: '#water-beds', lastSavedSelector: '#water-last-saved', restoreButtonSelector: '#water-btn-clear-autosave' },
-  { reportName: 'FieldCalcs / Consumables', shellPanelId: 'panel-consumables', numericSelector: '#cons-days', lastSavedSelector: '#cons-last-saved', restoreButtonSelector: '#cons-clear-autosave-btn' },
-  { reportName: 'FieldCalcs / Pharmaceuticals', shellPanelId: 'panel-medications', numericSelector: '#meds-days', lastSavedSelector: '#meds-last-saved', restoreButtonSelector: '#meds-btn-clear-autosave' }
+  { reportName: 'Portable-Solution-Estimator-Suite / Load Basic', shellPanelId: 'panel-load-calc', numericSelector: '#load-fuel-capacity', lastSavedSelector: '#load-load-basic-last-saved', restoreButtonSelector: '#load-btn-clear-autosave' },
+  { reportName: 'Portable-Solution-Estimator-Suite / Load Pro', shellPanelId: 'panel-load-pro', numericSelector: '#load-pro-fuel-capacity', lastSavedSelector: '#load-pro-last-saved', restoreButtonSelector: '#load-pro-btn-clear-autosave' },
+  { reportName: 'Portable-Solution-Estimator-Suite / Water', shellPanelId: 'panel-water', numericSelector: '#water-beds', lastSavedSelector: '#water-last-saved', restoreButtonSelector: '#water-btn-clear-autosave' },
+  { reportName: 'Portable-Solution-Estimator-Suite / Consumables', shellPanelId: 'panel-consumables', numericSelector: '#cons-days', lastSavedSelector: '#cons-last-saved', restoreButtonSelector: '#cons-clear-autosave-btn' },
+  { reportName: 'Portable-Solution-Estimator-Suite / Pharmaceuticals', shellPanelId: 'panel-medications', numericSelector: '#meds-days', lastSavedSelector: '#meds-last-saved', restoreButtonSelector: '#meds-btn-clear-autosave' }
 ];
 
 async function newHarnessContext(browser) {

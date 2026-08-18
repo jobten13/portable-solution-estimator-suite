@@ -10,7 +10,7 @@ Part of the **Field Hospital Calculator** suite. Manages pharmaceuticals require
 
 ## How to run
 
-Open this folder’s **`index.html`** — it redirects to **`../index.html#medicines`** in the FieldCalcs shell. No server required. Works offline.
+Open this folder’s **`index.html`** — it redirects to **`../index.html#medicines`** in the Portable-Solution-Estimator-Suite shell. No server required. Works offline.
 
 **Dependencies:** `script.js` (main logic), `medications-data.js` (Ward/ICU pharmaceuticals list data), `styles.css`.
 

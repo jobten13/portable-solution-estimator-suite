@@ -1,8 +1,8 @@
 # Field Hospital Calculator Suite — Playwright Test Harness
 
 This harness runs **Chrome-first** browser tests against the real suite UI:
-- **FieldCalcs** shell (panel switching/state bleed)
-- All five calculators via **hash entry** URLs (`FieldCalcs/index.html#water`, etc.)
+- **Portable-Solution-Estimator-Suite** shell (panel switching/state bleed)
+- All five calculators via **hash entry** URLs (`Portable-Solution-Estimator-Suite/index.html#water`, etc.)
 
 It writes human-readable reports to:
 - `tests/reports/<run-id>/test-matrix-report.html`

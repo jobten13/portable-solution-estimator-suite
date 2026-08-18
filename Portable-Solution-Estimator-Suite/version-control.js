@@ -1,6 +1,6 @@
 /**
  * Field Hospital Calculator Suite — suite version (single source: version.json next to this file).
- * Updates: meta[name="suite-version"] and all [data-suite-version] (FieldCalcs panel footers + standalone calc pages).
+ * Updates: meta[name="suite-version"] and all [data-suite-version] (Portable-Solution-Estimator-Suite panel footers + standalone calc pages).
  */
 (function () {
   'use strict';

@@ -10,7 +10,7 @@ Part of the **Field Hospital Calculator** suite. Estimates potable water demand,
 
 ## How to run
 
-Open this folder’s **`index.html`** — it redirects to **`../index.html#water`** in the FieldCalcs shell. No server required. Works offline.
+Open this folder’s **`index.html`** — it redirects to **`../index.html#water`** in the Portable-Solution-Estimator-Suite shell. No server required. Works offline.
 
 **Dependencies:** `water-data.js` (defaults), `script.js` (main logic), `styles.css`.
 

@@ -10,7 +10,7 @@ Part of the **Field Hospital Calculator** suite. Estimates generator load (kW on
 
 ## How to run
 
-Open this folder’s **`index.html`** — it redirects to **`../index.html#load-basic`** in the FieldCalcs shell. No server required. Works offline.
+Open this folder’s **`index.html`** — it redirects to **`../index.html#load-basic`** in the Portable-Solution-Estimator-Suite shell. No server required. Works offline.
 
 **Dependencies:** `script.js` (main logic and equipment data), `styles.css`. Equipment is defined in the `EQUIPMENT` object inside `script.js`.
 
@@ -64,7 +64,7 @@ Open this folder’s **`index.html`** — it redirects to **`../index.html#load-
 
 | File | Purpose |
 |------|--------|
-| `index.html` | Redirect stub to the FieldCalcs shell (`#load-basic`). |
+| `index.html` | Redirect stub to the Portable-Solution-Estimator-Suite shell (`#load-basic`). |
 | `script.js` | `EQUIPMENT` data, DOM build, recalc, validation, scenarios, search filter, sort. |
 | `styles.css` | Layout, cards, table, validation and placeholder styles, print. |
 

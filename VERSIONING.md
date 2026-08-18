@@ -1,7 +1,7 @@
 # Suite versioning
 
-**Canonical suite build ID:** **`FieldCalcs/version.json`**.  
-**Loader:** **`FieldCalcs/version-control.js`** (same folder). The shell loads it as **`version-control.js`** and resolves **`version.json`** next to that script.
+**Canonical suite build ID:** **`Portable-Solution-Estimator-Suite/version.json`**.  
+**Loader:** **`Portable-Solution-Estimator-Suite/version-control.js`** (same folder). The shell loads it as **`version-control.js`** and resolves **`version.json`** next to that script.
 
 Handoff overview: **[README.md](README.md)**.
 
@@ -9,17 +9,17 @@ Handoff overview: **[README.md](README.md)**.
 
 ## Bump for a release
 
-1. Edit **`FieldCalcs/version.json`** — update **`version`**, **`lastUpdated`**, and **prepend** a **`changelog`** entry (newest first).
-2. **`FieldCalcs/index.html` `file://` fallback:** Update the **same** suite version wherever marked *“Fallback must match version.json”* — `meta name="suite-version"` and each panel footer **`[data-suite-version]`** (e.g. `Suite v1.1.1`). There is **no** separate shell bottom bar. When the page is served over **http**, **`version-control.js`** overwrites those spans and **`meta`** from **`version.json`**.
+1. Edit **`Portable-Solution-Estimator-Suite/version.json`** — update **`version`**, **`lastUpdated`**, and **prepend** a **`changelog`** entry (newest first).
+2. **`Portable-Solution-Estimator-Suite/index.html` `file://` fallback:** Update the **same** suite version wherever marked *“Fallback must match version.json”* — `meta name="suite-version"` and each panel footer **`[data-suite-version]`** (e.g. `Suite v1.1.1`). There is **no** separate shell bottom bar. When the page is served over **http**, **`version-control.js`** overwrites those spans and **`meta`** from **`version.json`**.
 3. Reload the app over **http**; shell panel footers update from **`version.json`** automatically.
 4. **Do not** paste the new suite number into multiple **README** files — **`version.json`** remains the canonical **http** source; shell HTML fallbacks are the exception above.
 
 ### Optional: PowerShell helper
 
-From **`FieldCalcs`**, run **`create-version.ps1`** — it updates **`version.json`** in the same directory. Example:
+From **`Portable-Solution-Estimator-Suite`**, run **`create-version.ps1`** — it updates **`version.json`** in the same directory. Example:
 
 ```powershell
-cd FieldCalcs
+cd Portable-Solution-Estimator-Suite
 .\create-version.ps1 -VersionType "minor" -Changes "Phase note", "Another change"
 ```
 
@@ -62,4 +62,4 @@ Opening HTML via **`file://`** may block **`fetch`** of **`version.json`** in so
 **`version-control.js`** loads **`version.json`** and sets:
 
 - **`meta[name="suite-version"]`**
-- Elements with **`[data-suite-version]`** (FieldCalcs shell: each panel footer)
+- Elements with **`[data-suite-version]`** (Portable-Solution-Estimator-Suite shell: each panel footer)

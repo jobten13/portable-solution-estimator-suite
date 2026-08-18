@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = parseInt(process.env.PORT || '4173', 10);
-const BASE = `http://localhost:${PORT}/FieldCalcs/index.html`;
+const BASE = `http://localhost:${PORT}/Portable-Solution-Estimator-Suite/index.html`;
 const FIXTURES_DIR = path.join(__dirname, 'functional-fixtures');
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────

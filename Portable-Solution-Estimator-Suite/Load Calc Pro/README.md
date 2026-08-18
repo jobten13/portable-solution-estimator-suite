@@ -10,7 +10,7 @@ Part of the **Field Hospital Calculator** suite. Estimates generator load (kW/kV
 
 ## How to run
 
-Open this folder’s **`index.html`** — it redirects to **`../index.html#load-pro`** in the FieldCalcs shell. No server required. Works offline.
+Open this folder’s **`index.html`** — it redirects to **`../index.html#load-pro`** in the Portable-Solution-Estimator-Suite shell. No server required. Works offline.
 
 **Dependencies:** `equipment-data.js` (category and item definitions), `script.js` (main logic), `styles.css`. Equipment data is loaded from `LOAD_CALC_PRO_EQUIPMENT` (in `equipment-data.js` or inline).
 
@@ -97,7 +97,7 @@ Open this folder’s **`index.html`** — it redirects to **`../index.html#load-
 
 | File | Purpose |
 |------|--------|
-| `index.html` | Redirect stub to the FieldCalcs shell (`#load-pro`). |
+| `index.html` | Redirect stub to the Portable-Solution-Estimator-Suite shell (`#load-pro`). |
 | `script.js` | Build tables from equipment data, recalc, validation, scenarios, search filter, sort. |
 | `styles.css` | Layout, cards, table, validation and placeholder styles, print. |
 | `equipment-data.js` | `LOAD_CALC_PRO_EQUIPMENT` — categories and items (name, kw, pf). |
