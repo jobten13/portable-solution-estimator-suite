@@ -1,5 +1,5 @@
 /**
- * Consumables Calculator - UCD UberCalc (Consumables panel)
+ * Consumables Calculator (Consumables panel)
  * Uses cons- prefixed IDs.
  */
 (function () {
