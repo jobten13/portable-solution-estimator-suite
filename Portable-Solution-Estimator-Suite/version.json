@@ -1,8 +1,17 @@
 {
   "suiteName": "Portable Solution Estimator Suite",
-  "version": "1.1.4",
-  "lastUpdated": "2026-06-03T00:00:00.000Z",
+  "version": "1.2.0",
+  "lastUpdated": "2026-08-18T00:00:00.000Z",
   "changelog": [
+    {
+      "version": "1.2.0",
+      "date": "2026-08-18T00:00:00.000Z",
+      "changes": [
+        "Rename product identity: folder FieldCalcs to Portable-Solution-Estimator-Suite; display name Field Hospital Calculator Suite to Portable Solution Estimator Suite. Calculator behavior unchanged.",
+        "Rename Water/Consumables/Pharma localStorage keys (fieldHospital → pse); Load Basic/Pro keys unchanged; no migration of previously saved data.",
+        "Retire Calcs Final branding; update shell banners, scenario placeholders, per-calc README product lines, and product-alignment comments."
+      ]
+    },
     {
       "version": "1.1.4",
       "date": "2026-06-03T00:00:00.000Z",
