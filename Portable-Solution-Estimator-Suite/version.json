@@ -30,7 +30,7 @@
       "version": "1.1.0",
       "date": "2026-03-13T00:00:00.000Z",
       "changes": [
-        "Suite versioning: single version.json + version-control.js at Calcs Final root; Shell footer and standalone calcs show Suite v#.#.# for field testing traceability",
+        "Suite versioning: single version.json + version-control.js at the suite root; Shell footer and standalone calcs show Suite v#.#.# for field testing traceability",
         "Per-calculator app versions remain in each footer where applicable"
       ]
     },

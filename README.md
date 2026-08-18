@@ -1,6 +1,6 @@
 # Portable Solution Estimator Suite
 
-This folder (**Calcs Final**) is the **suite root**: five calculators in a single **Portable-Solution-Estimator-Suite** shell with tab navigation.
+This folder (the **suite root**) contains five calculators in a single **Portable-Solution-Estimator-Suite** shell with tab navigation.
 
 ## Start here (handoff)
 

@@ -4,7 +4,7 @@
  * Goal: run the real app from http://localhost so browser features like fetch(version.json)
  * work exactly like a hosted deployment.
  *
- * This test server is isolated under tests/ and serves the repository root (Calcs Final).
+ * This test server is isolated under tests/ and serves the repository root (suite root).
  */
 const http = require('http');
 const fs = require('fs');
