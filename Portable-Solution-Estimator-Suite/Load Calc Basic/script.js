@@ -11,6 +11,9 @@
   const LAST_SAVED_KEY = 'generator-load-basic-lastSaved';
   const SORT_STORAGE_KEY = 'generator-load-sort';
   let currentSortKey = 'name-asc';
+  const SCHEMA_VERSION = 1;
+  const LOAD_CALC_SORT_KEYS = ['name-asc', 'name-desc', 'kw-desc', 'kw-asc'];
+  const VIEW_STATE_DEFAULTS = { sort: 'name-asc', search: '' };
 
   const CONSTANTS = {
     SAFETY_FACTOR: 1.25,
@@ -339,6 +342,31 @@
     if (loadAutosaveDirty) saveWorksheetState();
   }
 
+  function captureLoadBasicViewState() {
+    const searchEl = $(id('search-equipment'));
+    const sortEl = $(id('sort-equipment'));
+    return {
+      sort: (sortEl && sortEl.value) || currentSortKey,
+      search: (searchEl && searchEl.value) || ''
+    };
+  }
+
+  function applyLoadBasicViewState(data) {
+    const src = (data && data.viewState && typeof data.viewState === 'object') ? data.viewState : {};
+    let sort = typeof src.sort === 'string' ? src.sort : VIEW_STATE_DEFAULTS.sort;
+    if (!LOAD_CALC_SORT_KEYS.includes(sort)) sort = VIEW_STATE_DEFAULTS.sort;
+    const search = typeof src.search === 'string' ? src.search : VIEW_STATE_DEFAULTS.search;
+
+    currentSortKey = sort;
+    const sortEl = $(id('sort-equipment'));
+    if (sortEl) sortEl.value = sort;
+    const searchEl = $(id('search-equipment'));
+    if (searchEl) searchEl.value = search;
+
+    filterEquipmentSearch();
+    applySort();
+  }
+
   function getCurrentWorksheetData() {
     const nameEl = $(id('scenario-name'));
     const notesEl = $(id('scenario-notes'));
@@ -358,7 +386,15 @@
       const isCustom = row.classList.contains('custom-item-row');
       equipment.push({ name, kwValue, qty, isCustom, categoryId: isCustom ? categoryId : undefined });
     });
-    return { scenarioName, scenarioNotes, generatorCapacity, fuelTankCapacityGallons, equipment };
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      scenarioName,
+      scenarioNotes,
+      generatorCapacity,
+      fuelTankCapacityGallons,
+      equipment,
+      viewState: captureLoadBasicViewState()
+    };
   }
 
   function saveWorksheetState() {
@@ -766,7 +802,7 @@
         }
       });
     }
-    filterEquipmentSearch();
+    applyLoadBasicViewState(data);
   }
 
   function syncScenarioSelectTitle() {
@@ -1056,6 +1092,11 @@
       }
     });
     cleaned.equipment = sanitizedEquipment;
+    if (data.viewState && typeof data.viewState === 'object') {
+      cleaned.viewState = {};
+      if (typeof data.viewState.sort === 'string') cleaned.viewState.sort = data.viewState.sort;
+      if (typeof data.viewState.search === 'string') cleaned.viewState.search = data.viewState.search;
+    }
     return cleaned;
   }
 
@@ -1485,7 +1526,10 @@
     const searchEl = $(id('search-equipment'));
     if (searchEl) {
       searchEl.removeEventListener('input', filterEquipmentSearch);
-      searchEl.addEventListener('input', filterEquipmentSearch);
+      searchEl.addEventListener('input', () => {
+        filterEquipmentSearch();
+        notifyWorksheetChanged();
+      });
     }
     const scenName = $(id('scenario-name'));
     const scenNotes = $(id('scenario-notes'));

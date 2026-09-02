@@ -374,6 +374,84 @@ test.describe('Functional tests', () => {
     });
   }
 
+  test('Scenarios: Load Basic — viewState search and sort round-trip', async ({ browser }) => {
+    const c = CALCS.loadBasic;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await page.selectOption('#load-sort-equipment', 'kw-asc');
+    await page.waitForTimeout(200);
+    const storedPreference = await getStorageItem(page, 'generator-load-sort');
+    expect(storedPreference).toBe('kw-asc');
+
+    await page.selectOption('#load-sort-equipment', 'kw-desc');
+    await page.locator('#load-search-equipment').fill('monitor');
+    await page.locator('#load-search-equipment').dispatchEvent('input');
+    await page.waitForTimeout(200);
+
+    await fillAndTab(page, c.inputs.primary, '20');
+    await page.locator(c.scenarioName).fill('ViewState Round Trip');
+    await page.locator(c.saveBtn).click();
+    await page.waitForTimeout(1000);
+
+    await page.selectOption('#load-sort-equipment', 'kw-asc');
+    await page.waitForTimeout(200);
+    await page.locator('#load-search-equipment').fill('');
+    await page.locator('#load-search-equipment').dispatchEvent('input');
+    await page.waitForTimeout(200);
+
+    const firstVal = await page.$eval(c.scenarioSelect, el => el.options[1]?.value || '');
+    expect(firstVal).not.toBe('');
+    await page.selectOption(c.scenarioSelect, firstVal);
+    await page.locator(c.loadBtn).click();
+
+    const modalShown = await page.waitForSelector('#shell-modal-overlay:not([hidden])', { timeout: 3000 }).catch(() => null);
+    if (modalShown) await acceptModal(page);
+    await page.waitForTimeout(1500);
+
+    const sortVal = await getVal(page, '#load-sort-equipment');
+    expect(sortVal).toBe('kw-desc');
+    const searchVal = await getVal(page, '#load-search-equipment');
+    expect(searchVal).toBe('monitor');
+    const preferenceAfterLoad = await getStorageItem(page, 'generator-load-sort');
+    expect(preferenceAfterLoad).toBe('kw-asc');
+
+    await ctx.close();
+  });
+
+  test('Import: Load Basic — v0 payload without viewState loads with defaults', async ({ browser }) => {
+    const c = CALCS.loadBasic;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    if (!fs.existsSync(FIXTURES_DIR)) fs.mkdirSync(FIXTURES_DIR, { recursive: true });
+    const v0Path = path.join(FIXTURES_DIR, `load-basic-v0-${Date.now()}.json`);
+    const v0Payload = {
+      data: {
+        scenarioName: 'Legacy v0 Export',
+        scenarioNotes: 'no schemaVersion',
+        generatorCapacity: '42',
+        fuelTankCapacityGallons: 500,
+        equipment: []
+      },
+      exportedAt: '2020-01-01T00:00:00.000Z'
+    };
+    fs.writeFileSync(v0Path, JSON.stringify(v0Payload, null, 2));
+
+    await page.locator(c.importInput).setInputFiles(v0Path);
+    await page.waitForTimeout(2000);
+
+    const genVal = await getVal(page, c.inputs.primary);
+    expect(genVal).toBe('42');
+    const sortVal = await getVal(page, '#load-sort-equipment');
+    expect(sortVal).toBe('name-asc');
+    const searchVal = await getVal(page, '#load-search-equipment');
+    expect(searchVal).toBe('');
+
+    try { fs.unlinkSync(v0Path); } catch (e) {}
+    await ctx.close();
+  });
+
   // ═══════════════════════════════════════════════════════════════════════════
   // IMPORT / EXPORT
   // ═══════════════════════════════════════════════════════════════════════════
