@@ -452,6 +452,177 @@ test.describe('Functional tests', () => {
     await ctx.close();
   });
 
+  test('Scenarios: Load Pro — viewState search and sort round-trip', async ({ browser }) => {
+    const c = CALCS.loadPro;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await page.selectOption('#load-pro-sort-equipment', 'kw-asc');
+    await page.waitForTimeout(200);
+    const storedPreference = await getStorageItem(page, 'loadCalcProSort');
+    expect(storedPreference).toBe('kw-asc');
+
+    await page.selectOption('#load-pro-sort-equipment', 'kw-desc');
+    await page.locator('#load-pro-search-equipment').fill('monitor');
+    await page.locator('#load-pro-search-equipment').dispatchEvent('input');
+    await page.waitForTimeout(200);
+
+    await fillAndTab(page, c.inputs.primary, '20');
+    await page.locator(c.scenarioName).fill('ViewState Round Trip Pro');
+    await page.locator(c.saveBtn).click();
+    await page.waitForTimeout(1000);
+
+    await page.selectOption('#load-pro-sort-equipment', 'kw-asc');
+    await page.waitForTimeout(200);
+    await page.locator('#load-pro-search-equipment').fill('');
+    await page.locator('#load-pro-search-equipment').dispatchEvent('input');
+    await page.waitForTimeout(200);
+
+    const firstVal = await page.$eval(c.scenarioSelect, el => el.options[1]?.value || '');
+    expect(firstVal).not.toBe('');
+    await page.selectOption(c.scenarioSelect, firstVal);
+    await page.locator(c.loadBtn).click();
+
+    const modalShown = await page.waitForSelector('#shell-modal-overlay:not([hidden])', { timeout: 3000 }).catch(() => null);
+    if (modalShown) await acceptModal(page);
+    await page.waitForTimeout(1500);
+
+    const sortVal = await getVal(page, '#load-pro-sort-equipment');
+    expect(sortVal).toBe('kw-desc');
+    const searchVal = await getVal(page, '#load-pro-search-equipment');
+    expect(searchVal).toBe('monitor');
+    const preferenceAfterLoad = await getStorageItem(page, 'loadCalcProSort');
+    expect(preferenceAfterLoad).toBe('kw-asc');
+
+    await ctx.close();
+  });
+
+  test('Import: Load Pro — v0 payload without viewState loads with defaults and full catalog', async ({ browser }) => {
+    const c = CALCS.loadPro;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    if (!fs.existsSync(FIXTURES_DIR)) fs.mkdirSync(FIXTURES_DIR, { recursive: true });
+    const v0Path = path.join(FIXTURES_DIR, `load-pro-v0-${Date.now()}.json`);
+    const v0Payload = {
+      name: 'Legacy v0 Export Pro',
+      notes: 'no schemaVersion',
+      availableKva: '42',
+      fuelTankCapacityGallons: 500,
+      fuelRateGalPerKw: 0.1,
+      rows: []
+    };
+    fs.writeFileSync(v0Path, JSON.stringify(v0Payload, null, 2));
+
+    await page.locator(c.importInput).setInputFiles(v0Path);
+    await page.waitForTimeout(2000);
+
+    const kvaVal = await getVal(page, c.inputs.primary);
+    expect(kvaVal).toBe('42');
+    const sortVal = await getVal(page, '#load-pro-sort-equipment');
+    expect(sortVal).toBe('name-asc');
+    const searchVal = await getVal(page, '#load-pro-search-equipment');
+    expect(searchVal).toBe('');
+    const monitorVisible = await page.locator('#panel-load-pro .equipment-row:not(.custom)', { hasText: 'Portable Vital Signs Monitor' }).count();
+    expect(monitorVisible).toBeGreaterThan(0);
+
+    try { fs.unlinkSync(v0Path); } catch (e) {}
+    await ctx.close();
+  });
+
+  test('Import: Load Pro — legacy name/notes alias into scenarioName/scenarioNotes', async ({ browser }) => {
+    const c = CALCS.loadPro;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    if (!fs.existsSync(FIXTURES_DIR)) fs.mkdirSync(FIXTURES_DIR, { recursive: true });
+    const legacyPath = path.join(FIXTURES_DIR, `load-pro-legacy-name-notes-${Date.now()}.json`);
+    const legacyPayload = {
+      name: 'Legacy Name Alias',
+      notes: 'Legacy notes alias text',
+      availableKva: '88',
+      fuelTankCapacityGallons: 100,
+      fuelRateGalPerKw: 0.2,
+      rows: []
+    };
+    fs.writeFileSync(legacyPath, JSON.stringify(legacyPayload, null, 2));
+
+    await page.locator(c.importInput).setInputFiles(legacyPath);
+    await page.waitForTimeout(2000);
+
+    expect(await getVal(page, c.scenarioName)).toBe('Legacy Name Alias');
+    expect(await getVal(page, c.scenarioNotes)).toBe('Legacy notes alias text');
+    expect(await getVal(page, c.inputs.primary)).toBe('88');
+
+    try { fs.unlinkSync(legacyPath); } catch (e) {}
+    await ctx.close();
+  });
+
+  test('Autosave: Load Pro — deleted built-in row persists through restore', async ({ browser }) => {
+    const c = CALCS.loadPro;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    const rowLocator = page.locator('#panel-load-pro .equipment-row:not(.custom)', { hasText: 'Portable Vital Signs Monitor' });
+    await expect(rowLocator).toHaveCount(1);
+    await rowLocator.first().locator('.delete-row').click();
+    await waitForModal(page);
+    await acceptModal(page);
+    await page.waitForTimeout(200);
+
+    await fillAndTab(page, c.inputs.primary, '55');
+    await waitForAutosave(page);
+
+    await page.locator(c.restoreBtn).click();
+    await page.waitForTimeout(1500);
+
+    const afterRestore = await page.locator('#panel-load-pro .equipment-row:not(.custom)', { hasText: 'Portable Vital Signs Monitor' }).count();
+    expect(afterRestore).toBe(0);
+
+    await ctx.close();
+  });
+
+  test('Reset: Load Pro — reset worksheet restores deleted built-in row', async ({ browser }) => {
+    const c = CALCS.loadPro;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await page.selectOption('#load-pro-sort-equipment', 'kw-desc');
+    await page.waitForTimeout(200);
+
+    const rowLocator = page.locator('#panel-load-pro .equipment-row:not(.custom)', { hasText: 'Portable Vital Signs Monitor' });
+    await expect(rowLocator).toHaveCount(1);
+    await rowLocator.first().locator('.delete-row').click();
+    await waitForModal(page);
+    await acceptModal(page);
+    await page.waitForTimeout(200);
+
+    const gone = await page.locator('#panel-load-pro .equipment-row:not(.custom)', { hasText: 'Portable Vital Signs Monitor' }).count();
+    expect(gone).toBe(0);
+
+    await page.locator(c.resetSheetBtn).click();
+    await waitForModal(page);
+    await acceptModal(page);
+    await page.waitForTimeout(1000);
+
+    const restored = await page.locator('#panel-load-pro .equipment-row:not(.custom)', { hasText: 'Portable Vital Signs Monitor' }).count();
+    expect(restored).toBeGreaterThan(0);
+
+    const sortVal = await getVal(page, '#load-pro-sort-equipment');
+    expect(sortVal).toBe('kw-desc');
+
+    // After reset all qtys are 0, so kw-desc uses name A–Z as tie-breaker within each category.
+    const names = await page.$$eval(
+      '#panel-load-pro #cat-standard .equipment-row:not(.custom) td:first-child',
+      els => els.map(el => el.textContent.trim())
+    );
+    expect(names.length).toBeGreaterThan(1);
+    const sortedByName = [...names].sort((a, b) => a.localeCompare(b));
+    expect(names).toEqual(sortedByName);
+
+    await ctx.close();
+  });
+
   // ═══════════════════════════════════════════════════════════════════════════
   // IMPORT / EXPORT
   // ═══════════════════════════════════════════════════════════════════════════
@@ -673,6 +844,31 @@ test.describe('Functional tests', () => {
       els.map(el => parseInt(el.textContent.trim(), 10)).filter(n => n > 0)
     );
     expect(qtyCells.length, 'should have items with non-zero quantities').toBeGreaterThan(0);
+
+    await ctx.close();
+  });
+
+  test('Calculation: Load Pro — kw-desc live re-sort on qty blur', async ({ browser }) => {
+    const c = CALCS.loadPro;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await page.selectOption('#load-pro-sort-equipment', 'kw-desc');
+    await page.waitForTimeout(200);
+
+    const cutterRow = page.locator('#panel-load-pro #cat-standard .equipment-row:not(.custom)', { hasText: 'Orthopedic Cast Cutter' });
+    await expect(cutterRow).toHaveCount(1);
+    const qty = cutterRow.locator('.qty-input');
+    await qty.fill('10');
+    await qty.blur();
+    await page.waitForTimeout(300);
+
+    const firstName = await page.$eval(
+      '#panel-load-pro #cat-standard .equipment-row:not(.custom) td:first-child',
+      el => el.textContent.trim()
+    );
+    expect(firstName).toBe('Orthopedic Cast Cutter');
+    expect(await getVal(page, '#load-pro-sort-equipment')).toBe('kw-desc');
 
     await ctx.close();
   });

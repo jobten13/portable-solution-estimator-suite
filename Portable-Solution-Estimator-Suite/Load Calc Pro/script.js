@@ -12,6 +12,11 @@
   const MOTOR_START_FACTOR = 4.0;
   const CONTINUOUS_SAFETY_FACTOR = 0.8;
   let currentSortKey = 'name-asc';
+  const SCHEMA_VERSION = 1;
+  const LOAD_PRO_SORT_KEYS = ['name-asc', 'name-desc', 'kw-desc', 'kw-asc', 'kva-peak-desc', 'kva-peak-asc'];
+  const VIEW_STATE_DEFAULTS = { sort: 'name-asc', search: '' };
+  /** Stable keys `${catId}::${name}` for built-in rows the user deleted this session / payload. */
+  let deletedCatalogKeys = [];
 
   // Important: in Portable-Solution-Estimator-Suite, multiple calc panels exist in the same DOM.
   // Both Load Basic and Load Pro use shared ids like `cat-standard` and shared row classnames like
@@ -244,12 +249,20 @@
 
   function onEquipmentBlur(e) {
     validateAndShowEquipment(e.target);
+    recalc();
     notifyWorksheetChanged();
   }
 
   function onRecalc() {
     recalc();
     notifyWorksheetChanged();
+  }
+
+  function isEditableRowInput(el) {
+    if (!el || !el.classList) return false;
+    return el.classList.contains('qty-input')
+      || el.classList.contains('kw-input')
+      || el.classList.contains('pf-input');
   }
 
   function filterEquipmentSearch() {
@@ -300,9 +313,9 @@
 
   function applySort() {
     const active = document.activeElement;
-    const wasQtyInput = active && active.classList && active.classList.contains('qty-input');
-    const selStart = wasQtyInput ? active.selectionStart : 0;
-    const selEnd = wasQtyInput ? active.selectionEnd : 0;
+    const wasEditableRowInput = isEditableRowInput(active);
+    const selStart = wasEditableRowInput ? active.selectionStart : 0;
+    const selEnd = wasEditableRowInput ? active.selectionEnd : 0;
 
     const sel = $('#load-pro-sort-equipment');
     const key = (sel && sel.value) || currentSortKey;
@@ -340,7 +353,7 @@
       rows.forEach(r => tbody.appendChild(r));
     });
 
-    if (wasQtyInput && active && active.closest('.equipment-table')) {
+    if (wasEditableRowInput && active && active.closest('.equipment-table')) {
       active.focus();
       if (typeof active.setSelectionRange === 'function') active.setSelectionRange(selStart, selEnd);
     }
@@ -360,8 +373,16 @@
     const nameCell = row.querySelector('td:first-child');
     const name = nameCell ? nameCell.textContent.trim() : 'this row';
     if (!(await shellConfirm(`Delete "${name}" from the list?`))) return;
+    const isCustom = row.classList.contains('custom');
+    const cat = row.closest('.category');
+    const catId = cat ? cat.id : null;
     row.remove();
+    if (!isCustom && catId && name && name !== 'this row') {
+      const key = makeCatalogKey(catId, name);
+      if (key && deletedCatalogKeys.indexOf(key) === -1) deletedCatalogKeys.push(key);
+    }
     recalc();
+    notifyWorksheetChanged();
   }
 
   function initCustomForms() {
@@ -529,6 +550,9 @@
     $('#load-pro-approximate-runtime').textContent = formatNum(runtime, 1);
 
     updateCapacityStatus(kvaMargin, peakKva, availableKva);
+    const active = document.activeElement;
+    const editingRowInput = isEditableRowInput(active);
+    if (!editingRowInput) applySort();
   }
 
   function updateCapacityStatus(kvaMargin, peakKva, availableKva) {
@@ -554,17 +578,86 @@
   }
 
   // --- Scenario state ---
+  function makeCatalogKey(catId, name) {
+    if (!catId || !name) return null;
+    return String(catId) + '::' + String(name);
+  }
+
+  function captureLoadProViewState() {
+    const searchEl = $('#load-pro-search-equipment');
+    const sortEl = $('#load-pro-sort-equipment');
+    return {
+      sort: (sortEl && sortEl.value) || currentSortKey,
+      search: (searchEl && searchEl.value) || ''
+    };
+  }
+
+  function applyLoadProViewState(data) {
+    const src = (data && data.viewState && typeof data.viewState === 'object') ? data.viewState : {};
+    let sort = typeof src.sort === 'string' ? src.sort : VIEW_STATE_DEFAULTS.sort;
+    if (!LOAD_PRO_SORT_KEYS.includes(sort)) sort = VIEW_STATE_DEFAULTS.sort;
+    const search = typeof src.search === 'string' ? src.search : VIEW_STATE_DEFAULTS.search;
+
+    currentSortKey = sort;
+    const sortEl = $('#load-pro-sort-equipment');
+    if (sortEl) sortEl.value = sort;
+    const searchEl = $('#load-pro-search-equipment');
+    if (searchEl) searchEl.value = search;
+
+    filterEquipmentSearch();
+    applySort();
+  }
+
+  function sanitizeDeletedCatalogKeys(raw) {
+    if (!Array.isArray(raw)) return [];
+    const out = [];
+    raw.forEach(entry => {
+      if (typeof entry !== 'string') return;
+      const key = entry.trim();
+      if (!key || key.indexOf('::') < 1) return;
+      if (out.indexOf(key) === -1) out.push(key);
+    });
+    return out;
+  }
+
+  function applyDeletedCatalogKeysToDom() {
+    deletedCatalogKeys.forEach(key => {
+      const sep = key.indexOf('::');
+      if (sep < 1) return;
+      const catId = key.slice(0, sep);
+      const name = key.slice(sep + 2);
+      if (!catId || !name) return;
+      const catEl = PRO_ROOT.querySelector('#' + catId);
+      if (!catEl) return;
+      const rows = Array.from(catEl.querySelectorAll('.equipment-row:not(.custom)'));
+      const match = rows.find(row => {
+        const first = row.querySelector('td:first-child');
+        return first && first.textContent.trim() === name;
+      });
+      if (match) match.remove();
+    });
+  }
+
+  function reattachCategoryResetButtons() {
+    $$('[data-reset-target]').forEach(btn => {
+      btn.addEventListener('click', () => resetCategory(btn.getAttribute('data-reset-target')));
+    });
+  }
+
   function getScenarioData() {
     const nameEl = $('#load-pro-scenario-name');
     const notesEl = $('#load-pro-scenario-notes');
     const data = {
-      name: (nameEl && nameEl.value && nameEl.value.trim()) ? nameEl.value.trim() : '',
-      notes: (notesEl && notesEl.value) ? notesEl.value : '',
+      schemaVersion: SCHEMA_VERSION,
+      scenarioName: (nameEl && nameEl.value && nameEl.value.trim()) ? nameEl.value.trim() : '',
+      scenarioNotes: (notesEl && notesEl.value) ? notesEl.value : '',
       availableKva: ($('#load-pro-available-kva') && $('#load-pro-available-kva').value) || '0',
       // Gallons-only canonical model for Pro.
       fuelTankCapacityGallons: getFuelCapacityGallons(),
       fuelRateGalPerKw: getFuelRateGalPerKw(),
-      rows: []
+      rows: [],
+      deletedCatalogKeys: deletedCatalogKeys.slice(),
+      viewState: captureLoadProViewState()
     };
     $$('.equipment-row').forEach(row => {
       const nameCell = row.querySelector('td:first-child');
@@ -584,14 +677,37 @@
     return data;
   }
 
+  /** Canonical scenarioName preferred; legacy name accepted. Returns null if neither present. */
+  function resolveScenarioNameField(data) {
+    if (!data || typeof data !== 'object') return null;
+    if (typeof data.scenarioName === 'string') return data.scenarioName;
+    if (typeof data.name === 'string') return data.name;
+    return null;
+  }
+
+  /** Canonical scenarioNotes preferred; legacy notes accepted. Returns null if neither present. */
+  function resolveScenarioNotesField(data) {
+    if (!data || typeof data !== 'object') return null;
+    if (typeof data.scenarioNotes === 'string') return data.scenarioNotes;
+    if (typeof data.notes === 'string') return data.notes;
+    return null;
+  }
+
   function applyScenarioData(data) {
     if (!data) return;
+    // Rebuild baseline catalog first so deleted built-ins can be re-applied from deletedCatalogKeys
+    // and stale custom/sort DOM cannot block restore (scenario, import, and autosave paths).
+    buildCategories();
+    reattachCategoryResetButtons();
+
     $$('.input-error').forEach(el => clearValidationError(el));
     $$('.validation-error').forEach(el => { el.style.display = 'none'; });
     const nameEl = $('#load-pro-scenario-name');
     const notesEl = $('#load-pro-scenario-notes');
-    if (nameEl && data.name != null) nameEl.value = data.name;
-    if (notesEl && data.notes != null) notesEl.value = data.notes;
+    const resolvedName = resolveScenarioNameField(data);
+    const resolvedNotes = resolveScenarioNotesField(data);
+    if (nameEl && resolvedName != null) nameEl.value = resolvedName;
+    if (notesEl && resolvedNotes != null) notesEl.value = resolvedNotes;
     const kvaEl = $('#load-pro-available-kva');
     const fuelEl = $('#load-pro-fuel-capacity');
     const rateEl = $('#load-pro-fuel-rate-per-kw');
@@ -603,7 +719,7 @@
       rateEl.value = rateG !== 0 ? String(rateG) : '';
     }
 
-    $$('.equipment-row.custom').forEach(row => row.remove());
+    deletedCatalogKeys = sanitizeDeletedCatalogKeys(data.deletedCatalogKeys);
 
     (data.rows || []).forEach(item => {
       let existing = null;
@@ -651,7 +767,9 @@
         addCustomRow(item.catId, item.name, parseFloat(item.kw) || 0, parseFloat(item.pf) || 1, parseInt(item.qty, 10) || 0);
       }
     });
-    filterEquipmentSearch();
+
+    applyDeletedCatalogKeysToDom();
+    applyLoadProViewState(data);
   }
 
   const LAST_SAVED_KEY = 'load-pro-lastSaved';
@@ -788,20 +906,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-
-        // Rebuild baseline table first to avoid any stale DOM state from sorting/search/custom rows
-        // interfering with restored qty rendering.
-        // This is intentionally done inside the restore path only (not on open).
-        buildCategories();
-        // Re-attach per-category Reset Qty buttons because buildCategories() recreates the DOM.
-        $$('[data-reset-target]').forEach(btn => {
-          btn.addEventListener('click', () => resetCategory(btn.getAttribute('data-reset-target')));
-        });
-
         applyScenarioData(parsed);
-        recalc();
-      // Ensure restored rows are ordered according to the user's selected sort.
-      applySort();
         loadProAutosaveDirty = false;
         scenarioLoadGuardDirty = false;
         let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
@@ -891,9 +996,21 @@
   function sanitizeImportedScenarioData(rawPayload, issues) {
     if (!rawPayload || typeof rawPayload !== 'object') return null;
     const payload = rawPayload;
+    let scenarioName = '';
+    if (typeof payload.scenarioName === 'string') {
+      scenarioName = payload.scenarioName.trim();
+    } else if (typeof payload.name === 'string') {
+      scenarioName = payload.name.trim();
+    }
+    let scenarioNotes = '';
+    if (typeof payload.scenarioNotes === 'string') {
+      scenarioNotes = payload.scenarioNotes;
+    } else if (typeof payload.notes === 'string') {
+      scenarioNotes = payload.notes;
+    }
     const cleaned = {
-      name: typeof payload.name === 'string' ? payload.name.trim() : '',
-      notes: typeof payload.notes === 'string' ? payload.notes : '',
+      scenarioName,
+      scenarioNotes,
       rows: []
     };
 
@@ -961,6 +1078,13 @@
       });
     });
 
+    if (payload.viewState && typeof payload.viewState === 'object') {
+      cleaned.viewState = {};
+      if (typeof payload.viewState.sort === 'string') cleaned.viewState.sort = payload.viewState.sort;
+      if (typeof payload.viewState.search === 'string') cleaned.viewState.search = payload.viewState.search;
+    }
+    cleaned.deletedCatalogKeys = sanitizeDeletedCatalogKeys(payload.deletedCatalogKeys);
+
     return cleaned;
   }
 
@@ -974,7 +1098,7 @@
       return;
     }
     const data = getScenarioData();
-    let scenarioName = (data.name && data.name.trim()) ? data.name.trim() : '';
+    let scenarioName = (data.scenarioName && data.scenarioName.trim()) ? data.scenarioName.trim() : '';
     if (!scenarioName) {
       scenarioName = await shellPrompt('Enter a name for this scenario:', `Scenario ${new Date().toLocaleDateString()}`);
       if (!scenarioName || !scenarioName.trim()) {
@@ -983,6 +1107,7 @@
       }
       scenarioName = scenarioName.trim();
     }
+    data.scenarioName = scenarioName;
     const scenario = {
       id: String(Date.now()),
       name: scenarioName,
@@ -1113,8 +1238,8 @@
   function buildCsvExport(data) {
     const lines = [];
     lines.push('Field,Value');
-    lines.push(`${toCsvCell('Scenario Name')},${toCsvCell(data.name || '')}`);
-    lines.push(`${toCsvCell('Notes')},${toCsvCell(data.notes || '')}`);
+    lines.push(`${toCsvCell('Scenario Name')},${toCsvCell(data.scenarioName || '')}`);
+    lines.push(`${toCsvCell('Notes')},${toCsvCell(data.scenarioNotes || '')}`);
     lines.push(`${toCsvCell('Available kVA')},${toCsvCell(data.availableKva || '')}`);
     lines.push(`${toCsvCell('Fuel Tank (gal)')},${toCsvCell(data.fuelTankCapacityGallons != null ? data.fuelTankCapacityGallons : '')}`);
     lines.push(`${toCsvCell('Fuel Rate (gal/kW)')},${toCsvCell(data.fuelRateGalPerKw != null ? data.fuelRateGalPerKw : '')}`);
@@ -1194,11 +1319,10 @@
   async function clearSheet() {
     if (!(await shellConfirm('Reset worksheet? This will restore the original equipment list, clear all quantities, remove custom rows, and reset generator/fuel inputs. This cannot be undone.'))) return;
     // Restore full table from baseline (restores any deleted rows)
+    deletedCatalogKeys = [];
     buildCategories();
     // Re-attach per-category Reset Qty buttons (new DOM from buildCategories)
-    $$('[data-reset-target]').forEach(btn => {
-      btn.addEventListener('click', () => resetCategory(btn.getAttribute('data-reset-target')));
-    });
+    reattachCategoryResetButtons();
     // Reset generator/fuel inputs to empty (placeholder shows)
     const kvaEl = $('#load-pro-available-kva');
     const fuelEl = $('#load-pro-fuel-capacity');
@@ -1217,6 +1341,8 @@
     filterEquipmentSearch();
     updateSavedDisplay(null);
     recalc();
+    // Re-apply the user's current sort so control and table stay aligned (preference key untouched).
+    applySort();
     if (debouncedAutosaveTimeout) { clearTimeout(debouncedAutosaveTimeout); debouncedAutosaveTimeout = null; }
     loadProAutosaveDirty = false;
     scenarioLoadGuardDirty = false;
@@ -1338,8 +1464,7 @@
     if (sortSel) {
       sortSel.addEventListener('change', onSortChange);
       const storedSort = localStorage.getItem(SORT_STORAGE_KEY);
-      const validSorts = ['name-asc', 'name-desc', 'kw-desc', 'kw-asc', 'kva-peak-desc', 'kva-peak-asc'];
-      if (storedSort && validSorts.includes(storedSort)) {
+      if (storedSort && LOAD_PRO_SORT_KEYS.includes(storedSort)) {
         currentSortKey = storedSort;
         sortSel.value = storedSort;
       } else {
@@ -1350,7 +1475,12 @@
     }
 
     const searchEl = $('#load-pro-search-equipment');
-    if (searchEl) searchEl.addEventListener('input', filterEquipmentSearch);
+    if (searchEl) {
+      searchEl.addEventListener('input', () => {
+        filterEquipmentSearch();
+        notifyWorksheetChanged();
+      });
+    }
 
     startAutosaveTimer();
 
