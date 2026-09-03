@@ -7,6 +7,7 @@
   const STORAGE_KEY = 'pseWaterScenarios';
   const WATER_AUTOSAVE_KEY = 'pseWaterAutosave';
   const LAST_SAVED_KEY = 'pseWaterLastSaved';
+  const SCHEMA_VERSION = 1;
   const GRAY_RATIO = 0.77; // Estimated ~77% gray water, ~23% black water
   const DEFAULT_POTABLE_GAL_PER_BED = 22;
   const DEFAULT_WASTEWATER_GAL_PER_BED = 18;
@@ -180,6 +181,7 @@
     const mainsFlowRate = getNum(g('water-mains-flow-rate'), 0);
 
     return {
+      schemaVersion: SCHEMA_VERSION,
       days,
       beds,
       bufferPercent: buffer * 100,

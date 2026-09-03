@@ -558,6 +558,64 @@ test.describe('Functional tests', () => {
     await ctx.close();
   });
 
+  test('Import/Export: Water — v0 import works; v1 export carries schemaVersion', async ({ browser }) => {
+    const c = CALCS.water;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    if (!fs.existsSync(FIXTURES_DIR)) fs.mkdirSync(FIXTURES_DIR, { recursive: true });
+    const v0Path = path.join(FIXTURES_DIR, `water-v0-${Date.now()}.json`);
+    const v0Payload = {
+      name: 'Legacy v0 Water Export',
+      timestamp: '2020-01-01T00:00:00.000Z',
+      state: {
+        days: 14,
+        beds: 25,
+        bufferPercent: 10,
+        scenarioName: 'Legacy v0 Water Export',
+        scenarioNotes: 'no schemaVersion',
+        potablePerBedPerDay: 22,
+        wastewaterPerBedPerDay: 18,
+        potableContainerCount: 0,
+        potableContainerCapacity: 0,
+        wastewaterContainerCount: 0,
+        wastewaterContainerCapacity: 0,
+        potableSupplyMode: 'self',
+        wastewaterDisposalMode: 'containers',
+        mainsFlowRate: 0
+      },
+      exportedAt: '2020-01-01T00:00:00.000Z'
+    };
+    fs.writeFileSync(v0Path, JSON.stringify(v0Payload, null, 2));
+
+    await page.locator(c.importInput).setInputFiles(v0Path);
+    await page.waitForTimeout(2000);
+
+    expect(await getVal(page, c.inputs.primary)).toBe('14');
+    expect(await getVal(page, c.inputs.secondary)).toBe('25');
+    expect(await getVal(page, c.scenarioName)).toBe('Legacy v0 Water Export');
+
+    await page.click(c.exportBtn);
+    await page.waitForTimeout(300);
+    let exportPath;
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 5000 }),
+      page.click(c.exportConfirm),
+    ]);
+    const tmpPath = await download.path();
+    exportPath = path.join(FIXTURES_DIR, `water-v1-export-${Date.now()}.json`);
+    fs.copyFileSync(tmpPath, exportPath);
+
+    const exported = JSON.parse(fs.readFileSync(exportPath, 'utf8'));
+    expect(exported.state).toBeTruthy();
+    expect(exported.state.schemaVersion).toBe(1);
+    expect(exported.state.days).toBe(14);
+
+    try { fs.unlinkSync(v0Path); } catch (e) {}
+    try { fs.unlinkSync(exportPath); } catch (e) {}
+    await ctx.close();
+  });
+
   test('Autosave: Load Pro — deleted built-in row persists through restore', async ({ browser }) => {
     const c = CALCS.loadPro;
     const ctx = await browser.newContext();
