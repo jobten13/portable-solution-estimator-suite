@@ -19,6 +19,9 @@
   const STORAGE_LIST_TYPE = 'cons-pseListType';
   const STORAGE_VIEW_STATE = 'cons-pseViewState';
   const STORAGE_SCHEMA_VERSION = 'cons-pseSchemaVersion';
+  const STORAGE_HOSPITAL_ITEMS = 'cons-pseHospitalItems';
+  const STORAGE_HOSPITAL_LABEL = 'cons-pseHospitalLabel';
+  const STORAGE_UPLOAD_PROVENANCE = 'cons-pseUploadProvenance';
   const SORT_STORAGE_KEY = 'cons-pseSort';
   const SCHEMA_VERSION = 1;
   const LIST_CALC_SORT_KEYS = ['source-asc', 'name-asc', 'name-desc', 'qty-desc', 'qty-asc'];
@@ -28,6 +31,20 @@
     minQtyFilter: '',
     nonZeroOnly: false
   };
+  const DEFAULT_HOSPITAL_LABEL = 'Hospital Data';
+  const RESERVED_LIST_LABELS = ['Ward Consumables', 'ICU Consumables'];
+  const HOSPITAL_RATE_OUTLIER_CEILING = 50;
+  const HOSPITAL_CSV_TEMPLATE =
+    'Item name,Quantity consumed\n"Gloves nitrile L, bx/100",200\n';
+  const MSG_HOSPITAL_UPLOAD_DAYS_BEDS =
+    'Enter positive numbers for days and beds.';
+  const MSG_HOSPITAL_OUTLIER =
+    'We flagged a few items with extremely high daily use rates — please check those quantities for typos such as an extra zero.';
+  const MSG_REMOVE_HOSPITAL =
+    'Remove your uploaded list? Saved scenarios and exports keep their copies.';
+  const MSG_HOSPITAL_REPLACE_PASTE_WITH_FILE = 'Replace pasted data with file?';
+  const MSG_HOSPITAL_REPLACE_FILE_WITH_PASTE = 'Replace file with pasted data?';
+  const MSG_HOSPITAL_NEED_SOURCE = 'Paste your list or choose a CSV file first.';
 
   function g(id) {
     return document.getElementById(`cons-${id}`);
@@ -152,9 +169,17 @@
   let bufferPercentage = 0;
   let currentFileName = null;
   let currentSortKey = 'source-asc';
-  /** 'ward' | 'icu' | 'custom' | null. null = no list / cleared; 'custom' = list present but not a known Ward/ICU list; 'ward'/'icu' = known list. Drives rate column label (Per Ward Bed / Per ICU Bed / Per Bed). */
+  /** 'ward' | 'icu' | 'hospital' | 'custom' | null. null = no list / cleared; 'custom' = list present but not a known built-in/hospital list. */
   let currentListType = null;
   let customItemCounter = 1;
+  /** Cached hospital upload (survives Ward/ICU switch until Reset or re-upload). */
+  let hospitalItemsCache = [];
+  let hospitalListLabel = DEFAULT_HOSPITAL_LABEL;
+  let uploadProvenance = null;
+  let pendingHospitalCsvText = null;
+  let pendingHospitalFilename = null;
+  let hospitalSourceReplaceBusy = false;
+  let hospitalPasteFeedbackTimer = null;
 
   function listTypeFromFileName(fileName) {
     if (!fileName) return null;
@@ -174,8 +199,131 @@
   /** Use saved listType if valid; otherwise derive from listLabel/fileName. For scenario load/import. */
   function resolveListType(scenario) {
     const t = scenario && scenario.listType;
-    if (t === 'ward' || t === 'icu' || t === 'custom') return t;
+    if (t === 'ward' || t === 'icu' || t === 'hospital' || t === 'custom') return t;
     return listTypeFromFileName(resolveListLabel(scenario));
+  }
+
+  function sanitizeListLabel(raw, defaultLabel, reservedLabels) {
+    const fallback = defaultLabel || DEFAULT_HOSPITAL_LABEL;
+    let s = String(raw == null ? '' : raw);
+    s = s.replace(/[\u0000-\u001F\u007F]/g, '');
+    s = s.replace(/\s+/g, ' ').trim();
+    if (!s) s = fallback;
+    const reserved = reservedLabels || RESERVED_LIST_LABELS;
+    const lower = s.toLowerCase();
+    if (reserved.some(function (r) { return String(r).toLowerCase() === lower; })) {
+      s = s + ' (upload)';
+    }
+    if (s.length > 24) s = s.slice(0, 24).trim();
+    if (!s) s = String(fallback).slice(0, 24);
+    return s;
+  }
+
+  function parseCsvLine(line) {
+    const fields = [];
+    let cur = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') {
+            cur += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          cur += ch;
+        }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        fields.push(cur);
+        cur = '';
+      } else {
+        cur += ch;
+      }
+    }
+    fields.push(cur);
+    return fields;
+  }
+
+  function hospitalTextUsesTabDelimiter(text) {
+    const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r\n|\n|\r/);
+    for (let i = 0; i < lines.length; i++) {
+      if (String(lines[i] || '').trim() === '') continue;
+      if (String(lines[i]).indexOf('\t') !== -1) return true;
+    }
+    return false;
+  }
+
+  function splitHospitalFields(rawLine, useTab) {
+    if (useTab) return String(rawLine).split('\t');
+    return parseCsvLine(rawLine);
+  }
+
+  function isCsvHeaderRow(fields) {
+    if (!fields || fields.length < 2) return false;
+    const a = String(fields[0] || '').trim().toLowerCase();
+    const b = String(fields[1] || '').trim().toLowerCase();
+    return (a.indexOf('item') !== -1 || a.indexOf('name') !== -1) &&
+      (b.indexOf('qty') !== -1 || b.indexOf('quantity') !== -1 || b.indexOf('consumed') !== -1);
+  }
+
+  /**
+   * Parse two-column hospital list (comma CSV or tab-delimited). Mutates flags counters.
+   * flags: { unreadable, blankName, badQty, duplicates, outlierNames, validCount }
+   */
+  function parseHospitalCsv(text, sourceDays, sourceBeds, flags) {
+    const items = [];
+    const seenNames = Object.create(null);
+    const lines = String(text || '').replace(/^\uFEFF/, '').split(/\r\n|\n|\r/);
+    const useTab = hospitalTextUsesTabDelimiter(text);
+    let started = false;
+    let sourceOrder = 1;
+    for (let li = 0; li < lines.length; li++) {
+      const rawLine = lines[li];
+      if (!started && String(rawLine || '').trim() === '') continue;
+      const fields = splitHospitalFields(rawLine, useTab);
+      if (!started) {
+        started = true;
+        if (isCsvHeaderRow(fields)) continue;
+      }
+      if (fields.length !== 2) {
+        if (String(rawLine || '').trim() !== '') flags.unreadable += 1;
+        continue;
+      }
+      const name = String(fields[0] || '').trim();
+      if (!name) {
+        flags.blankName += 1;
+        continue;
+      }
+      const qtyRaw = String(fields[1] || '').trim().replace(/,/g, '');
+      const qty = Number(qtyRaw);
+      if (!Number.isFinite(qty) || qty < 0) {
+        flags.badQty += 1;
+        continue;
+      }
+      const nameKey = name.toLowerCase();
+      if (seenNames[nameKey]) {
+        flags.duplicates += 1;
+        continue;
+      }
+      seenNames[nameKey] = true;
+      const rate = qty / sourceBeds / sourceDays;
+      if (rate > HOSPITAL_RATE_OUTLIER_CEILING) {
+        flags.outlierNames.push(name);
+      }
+      items.push({
+        name: name,
+        usagePerDayPerBed: rate,
+        id: sourceOrder++,
+        isCustom: false
+      });
+    }
+    flags.validCount = items.length;
+    return items;
   }
 
   /** Canonical scenarioName preferred; legacy name accepted. */
@@ -252,6 +400,481 @@
     return listType === 'ward' ? 'Per day/Per Ward Bed' : listType === 'icu' ? 'Per day/Per ICU Bed' : 'Per day/Per bed';
   }
 
+  function setListButtonActive(listType) {
+    const wb = g('ward-list-btn');
+    const ib = g('icu-list-btn');
+    const hb = g('hospital-list-btn');
+    if (wb) wb.classList.toggle('active', listType === 'ward');
+    if (ib) ib.classList.toggle('active', listType === 'icu');
+    if (hb) hb.classList.toggle('active', listType === 'hospital');
+  }
+
+  function syncHospitalButton() {
+    const hasHospital = hospitalItemsCache && hospitalItemsCache.length > 0;
+    const hb = g('hospital-list-btn');
+    if (hb) {
+      hb.hidden = !hasHospital;
+      if (hasHospital) {
+        hb.textContent = hospitalListLabel || DEFAULT_HOSPITAL_LABEL;
+        hb.title = 'Load your uploaded hospital consumables list; replaces the current worksheet list.';
+      } else {
+        hb.classList.remove('active');
+      }
+    }
+    const removeBtn = g('hospital-remove-btn');
+    if (removeBtn) removeBtn.hidden = !hasHospital;
+  }
+
+  function clearHospitalCache() {
+    hospitalItemsCache = [];
+    hospitalListLabel = DEFAULT_HOSPITAL_LABEL;
+    uploadProvenance = null;
+    syncHospitalButton();
+  }
+
+  function clearHospitalAutosaveKeys() {
+    try {
+      localStorage.removeItem(STORAGE_HOSPITAL_ITEMS);
+      localStorage.removeItem(STORAGE_HOSPITAL_LABEL);
+      localStorage.removeItem(STORAGE_UPLOAD_PROVENANCE);
+    } catch (e) { /* ignore */ }
+  }
+
+  async function removeHospitalList() {
+    if (!hospitalItemsCache || hospitalItemsCache.length === 0) {
+      showFeedback('No uploaded list to remove.', 'info');
+      return;
+    }
+    if (!(await shellConfirm(MSG_REMOVE_HOSPITAL))) return;
+
+    const hospitalWasActive = currentListType === 'hospital';
+    clearHospitalCache();
+    clearHospitalAutosaveKeys();
+    dismissUploadFlags();
+
+    if (hospitalWasActive) {
+      allConsumables = [];
+      filteredConsumables = [];
+      currentFileName = null;
+      currentListType = null;
+      setListButtonActive(null);
+      clearViewFilters();
+      filterItems();
+      calculateAndDisplay();
+    }
+
+    saveData();
+    scenarioLoadGuardDirty = false;
+    closeHospitalUploadDialog();
+    showFeedback('Uploaded list removed.', 'success');
+  }
+
+  function restoreHospitalCacheFromStorage() {
+    try {
+      const rawItems = localStorage.getItem(STORAGE_HOSPITAL_ITEMS);
+      const rawLabel = localStorage.getItem(STORAGE_HOSPITAL_LABEL);
+      const rawProv = localStorage.getItem(STORAGE_UPLOAD_PROVENANCE);
+      if (!rawItems) {
+        hospitalItemsCache = [];
+        hospitalListLabel = DEFAULT_HOSPITAL_LABEL;
+        uploadProvenance = null;
+        return;
+      }
+      const parsed = JSON.parse(rawItems);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        hospitalItemsCache = [];
+        hospitalListLabel = DEFAULT_HOSPITAL_LABEL;
+        uploadProvenance = null;
+        return;
+      }
+      hospitalItemsCache = parsed;
+      hospitalListLabel = (rawLabel && String(rawLabel).trim())
+        ? sanitizeListLabel(rawLabel, DEFAULT_HOSPITAL_LABEL, RESERVED_LIST_LABELS)
+        : DEFAULT_HOSPITAL_LABEL;
+      if (rawProv) {
+        try {
+          uploadProvenance = JSON.parse(rawProv);
+        } catch (e) {
+          uploadProvenance = null;
+        }
+      } else {
+        uploadProvenance = null;
+      }
+    } catch (e) {
+      hospitalItemsCache = [];
+      hospitalListLabel = DEFAULT_HOSPITAL_LABEL;
+      uploadProvenance = null;
+    }
+  }
+
+  function rememberHospitalFromWorksheet() {
+    if (currentListType !== 'hospital') return;
+    hospitalItemsCache = JSON.parse(JSON.stringify(allConsumables));
+    hospitalListLabel = currentFileName || hospitalListLabel || DEFAULT_HOSPITAL_LABEL;
+    syncHospitalButton();
+  }
+
+  function dismissUploadFlags() {
+    const callout = g('upload-flags-callout');
+    if (callout) callout.hidden = true;
+    const body = g('upload-flags-body');
+    if (body) body.innerHTML = '';
+  }
+
+  function showUploadFlags(flags) {
+    const parts = [];
+    if (flags.unreadable > 0) {
+      parts.push('Skipped ' + flags.unreadable + ' unreadable row' + (flags.unreadable === 1 ? '' : 's') + '.');
+    }
+    if (flags.blankName > 0) {
+      parts.push('Skipped ' + flags.blankName + ' row' + (flags.blankName === 1 ? '' : 's') + ' with blank item names.');
+    }
+    if (flags.badQty > 0) {
+      parts.push('Skipped ' + flags.badQty + ' row' + (flags.badQty === 1 ? '' : 's') + ' with invalid quantities.');
+    }
+    if (flags.duplicates > 0) {
+      parts.push('Skipped ' + flags.duplicates + ' duplicate item name' + (flags.duplicates === 1 ? '' : 's') + ' (kept the first).');
+    }
+    if (flags.outlierNames && flags.outlierNames.length > 0) {
+      parts.push(MSG_HOSPITAL_OUTLIER);
+      parts.push('<ul>' + flags.outlierNames.map(function (n) {
+        return '<li>' + escapeHtml(n) + '</li>';
+      }).join('') + '</ul>');
+    }
+    if (flags.validCount > 0 && flags.validCount < 4) {
+      parts.push('Only ' + flags.validCount + ' item' + (flags.validCount === 1 ? '' : 's') +
+        ' uploaded. For a short list, Add Item on Ward or ICU Consumables may be simpler.');
+    }
+    const callout = g('upload-flags-callout');
+    const body = g('upload-flags-body');
+    if (!callout || !body) return;
+    if (parts.length === 0) {
+      callout.hidden = true;
+      body.innerHTML = '';
+      return;
+    }
+    body.innerHTML = parts.map(function (p) {
+      return p.charAt(0) === '<' ? p : ('<p>' + p + '</p>');
+    }).join('');
+    callout.hidden = false;
+  }
+
+  function clearHospitalPendingFile() {
+    pendingHospitalCsvText = null;
+    pendingHospitalFilename = null;
+    const fileEl = g('hospital-upload-filename');
+    if (fileEl) fileEl.textContent = '';
+  }
+
+  function clearHospitalPasteFeedback() {
+    if (hospitalPasteFeedbackTimer) {
+      clearTimeout(hospitalPasteFeedbackTimer);
+      hospitalPasteFeedbackTimer = null;
+    }
+    const wrap = g('hospital-upload-paste-feedback');
+    const countEl = g('hospital-upload-paste-count');
+    const table = g('hospital-upload-paste-preview');
+    const moreEl = g('hospital-upload-paste-more');
+    if (wrap) wrap.hidden = true;
+    if (countEl) countEl.textContent = '';
+    if (table) {
+      table.hidden = true;
+      const tbody = table.querySelector('tbody');
+      if (tbody) tbody.innerHTML = '';
+    }
+    if (moreEl) {
+      moreEl.hidden = true;
+      moreEl.textContent = '';
+    }
+  }
+
+  function updateHospitalPasteFeedback(text) {
+    const wrap = g('hospital-upload-paste-feedback');
+    const countEl = g('hospital-upload-paste-count');
+    const table = g('hospital-upload-paste-preview');
+    const moreEl = g('hospital-upload-paste-more');
+    if (!wrap || !countEl || !table || !moreEl) return;
+
+    const raw = String(text == null ? '' : text);
+    if (raw.trim() === '') {
+      clearHospitalPasteFeedback();
+      return;
+    }
+
+    // Neutral days/beds (1,1): rate === quantity for preview display; rates are not shown.
+    const flags = {
+      unreadable: 0,
+      blankName: 0,
+      badQty: 0,
+      duplicates: 0,
+      outlierNames: [],
+      validCount: 0
+    };
+    const items = parseHospitalCsv(raw, 1, 1, flags);
+    wrap.hidden = false;
+
+    if (items.length === 0) {
+      countEl.textContent = 'No valid rows detected — check the format example.';
+      table.hidden = true;
+      const tbodyEmpty = table.querySelector('tbody');
+      if (tbodyEmpty) tbodyEmpty.innerHTML = '';
+      moreEl.hidden = true;
+      moreEl.textContent = '';
+      return;
+    }
+
+    const n = items.length;
+    countEl.textContent = n + ' item' + (n === 1 ? '' : 's') + ' detected';
+
+    const tbody = table.querySelector('tbody');
+    if (tbody) {
+      const preview = items.slice(0, 5);
+      tbody.innerHTML = preview.map(function (item) {
+        const qty = item.usagePerDayPerBed;
+        const qtyText = Number.isFinite(qty)
+          ? (Number.isInteger(qty) ? String(qty) : String(qty))
+          : '';
+        return '<tr><td>' + escapeHtml(item.name) + '</td><td>' + escapeHtml(qtyText) + '</td></tr>';
+      }).join('');
+    }
+    table.hidden = false;
+
+    if (n > 5) {
+      moreEl.textContent = '…and ' + (n - 5) + ' more';
+      moreEl.hidden = false;
+    } else {
+      moreEl.hidden = true;
+      moreEl.textContent = '';
+    }
+  }
+
+  function scheduleHospitalPasteFeedback(text) {
+    if (hospitalPasteFeedbackTimer) clearTimeout(hospitalPasteFeedbackTimer);
+    hospitalPasteFeedbackTimer = setTimeout(function () {
+      hospitalPasteFeedbackTimer = null;
+      updateHospitalPasteFeedback(text);
+    }, 120);
+  }
+
+  function closeHospitalUploadDialog() {
+    const dialog = g('hospital-upload-dialog');
+    if (dialog) {
+      dialog.hidden = true;
+      dialog.setAttribute('aria-hidden', 'true');
+    }
+    const err = g('hospital-upload-error');
+    if (err) {
+      err.hidden = true;
+      err.textContent = '';
+    }
+    const pasteEl = g('hospital-upload-paste');
+    if (pasteEl) pasteEl.value = '';
+    clearHospitalPendingFile();
+    clearHospitalPasteFeedback();
+    hospitalSourceReplaceBusy = false;
+  }
+
+  function openHospitalUploadDialog() {
+    const dialog = g('hospital-upload-dialog');
+    if (!dialog) return;
+    const daysEl = g('hospital-upload-days');
+    const bedsEl = g('hospital-upload-beds');
+    const labelEl = g('hospital-upload-label');
+    const pasteEl = g('hospital-upload-paste');
+    const err = g('hospital-upload-error');
+    if (daysEl) daysEl.value = '';
+    if (bedsEl) bedsEl.value = '';
+    if (labelEl) labelEl.value = hospitalListLabel || DEFAULT_HOSPITAL_LABEL;
+    if (pasteEl) pasteEl.value = '';
+    clearHospitalPendingFile();
+    clearHospitalPasteFeedback();
+    if (err) {
+      err.hidden = true;
+      err.textContent = '';
+    }
+    syncHospitalButton();
+    dialog.hidden = false;
+    dialog.setAttribute('aria-hidden', 'false');
+    if (pasteEl) pasteEl.focus();
+  }
+
+  function downloadHospitalCsvTemplate() {
+    downloadTextFile(HOSPITAL_CSV_TEMPLATE, 'text/csv;charset=utf-8', 'consumables-hospital-template.csv');
+    showFeedback('CSV template downloaded.', 'success');
+  }
+
+  function onHospitalUploadClick() {
+    openHospitalUploadDialog();
+  }
+
+  function triggerHospitalFilePicker() {
+    const input = document.getElementById('cons-hospital-file-input');
+    if (!input) return;
+    input.value = '';
+    input.click();
+  }
+
+  async function onHospitalFileBtnClick() {
+    const pasteEl = g('hospital-upload-paste');
+    if (pasteEl && String(pasteEl.value || '').trim() !== '') {
+      if (!(await shellConfirm(MSG_HOSPITAL_REPLACE_PASTE_WITH_FILE))) return;
+      pasteEl.value = '';
+      clearHospitalPasteFeedback();
+    }
+    triggerHospitalFilePicker();
+  }
+
+  function onHospitalFileSelected(ev) {
+    const file = ev.target && ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function () {
+      const pasteEl = g('hospital-upload-paste');
+      if (pasteEl) pasteEl.value = '';
+      clearHospitalPasteFeedback();
+      pendingHospitalCsvText = String(reader.result || '');
+      pendingHospitalFilename = file.name || 'hospital-data.csv';
+      const fileEl = g('hospital-upload-filename');
+      if (fileEl) fileEl.textContent = 'File: ' + pendingHospitalFilename;
+      const err = g('hospital-upload-error');
+      if (err) {
+        err.hidden = true;
+        err.textContent = '';
+      }
+    };
+    reader.onerror = function () {
+      showFeedback('Could not read that CSV file.', 'error');
+      clearHospitalPendingFile();
+    };
+    reader.readAsText(file);
+    if (ev.target) ev.target.value = '';
+  }
+
+  async function onHospitalPasteInput(ev) {
+    const el = ev.target;
+    if (!el) return;
+    if (pendingHospitalCsvText != null) {
+      if (hospitalSourceReplaceBusy) return;
+      const attempted = el.value;
+      if (String(attempted || '').trim() === '') {
+        scheduleHospitalPasteFeedback(el.value);
+        return;
+      }
+      hospitalSourceReplaceBusy = true;
+      const ok = await shellConfirm(MSG_HOSPITAL_REPLACE_FILE_WITH_PASTE);
+      if (ok) {
+        clearHospitalPendingFile();
+      } else {
+        el.value = '';
+      }
+      hospitalSourceReplaceBusy = false;
+    }
+    scheduleHospitalPasteFeedback(el.value);
+  }
+
+  function confirmHospitalUpload() {
+    const daysEl = g('hospital-upload-days');
+    const bedsEl = g('hospital-upload-beds');
+    const labelEl = g('hospital-upload-label');
+    const pasteEl = g('hospital-upload-paste');
+    const err = g('hospital-upload-error');
+    const days = daysEl ? Number(daysEl.value) : NaN;
+    const beds = bedsEl ? Number(bedsEl.value) : NaN;
+    if (!Number.isFinite(days) || days <= 0 || !Number.isFinite(beds) || beds <= 0) {
+      if (err) {
+        err.textContent = MSG_HOSPITAL_UPLOAD_DAYS_BEDS;
+        err.hidden = false;
+      }
+      return;
+    }
+    if (err) {
+      err.hidden = true;
+      err.textContent = '';
+    }
+    const pasteText = pasteEl ? String(pasteEl.value || '') : '';
+    const hasPaste = pasteText.trim() !== '';
+    const hasFile = pendingHospitalCsvText != null;
+    if (!hasPaste && !hasFile) {
+      if (err) {
+        err.textContent = MSG_HOSPITAL_NEED_SOURCE;
+        err.hidden = false;
+      }
+      return;
+    }
+    const sourceText = hasPaste ? pasteText : pendingHospitalCsvText;
+    const provenanceFilename = hasPaste ? '' : (pendingHospitalFilename || '');
+    const flags = {
+      unreadable: 0,
+      blankName: 0,
+      badQty: 0,
+      duplicates: 0,
+      outlierNames: [],
+      validCount: 0
+    };
+    const items = parseHospitalCsv(sourceText, days, beds, flags);
+    if (items.length === 0) {
+      if (err) {
+        err.textContent = 'No valid rows found in the CSV.';
+        err.hidden = false;
+      }
+      return;
+    }
+    const label = sanitizeListLabel(
+      labelEl ? labelEl.value : DEFAULT_HOSPITAL_LABEL,
+      DEFAULT_HOSPITAL_LABEL,
+      RESERVED_LIST_LABELS
+    );
+    const provenance = {
+      uploadedAt: new Date().toISOString(),
+      sourceDays: days,
+      sourceBeds: beds,
+      originalFilename: provenanceFilename
+    };
+    closeHospitalUploadDialog();
+    applyHospitalList(items, label, provenance, flags);
+  }
+
+  function applyHospitalList(items, label, provenance, flags) {
+    hospitalItemsCache = JSON.parse(JSON.stringify(items));
+    hospitalListLabel = label || DEFAULT_HOSPITAL_LABEL;
+    uploadProvenance = provenance || null;
+    allConsumables = JSON.parse(JSON.stringify(hospitalItemsCache));
+    filteredConsumables = allConsumables.slice();
+    currentFileName = hospitalListLabel;
+    currentListType = 'hospital';
+    clearViewFilters();
+    setListButtonActive('hospital');
+    syncHospitalButton();
+    setSortToUcdSourceOrder();
+    filterItems();
+    calculateAndDisplay();
+    saveData();
+    scenarioLoadGuardDirty = false;
+    if (flags) showUploadFlags(flags);
+    showFeedback('Hospital list loaded (' + allConsumables.length + ' items).', 'success');
+  }
+
+  function loadHospitalList() {
+    if (!hospitalItemsCache || hospitalItemsCache.length === 0) {
+      showFeedback('No hospital list uploaded yet.', 'info');
+      return;
+    }
+    allConsumables = JSON.parse(JSON.stringify(hospitalItemsCache));
+    filteredConsumables = allConsumables.slice();
+    currentFileName = hospitalListLabel || DEFAULT_HOSPITAL_LABEL;
+    currentListType = 'hospital';
+    clearViewFilters();
+    setListButtonActive('hospital');
+    syncHospitalButton();
+    setSortToUcdSourceOrder();
+    filterItems();
+    calculateAndDisplay();
+    saveData();
+    scenarioLoadGuardDirty = false;
+    dismissUploadFlags();
+    showFeedback((currentFileName || 'Hospital list') + ' loaded', 'success');
+  }
+
   function setupPlaceholderBehavior(input) {
     if (!input) return;
     input.addEventListener('focus', function() {
@@ -272,6 +895,24 @@
     if (g('clear-items-btn')) g('clear-items-btn').addEventListener('click', clearAllItems);
     if (g('ward-list-btn')) g('ward-list-btn').addEventListener('click', loadWardList);
     if (g('icu-list-btn')) g('icu-list-btn').addEventListener('click', loadICUList);
+    if (g('hospital-list-btn')) g('hospital-list-btn').addEventListener('click', loadHospitalList);
+    if (g('hospital-upload-btn')) g('hospital-upload-btn').addEventListener('click', onHospitalUploadClick);
+    if (g('hospital-template-btn')) g('hospital-template-btn').addEventListener('click', downloadHospitalCsvTemplate);
+    if (g('hospital-remove-btn')) g('hospital-remove-btn').addEventListener('click', removeHospitalList);
+    if (g('hospital-upload-file-btn')) g('hospital-upload-file-btn').addEventListener('click', onHospitalFileBtnClick);
+    const hospitalPasteEl = g('hospital-upload-paste');
+    if (hospitalPasteEl) hospitalPasteEl.addEventListener('input', onHospitalPasteInput);
+    const hospitalFileInput = document.getElementById('cons-hospital-file-input');
+    if (hospitalFileInput) hospitalFileInput.addEventListener('change', onHospitalFileSelected);
+    if (g('hospital-upload-confirm')) g('hospital-upload-confirm').addEventListener('click', confirmHospitalUpload);
+    if (g('hospital-upload-cancel')) g('hospital-upload-cancel').addEventListener('click', closeHospitalUploadDialog);
+    if (g('upload-flags-dismiss')) g('upload-flags-dismiss').addEventListener('click', dismissUploadFlags);
+    const hospitalUploadDialog = g('hospital-upload-dialog');
+    if (hospitalUploadDialog) {
+      hospitalUploadDialog.addEventListener('click', function (e) {
+        if (e.target === hospitalUploadDialog) closeHospitalUploadDialog();
+      });
+    }
 
     if (g('days')) {
       const daysEl = g('days');
@@ -418,6 +1059,26 @@
         if (!pop) return;
         btn.addEventListener('mouseenter', () => {
           cancelHoverHide();
+          // Hover exclusivity: hide other unpinned popovers. Do not unpin/close a
+          // different pinned popover (click path unpins via closeAllHelpPopovers(true);
+          // hover must not silently steal a pin). If another is pinned, skip opening.
+          let otherPinned = false;
+          helpROOT.querySelectorAll('.help-popover').forEach(function (p) {
+            if (p === pop) return;
+            if (p.classList.contains('pinned')) {
+              otherPinned = true;
+              return;
+            }
+            p.hidden = true;
+          });
+          helpROOT.querySelectorAll('.help-icon').forEach(function (b) {
+            if (b === btn) return;
+            const otherPop = getPopoverForBtn(b);
+            if (otherPop && otherPop.classList.contains('pinned')) return;
+            b.setAttribute('aria-expanded', 'false');
+            b.removeAttribute('aria-describedby');
+          });
+          if (otherPinned) return;
           pop.hidden = false;
           btn.setAttribute('aria-expanded', 'true');
           if (pop.id) btn.setAttribute('aria-describedby', pop.id);
@@ -882,6 +1543,18 @@
             currentFileName = null;
             currentListType = allConsumables.length > 0 ? 'custom' : null;
           }
+          if (currentListType === 'hospital') {
+            hospitalItemsCache = JSON.parse(JSON.stringify(allConsumables));
+            hospitalListLabel = currentFileName || DEFAULT_HOSPITAL_LABEL;
+            uploadProvenance = (data.uploadProvenance && typeof data.uploadProvenance === 'object')
+              ? data.uploadProvenance
+              : null;
+            syncHospitalButton();
+            setListButtonActive('hospital');
+          } else {
+            setListButtonActive(currentListType === 'ward' || currentListType === 'icu' ? currentListType : null);
+            syncHospitalButton();
+          }
           applyViewState(data);
           calculateAndDisplay();
           saveData();
@@ -915,6 +1588,7 @@
   function buildExportScenario() {
     const nameEl = g('scenario-name');
     const notesEl = g('scenario-notes');
+    if (currentListType === 'hospital') rememberHospitalFromWorksheet();
     return {
       schemaVersion: SCHEMA_VERSION,
       scenarioName: (nameEl && nameEl.value.trim()) || '',
@@ -926,6 +1600,7 @@
       listLabel: currentFileName,
       fileName: currentFileName,
       listType: currentListType,
+      uploadProvenance: currentListType === 'hospital' ? uploadProvenance : null,
       viewState: captureViewState(),
       exportedAt: new Date().toISOString()
     };
@@ -1091,6 +1766,8 @@
     if (nameEl) nameEl.value = baseName;
     const notes = notesEl ? notesEl.value.trim() : '';
 
+    if (currentListType === 'hospital') rememberHospitalFromWorksheet();
+
     const scenario = {
       id: Date.now().toString(),
       name,
@@ -1106,6 +1783,7 @@
       listLabel: currentFileName,
       fileName: currentFileName,
       listType: currentListType,
+      uploadProvenance: currentListType === 'hospital' ? uploadProvenance : null,
       viewState: captureViewState(),
       timestamp: now.toISOString()
     };
@@ -1239,6 +1917,19 @@
       currentListType = allConsumables.length > 0 ? 'custom' : null;
     }
 
+    if (currentListType === 'hospital') {
+      hospitalItemsCache = JSON.parse(JSON.stringify(allConsumables));
+      hospitalListLabel = currentFileName || DEFAULT_HOSPITAL_LABEL;
+      uploadProvenance = (scenario.uploadProvenance && typeof scenario.uploadProvenance === 'object')
+        ? scenario.uploadProvenance
+        : null;
+      syncHospitalButton();
+      setListButtonActive('hospital');
+    } else {
+      setListButtonActive(currentListType === 'ward' || currentListType === 'icu' ? currentListType : null);
+      syncHospitalButton();
+    }
+
     const nameEl = g('scenario-name');
     const notesEl = g('scenario-notes');
     if (nameEl) {
@@ -1364,6 +2055,7 @@
 
   function saveData() {
     try {
+      if (currentListType === 'hospital') rememberHospitalFromWorksheet();
       localStorage.setItem(STORAGE_BUFFER, bufferPercentage);
       localStorage.setItem(STORAGE_DAYS, String(deploymentDays));
       localStorage.setItem(STORAGE_BEDS, String(deploymentBeds));
@@ -1392,6 +2084,19 @@
         localStorage.setItem(STORAGE_LIST_TYPE, currentListType);
       } else {
         localStorage.removeItem(STORAGE_LIST_TYPE);
+      }
+      if (hospitalItemsCache && hospitalItemsCache.length > 0) {
+        localStorage.setItem(STORAGE_HOSPITAL_ITEMS, JSON.stringify(hospitalItemsCache));
+        localStorage.setItem(STORAGE_HOSPITAL_LABEL, hospitalListLabel || DEFAULT_HOSPITAL_LABEL);
+        if (uploadProvenance) {
+          localStorage.setItem(STORAGE_UPLOAD_PROVENANCE, JSON.stringify(uploadProvenance));
+        } else {
+          localStorage.removeItem(STORAGE_UPLOAD_PROVENANCE);
+        }
+      } else {
+        localStorage.removeItem(STORAGE_HOSPITAL_ITEMS);
+        localStorage.removeItem(STORAGE_HOSPITAL_LABEL);
+        localStorage.removeItem(STORAGE_UPLOAD_PROVENANCE);
       }
       const now = new Date().toISOString();
       localStorage.setItem(LAST_SAVED_KEY, now);
@@ -1469,7 +2174,7 @@
     } else {
       currentFileName = null;
     }
-    if (savedListType === 'ward' || savedListType === 'icu' || savedListType === 'custom') {
+    if (savedListType === 'ward' || savedListType === 'icu' || savedListType === 'hospital' || savedListType === 'custom') {
       currentListType = savedListType;
     } else if (savedFileName) {
       currentListType = listTypeFromFileName(savedFileName);
@@ -1477,10 +2182,17 @@
       currentListType = allConsumables.length > 0 ? 'custom' : null;
     }
 
-    const wb = g('ward-list-btn');
-    const ib = g('icu-list-btn');
-    if (wb) wb.classList.remove('active');
-    if (ib) ib.classList.remove('active');
+    restoreHospitalCacheFromStorage();
+    if (currentListType === 'hospital' && allConsumables.length > 0) {
+      hospitalItemsCache = JSON.parse(JSON.stringify(allConsumables));
+      hospitalListLabel = currentFileName || hospitalListLabel || DEFAULT_HOSPITAL_LABEL;
+    }
+    syncHospitalButton();
+    setListButtonActive(
+      currentListType === 'ward' || currentListType === 'icu' || currentListType === 'hospital'
+        ? currentListType
+        : null
+    );
 
     let viewStateApplied = false;
     if (savedViewStateRaw) {
@@ -1571,10 +2283,9 @@
     if (notesEl) notesEl.value = '';
     updateSavedDisplay(null);
 
-    const wb = g('ward-list-btn');
-    const ib = g('icu-list-btn');
-    if (wb) wb.classList.remove('active');
-    if (ib) ib.classList.remove('active');
+    setListButtonActive(null);
+    syncHospitalButton();
+    dismissUploadFlags();
     clearViewFilters();
 
     filterItems();
@@ -1596,15 +2307,13 @@
     currentListType = 'ward';
 
     clearViewFilters();
-    const wb = g('ward-list-btn');
-    const ib = g('icu-list-btn');
-    if (wb) wb.classList.add('active');
-    if (ib) ib.classList.remove('active');
+    setListButtonActive('ward');
 
     setSortToUcdSourceOrder();
     filterItems();
     saveData();
     scenarioLoadGuardDirty = false;
+    dismissUploadFlags();
     showFeedback('Ward Consumables loaded', 'success');
   }
 
@@ -1619,15 +2328,13 @@
     currentListType = 'icu';
 
     clearViewFilters();
-    const wb = g('ward-list-btn');
-    const ib = g('icu-list-btn');
-    if (wb) wb.classList.remove('active');
-    if (ib) ib.classList.add('active');
+    setListButtonActive('icu');
 
     setSortToUcdSourceOrder();
     filterItems();
     saveData();
     scenarioLoadGuardDirty = false;
+    dismissUploadFlags();
     showFeedback('ICU Consumables loaded', 'success');
   }
 
@@ -1648,6 +2355,9 @@
       if (sortSel) sortSel.value = 'source-asc';
     }
     setupEventListeners();
+    restoreHospitalCacheFromStorage();
+    syncHospitalButton();
+    setListButtonActive(null);
     consAutosaveDirty = false;
     scenarioLoadGuardDirty = false;
     startAutosaveTimer();

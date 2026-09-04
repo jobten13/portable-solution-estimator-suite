@@ -753,7 +753,7 @@
             <p class="banner-subtitle">Portable Solution Estimator</p>
           </header>
           <div class="toolbar-wrap">
-            <div class="toolbar">
+            <div class="toolbar cons-toolbar-actions">
               <button type="button" id="cons-clear-autosave-btn" class="btn btn-secondary" title="Restore the worksheet autosave from this browser (recovery slot). Named scenarios in the list are unchanged.">Restore Autosave</button>
               <span id="cons-last-saved" class="toolbar-last-saved" aria-live="polite"></span>
               <button type="button" class="btn btn-print" id="cons-print-btn">Print</button>
@@ -762,13 +762,75 @@
               <button type="button" class="btn btn-clear-items" id="cons-clear-items-btn">Reset Worksheet</button>
               <button type="button" class="help-icon" aria-label="Help for the toolbar" data-help="toolbar">?</button>
             </div>
+            <div class="toolbar cons-toolbar-hospital">
+              <button type="button" class="btn btn-secondary" id="cons-hospital-upload-btn" title="Paste or upload a two-column list of hospital consumables use.">Upload Data</button>
+              <button type="button" class="btn btn-ucd" id="cons-hospital-list-btn" hidden title="Load your uploaded hospital consumables list; replaces the current worksheet list.">Hospital Data</button>
+              <button type="button" class="help-icon" aria-label="Help for Upload Data" data-help="hospital-upload">?</button>
+              <input type="file" id="cons-hospital-file-input" accept=".csv,text/csv" hidden>
+            </div>
+            <div class="help-popover" id="cons-help-popover-hospital-upload" role="tooltip" hidden>
+              <ul>
+                <li><strong>Paste</strong> your item list into the Upload Data dialog — one item and quantity per line. You can also upload a CSV file instead.</li>
+                <li>Enter how many days and beds the data covers — the tool converts to daily rates per bed.</li>
+                <li>Your list becomes its own reloadable button next to Upload Data.</li>
+                <li><strong>CSV template</strong> and <strong>Remove uploaded list</strong> are inside the dialog.</li>
+                <li>Re-paste or re-upload anytime to update — saved scenarios and exports keep the data they were saved with.</li>
+                <li>Flags are advice, not blockers.</li>
+              </ul>
+            </div>
             <div class="help-popover" id="cons-help-popover-toolbar" role="tooltip" hidden>
               <ul>
                 <li><strong>Restore Autosave</strong> — recovers your last unsaved session</li>
-                <li><strong>Ward/ICU buttons</strong> — load a clinical baseline list</li>
+                <li><strong>Ward/ICU buttons</strong> — load a clinical baseline list (top row)</li>
+                <li><strong>Upload Data</strong> — paste or upload your own supply list; it appears as its own reloadable button</li>
                 <li><strong>Print</strong> — outputs the current view</li>
                 <li><strong>Reset Worksheet</strong> — clears everything and starts fresh; save your scenario first if you want to keep your work</li>
               </ul>
+            </div>
+            <div id="cons-hospital-upload-dialog" class="export-format-dialog cons-hospital-upload-dialog" hidden aria-hidden="true">
+              <div class="export-format-panel">
+                <p class="export-format-title">Hospital data details</p>
+                <div class="cons-hospital-upload-paste-block">
+                  <label for="cons-hospital-upload-paste">Paste item list</label>
+                  <p id="cons-hospital-upload-hint" class="cons-hospital-upload-hint">Paste your item list, one item and quantity per line.</p>
+                  <textarea id="cons-hospital-upload-paste" rows="6" spellcheck="false" aria-describedby="cons-hospital-upload-hint"></textarea>
+                  <div id="cons-hospital-upload-paste-feedback" class="cons-hospital-upload-paste-feedback" hidden>
+                    <p id="cons-hospital-upload-paste-count" class="cons-hospital-upload-paste-count" role="status" aria-live="polite"></p>
+                    <table id="cons-hospital-upload-paste-preview" class="cons-hospital-upload-paste-preview" hidden>
+                      <tbody></tbody>
+                    </table>
+                    <p id="cons-hospital-upload-paste-more" class="cons-hospital-upload-paste-more" hidden></p>
+                  </div>
+                  <div class="cons-hospital-upload-example">
+                    <p class="cons-hospital-upload-example-label">Format example</p>
+                    <pre class="cons-hospital-upload-example-pre">Item name,Quantity consumed
+"Gloves nitrile L, bx/100",200</pre>
+                    <button type="button" class="btn btn-secondary cons-hospital-template-btn" id="cons-hospital-template-btn" title="Download a two-column CSV template.">CSV template</button>
+                  </div>
+                </div>
+                <div class="cons-hospital-upload-file-row">
+                  <button type="button" class="btn btn-link cons-hospital-upload-file-btn" id="cons-hospital-upload-file-btn">or upload a CSV file</button>
+                  <p class="cons-hospital-upload-filename" id="cons-hospital-upload-filename" aria-live="polite"></p>
+                </div>
+                <div class="cons-hospital-upload-fields">
+                  <label for="cons-hospital-upload-days">Days covered <span class="required-mark">*</span></label>
+                  <input type="number" id="cons-hospital-upload-days" min="1" step="1" inputmode="numeric" required>
+                  <label for="cons-hospital-upload-beds">Beds covered <span class="required-mark">*</span></label>
+                  <input type="number" id="cons-hospital-upload-beds" min="1" step="1" inputmode="numeric" required>
+                  <label for="cons-hospital-upload-label">List name (button label)</label>
+                  <input type="text" id="cons-hospital-upload-label" maxlength="24" placeholder="Hospital Data">
+                </div>
+                <button type="button" class="btn btn-secondary cons-hospital-remove-btn" id="cons-hospital-remove-btn" hidden title="Remove the uploaded hospital list from this browser. Saved scenarios and exports keep their copies.">Remove uploaded list</button>
+                <p class="cons-hospital-upload-error" id="cons-hospital-upload-error" hidden role="alert"></p>
+                <div class="export-format-actions">
+                  <button type="button" id="cons-hospital-upload-cancel" class="btn btn-secondary">Cancel</button>
+                  <button type="button" id="cons-hospital-upload-confirm" class="btn btn-save">Upload</button>
+                </div>
+              </div>
+            </div>
+            <div id="cons-upload-flags-callout" class="cons-upload-flags-callout" hidden role="status">
+              <button type="button" class="cons-upload-flags-dismiss" id="cons-upload-flags-dismiss" aria-label="Dismiss upload notices">×</button>
+              <div id="cons-upload-flags-body" class="cons-upload-flags-body"></div>
             </div>
           </div>
           <div class="main-content">

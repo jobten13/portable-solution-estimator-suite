@@ -44,6 +44,7 @@ tests/node_modules/
 tests/reports/
 tests/test-results/
 tests/functional-fixtures/
+tests/fixtures/
 tests/package-lock.json
 test-results/
 

@@ -279,6 +279,9 @@ function getAutosaveLocalStorageKeysForCalc(calc) {
       'cons-pseNonzeroOnly',
       'cons-pseViewState',
       'cons-pseSchemaVersion',
+      'cons-pseHospitalItems',
+      'cons-pseHospitalLabel',
+      'cons-pseUploadProvenance',
       'cons-pseLastSaved',
       'cons-pseSort'
     ];

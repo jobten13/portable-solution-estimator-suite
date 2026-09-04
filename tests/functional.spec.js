@@ -717,6 +717,331 @@ test.describe('Functional tests', () => {
     await ctx.close();
   });
 
+  async function openHospitalDialog(page) {
+    await page.click('#cons-hospital-upload-btn');
+    await page.waitForSelector('#cons-hospital-upload-dialog:not([hidden])', { timeout: 5000 });
+  }
+
+  async function loadHospitalViaFile(page, fixturePath, opts) {
+    opts = opts || {};
+    await openHospitalDialog(page);
+    const [chooser] = await Promise.all([
+      page.waitForEvent('filechooser', { timeout: 5000 }),
+      page.click('#cons-hospital-upload-file-btn'),
+    ]);
+    await chooser.setFiles(fixturePath);
+    await page.waitForFunction(() => {
+      const el = document.getElementById('cons-hospital-upload-filename');
+      return !!(el && el.textContent && el.textContent.indexOf('File:') !== -1);
+    }, null, { timeout: 5000 });
+    if (opts.days != null) await page.fill('#cons-hospital-upload-days', String(opts.days));
+    if (opts.beds != null) await page.fill('#cons-hospital-upload-beds', String(opts.beds));
+    if (opts.label != null) await page.fill('#cons-hospital-upload-label', opts.label);
+    await page.click('#cons-hospital-upload-confirm');
+  }
+
+  test('Upload: Consumables — CSV template download', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await openHospitalDialog(page);
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 5000 }),
+      page.click('#cons-hospital-template-btn'),
+    ]);
+    const tmpPath = await download.path();
+    const text = fs.readFileSync(tmpPath, 'utf8');
+    expect(text).toContain('Item name,Quantity consumed');
+    expect(text).toContain('Gloves nitrile L, bx/100');
+
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — hospital CSV rates, button, re-upload replace', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+    const fixturePath = path.join(__dirname, 'fixtures', 'consumables-hospital-sample.csv');
+
+    await loadHospitalViaFile(page, fixturePath, { days: 10, beds: 10, label: 'Clinic A' });
+    await page.waitForTimeout(1500);
+
+    const hospBtn = page.locator('#cons-hospital-list-btn');
+    await expect(hospBtn).toBeVisible();
+    expect(await hospBtn.textContent()).toBe('Clinic A');
+    expect(await hospBtn.evaluate(el => el.classList.contains('active'))).toBe(true);
+
+    const gloveRate = await page.locator('#cons-consumables-container tbody tr', { hasText: 'Gloves nitrile L, bx/100' })
+      .locator('td').nth(1).textContent();
+    expect(gloveRate.trim()).toBe('2.000');
+
+    const listType = await getStorageItem(page, 'cons-pseListType');
+    expect(listType).toBe('hospital');
+    const provenanceRaw = await getStorageItem(page, 'cons-pseUploadProvenance');
+    expect(provenanceRaw).toBeTruthy();
+    const provenance = JSON.parse(provenanceRaw);
+    expect(provenance.sourceDays).toBe(10);
+    expect(provenance.sourceBeds).toBe(10);
+
+    if (!fs.existsSync(FIXTURES_DIR)) fs.mkdirSync(FIXTURES_DIR, { recursive: true });
+    const replacePath = path.join(FIXTURES_DIR, `cons-hospital-replace-${Date.now()}.csv`);
+    fs.writeFileSync(replacePath, 'Item name,Quantity consumed\nReplacement Only Item,30\n');
+
+    await loadHospitalViaFile(page, replacePath, { days: 5, beds: 2 });
+    await page.waitForTimeout(1500);
+
+    expect(await hospBtn.textContent()).toBe('Clinic A');
+    const rowCount = await page.locator('#cons-consumables-container tbody tr').count();
+    expect(rowCount).toBe(1);
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Replacement Only Item' })).toHaveCount(1);
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Gloves nitrile L' })).toHaveCount(0);
+    const replaceRate = await page.locator('#cons-consumables-container tbody tr td').nth(1).textContent();
+    expect(replaceRate.trim()).toBe('3.000');
+
+    try { fs.unlinkSync(replacePath); } catch (e) {}
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — scenario restores hospital button and label', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+    const fixturePath = path.join(__dirname, 'fixtures', 'consumables-hospital-sample.csv');
+
+    await loadHospitalViaFile(page, fixturePath, { days: 10, beds: 10, label: 'ER Surge' });
+    await page.waitForTimeout(1000);
+
+    await fillAndTab(page, c.inputs.primary, '14');
+    await fillAndTab(page, c.inputs.secondary, '20');
+    await page.locator(c.scenarioName).fill('Hospital Scenario RT');
+    await page.locator(c.saveBtn).click();
+    await page.waitForTimeout(1000);
+
+    await page.locator(c.listLoadBtn).click();
+    await page.waitForTimeout(800);
+    expect(await page.locator('#cons-ward-list-btn').evaluate(el => el.classList.contains('active'))).toBe(true);
+
+    const firstVal = await page.$eval(c.scenarioSelect, el => el.options[1]?.value || '');
+    expect(firstVal).not.toBe('');
+    await page.selectOption(c.scenarioSelect, firstVal);
+    await page.locator(c.loadBtn).click();
+    const modalShown = await page.waitForSelector('#shell-modal-overlay:not([hidden])', { timeout: 3000 }).catch(() => null);
+    if (modalShown) await acceptModal(page);
+    await page.waitForTimeout(1500);
+
+    const hospBtn = page.locator('#cons-hospital-list-btn');
+    await expect(hospBtn).toBeVisible();
+    expect(await hospBtn.textContent()).toBe('ER Surge');
+    expect(await hospBtn.evaluate(el => el.classList.contains('active'))).toBe(true);
+    expect(await getStorageItem(page, 'cons-pseListType')).toBe('hospital');
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Gloves nitrile L, bx/100' })).toHaveCount(1);
+
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — flags for duplicates and ceiling-50 outlier', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    if (!fs.existsSync(FIXTURES_DIR)) fs.mkdirSync(FIXTURES_DIR, { recursive: true });
+    const flagsPath = path.join(FIXTURES_DIR, `cons-hospital-flags-${Date.now()}.csv`);
+    fs.writeFileSync(flagsPath, [
+      'Item name,Quantity consumed',
+      'Normal Item,10',
+      'normal item,20',
+      'Extreme Item,10000',
+      ',5',
+      'Bad Qty,abc',
+      'Only Three'
+    ].join('\n'));
+
+    await loadHospitalViaFile(page, flagsPath, { days: 10, beds: 10 });
+    await page.waitForTimeout(1500);
+
+    const callout = page.locator('#cons-upload-flags-callout');
+    await expect(callout).toBeVisible();
+    const bodyText = await page.locator('#cons-upload-flags-body').innerText();
+    expect(bodyText).toContain('duplicate');
+    expect(bodyText).toContain('extremely high daily use rates');
+    expect(bodyText).toContain('Extreme Item');
+    expect(bodyText).toContain('Only 2 items');
+
+    const rowCount = await page.locator('#cons-consumables-container tbody tr').count();
+    expect(rowCount).toBe(2);
+
+    try { fs.unlinkSync(flagsPath); } catch (e) {}
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — reset keeps hospital button; list reloadable', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+    const fixturePath = path.join(__dirname, 'fixtures', 'consumables-hospital-sample.csv');
+
+    await loadHospitalViaFile(page, fixturePath, { days: 10, beds: 10, label: 'Keep After Reset' });
+    await page.waitForTimeout(1000);
+
+    await page.locator(c.resetSheetBtn).click();
+    await acceptModal(page);
+    await page.waitForTimeout(800);
+
+    const hospBtn = page.locator('#cons-hospital-list-btn');
+    await expect(hospBtn).toBeVisible();
+    expect(await hospBtn.textContent()).toBe('Keep After Reset');
+    expect(await getStorageItem(page, 'cons-pseHospitalItems')).toBeTruthy();
+
+    await hospBtn.click();
+    await page.waitForTimeout(800);
+    expect(await hospBtn.evaluate(el => el.classList.contains('active'))).toBe(true);
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Gloves nitrile L, bx/100' })).toHaveCount(1);
+
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — remove clears list; scenario restore still works', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+    const fixturePath = path.join(__dirname, 'fixtures', 'consumables-hospital-sample.csv');
+
+    await loadHospitalViaFile(page, fixturePath, { days: 10, beds: 10, label: 'Remove Me' });
+    await page.waitForTimeout(1000);
+
+    await fillAndTab(page, c.inputs.primary, '9');
+    await fillAndTab(page, c.inputs.secondary, '3');
+    await page.locator(c.scenarioName).fill('Hospital Before Remove');
+    await page.locator(c.saveBtn).click();
+    await page.waitForTimeout(1000);
+
+    await openHospitalDialog(page);
+    await expect(page.locator('#cons-hospital-remove-btn')).toBeVisible();
+    await page.click('#cons-hospital-remove-btn');
+    await waitForModal(page);
+    const modalText = await page.locator('#shell-modal-message').textContent();
+    expect(modalText).toContain('Remove your uploaded list?');
+    expect(modalText).toContain('Saved scenarios and exports keep their copies.');
+    await acceptModal(page);
+    await page.waitForTimeout(800);
+
+    await expect(page.locator('#cons-hospital-upload-dialog')).toBeHidden();
+    await expect(page.locator('#cons-hospital-list-btn')).toBeHidden();
+    await expect(page.locator('#cons-hospital-remove-btn')).toBeHidden();
+    expect(await getStorageItem(page, 'cons-pseHospitalItems')).toBeNull();
+    expect(await getStorageItem(page, 'cons-pseUploadProvenance')).toBeNull();
+    const rowCount = await page.locator('#cons-consumables-container tbody tr').count();
+    expect(rowCount).toBe(0);
+
+    const firstVal = await page.$eval(c.scenarioSelect, el => el.options[1]?.value || '');
+    expect(firstVal).not.toBe('');
+    await page.selectOption(c.scenarioSelect, firstVal);
+    await page.locator(c.loadBtn).click();
+    const modalShown = await page.waitForSelector('#shell-modal-overlay:not([hidden])', { timeout: 3000 }).catch(() => null);
+    if (modalShown) await acceptModal(page);
+    await page.waitForTimeout(1500);
+
+    const hospBtn = page.locator('#cons-hospital-list-btn');
+    await expect(hospBtn).toBeVisible();
+    expect(await hospBtn.textContent()).toBe('Remove Me');
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Gloves nitrile L, bx/100' })).toHaveCount(1);
+
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — paste path (comma CSV)', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await openHospitalDialog(page);
+    await page.fill('#cons-hospital-upload-paste',
+      'Item name,Quantity consumed\n"Gloves nitrile L, bx/100",200\nPaste Path Only,50\n');
+    await page.waitForSelector('#cons-hospital-upload-paste-feedback:not([hidden])', { timeout: 3000 });
+    await expect(page.locator('#cons-hospital-upload-paste-count')).toHaveText('2 items detected');
+    await expect(page.locator('#cons-hospital-upload-paste-preview tbody tr').first()).toContainText('Gloves nitrile L, bx/100');
+    await page.fill('#cons-hospital-upload-days', '10');
+    await page.fill('#cons-hospital-upload-beds', '10');
+    await page.fill('#cons-hospital-upload-label', 'Paste Clinic');
+    await page.click('#cons-hospital-upload-confirm');
+    await page.waitForTimeout(1500);
+
+    const hospBtn = page.locator('#cons-hospital-list-btn');
+    await expect(hospBtn).toBeVisible();
+    expect(await hospBtn.textContent()).toBe('Paste Clinic');
+    const gloveRate = await page.locator('#cons-consumables-container tbody tr', { hasText: 'Gloves nitrile L, bx/100' })
+      .locator('td').nth(1).textContent();
+    expect(gloveRate.trim()).toBe('2.000');
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Paste Path Only' })).toHaveCount(1);
+    const provenanceRaw = await getStorageItem(page, 'cons-pseUploadProvenance');
+    const provenance = JSON.parse(provenanceRaw);
+    expect(provenance.originalFilename).toBe('');
+
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — tab-delimited paste', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await openHospitalDialog(page);
+    await page.fill('#cons-hospital-upload-paste',
+      'Item name\tQuantity consumed\nTabbed Gloves\t100\n');
+    await page.fill('#cons-hospital-upload-days', '10');
+    await page.fill('#cons-hospital-upload-beds', '10');
+    await page.fill('#cons-hospital-upload-label', 'Tab Paste');
+    await page.click('#cons-hospital-upload-confirm');
+    await page.waitForTimeout(1500);
+
+    const hospBtn = page.locator('#cons-hospital-list-btn');
+    await expect(hospBtn).toBeVisible();
+    expect(await hospBtn.textContent()).toBe('Tab Paste');
+    const rate = await page.locator('#cons-consumables-container tbody tr', { hasText: 'Tabbed Gloves' })
+      .locator('td').nth(1).textContent();
+    expect(rate.trim()).toBe('1.000');
+
+    await ctx.close();
+  });
+
+  test('Upload: Consumables — mutual exclusivity paste then file wins', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+    const fixturePath = path.join(__dirname, 'fixtures', 'consumables-hospital-sample.csv');
+
+    await openHospitalDialog(page);
+    await page.fill('#cons-hospital-upload-paste', 'Paste Only Item,10\n');
+    await page.click('#cons-hospital-upload-file-btn');
+    await waitForModal(page);
+    const modalText = await page.locator('#shell-modal-message').textContent();
+    expect(modalText).toContain('Replace pasted data with file?');
+    const [chooser] = await Promise.all([
+      page.waitForEvent('filechooser', { timeout: 5000 }),
+      acceptModal(page),
+    ]);
+    await chooser.setFiles(fixturePath);
+    await page.waitForFunction(() => {
+      const el = document.getElementById('cons-hospital-upload-filename');
+      return !!(el && el.textContent && el.textContent.indexOf('File:') !== -1);
+    }, null, { timeout: 5000 });
+    expect(await page.locator('#cons-hospital-upload-paste').inputValue()).toBe('');
+    await page.fill('#cons-hospital-upload-days', '10');
+    await page.fill('#cons-hospital-upload-beds', '10');
+    await page.fill('#cons-hospital-upload-label', 'File Wins');
+    await page.click('#cons-hospital-upload-confirm');
+    await page.waitForTimeout(1500);
+
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Paste Only Item' })).toHaveCount(0);
+    await expect(page.locator('#cons-consumables-container tbody tr', { hasText: 'Gloves nitrile L, bx/100' })).toHaveCount(1);
+    const provenanceRaw = await getStorageItem(page, 'cons-pseUploadProvenance');
+    const provenance = JSON.parse(provenanceRaw);
+    expect(provenance.originalFilename).toContain('consumables-hospital-sample.csv');
+
+    await ctx.close();
+  });
+
   test('Import/Export: Water — v0 import works; v1 export carries schemaVersion', async ({ browser }) => {
     const c = CALCS.water;
     const ctx = await browser.newContext();
