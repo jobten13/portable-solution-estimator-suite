@@ -48,10 +48,12 @@ auditor / overseer session inherits it. Read it before starting work.
 
 ### Auditor / gatekeeper — read-only, independent
 - Verifies against ground truth; produces facts, never edits.
-- **Today this role is shared** (the coder runs its own mechanical gates). This
-  is tolerable **only while gates stay objective.**
-- **Trigger:** the moment a check cannot be made objective, a separate
-  read-only auditor session is required.
+- Audits run **only** from a separate, independent audit chat. The coder
+  **never** audits its own work — mechanical gates included. A coder-spawned
+  audit is **void**.
+- Two tiers: **WINDOW** audit for smaller reviews; **SPAWNED SUBAGENT** audit
+  for major changes, wide codebase touch, or after any audit **FAIL** (a FAIL
+  escalates the re-audit to the spawned tier).
 
 ---
 
@@ -95,11 +97,12 @@ and report the delta** before acting.
 
 - The developer decides every commit, tag, and push — these are never
   automatic.
-- Cursor executes Git commands ONLY on the developer's explicit instruction,
-  AND only after a read-only verification has been reported and reviewed clean
-  (e.g. `git status`, `git log --oneline origin/master..master`, branch
-  ahead/behind).
-- Cursor proposes the commit message and the exact command sequence for the
-  developer to approve before running.
+- The developer does not use the terminal. They request read-only checks
+  (`git status`, `log`, `diff`, ahead/behind) and, when ready, hand Cursor a
+  commit message (developed with the overseer) and an explicit instruction to
+  commit, push, or otherwise write. Cursor **executes** those Git operations
+  when so instructed — after a clean read-only verification has been reported.
+- Cursor may also propose commit message text for the developer/overseer to
+  refine before handing it back for execution.
 - Untracked artifacts (`tests/functional-fixtures/`, `test-results/`) stay out
   of version control.
