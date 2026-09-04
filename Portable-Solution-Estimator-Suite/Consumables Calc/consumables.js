@@ -16,7 +16,18 @@
   const STORAGE_SEARCH = 'cons-pseSearch';
   const STORAGE_MIN_QTY_FILTER = 'cons-pseMinQtyFilter';
   const STORAGE_NONZERO_ONLY = 'cons-pseNonzeroOnly';
+  const STORAGE_LIST_TYPE = 'cons-pseListType';
+  const STORAGE_VIEW_STATE = 'cons-pseViewState';
+  const STORAGE_SCHEMA_VERSION = 'cons-pseSchemaVersion';
   const SORT_STORAGE_KEY = 'cons-pseSort';
+  const SCHEMA_VERSION = 1;
+  const LIST_CALC_SORT_KEYS = ['source-asc', 'name-asc', 'name-desc', 'qty-desc', 'qty-asc'];
+  const VIEW_STATE_DEFAULTS = {
+    sort: 'source-asc',
+    search: '',
+    minQtyFilter: '',
+    nonZeroOnly: false
+  };
 
   function g(id) {
     return document.getElementById(`cons-${id}`);
@@ -152,11 +163,85 @@
     return 'custom';
   }
 
-  /** Use saved listType if valid; otherwise derive from fileName. For scenario load/import. */
+  /** Prefer listLabel; fall back to legacy fileName. */
+  function resolveListLabel(data) {
+    if (!data || typeof data !== 'object') return null;
+    if (typeof data.listLabel === 'string' && data.listLabel) return data.listLabel;
+    if (typeof data.fileName === 'string' && data.fileName) return data.fileName;
+    return null;
+  }
+
+  /** Use saved listType if valid; otherwise derive from listLabel/fileName. For scenario load/import. */
   function resolveListType(scenario) {
     const t = scenario && scenario.listType;
     if (t === 'ward' || t === 'icu' || t === 'custom') return t;
-    return listTypeFromFileName(scenario && scenario.fileName);
+    return listTypeFromFileName(resolveListLabel(scenario));
+  }
+
+  /** Canonical scenarioName preferred; legacy name accepted. */
+  function resolveScenarioNameField(data) {
+    if (!data || typeof data !== 'object') return null;
+    if (typeof data.scenarioName === 'string') return data.scenarioName;
+    if (typeof data.name === 'string') return data.name;
+    return null;
+  }
+
+  /** Canonical scenarioNotes preferred; legacy notes accepted. */
+  function resolveScenarioNotesField(data) {
+    if (!data || typeof data !== 'object') return null;
+    if (typeof data.scenarioNotes === 'string') return data.scenarioNotes;
+    if (typeof data.notes === 'string') return data.notes;
+    return null;
+  }
+
+  function captureViewState() {
+    const searchEl = g('search');
+    const sortEl = g('sort-equipment');
+    const minQtyEl = g('min-qty-filter');
+    const nonzeroEl = g('nonzero-only-filter');
+    return {
+      sort: (sortEl && sortEl.value) || currentSortKey,
+      search: (searchEl && searchEl.value) || '',
+      minQtyFilter: (minQtyEl && minQtyEl.value) || '',
+      nonZeroOnly: !!(nonzeroEl && nonzeroEl.checked)
+    };
+  }
+
+  /**
+   * Apply viewState to controls. Does NOT write cons-pseSort (session-only).
+   * opts.preserveSort: when true and sort missing/invalid, leave currentSortKey alone
+   * (v0 autosave had filters but not sort).
+   */
+  function applyViewState(data, opts) {
+    opts = opts || {};
+    const src = (data && data.viewState && typeof data.viewState === 'object') ? data.viewState : {};
+    let sort;
+    if (typeof src.sort === 'string' && LIST_CALC_SORT_KEYS.includes(src.sort)) {
+      sort = src.sort;
+    } else if (opts.preserveSort) {
+      sort = currentSortKey;
+    } else {
+      sort = VIEW_STATE_DEFAULTS.sort;
+    }
+    const search = typeof src.search === 'string' ? src.search : VIEW_STATE_DEFAULTS.search;
+    const minQtyFilter = typeof src.minQtyFilter === 'string'
+      ? src.minQtyFilter
+      : VIEW_STATE_DEFAULTS.minQtyFilter;
+    const nonZeroOnly = typeof src.nonZeroOnly === 'boolean'
+      ? src.nonZeroOnly
+      : VIEW_STATE_DEFAULTS.nonZeroOnly;
+
+    currentSortKey = sort;
+    const sortEl = g('sort-equipment');
+    if (sortEl) sortEl.value = sort;
+    const searchEl = g('search');
+    if (searchEl) searchEl.value = search;
+    const minQtyEl = g('min-qty-filter');
+    if (minQtyEl) minQtyEl.value = minQtyFilter;
+    const nonzeroEl = g('nonzero-only-filter');
+    if (nonzeroEl) nonzeroEl.checked = nonZeroOnly;
+
+    filterItems();
   }
 
   function getRateColumnLabel(listType) {
@@ -526,14 +611,11 @@
     return Number.isFinite(n) ? n : 2000000;
   }
 
-  /** After loading Ward/ICU consumables data, show rows in MSF/source order (not Name A–Z). */
+  /** After loading Ward/ICU consumables data, show rows in MSF/source order (session only — does not write cons-pseSort). */
   function setSortToUcdSourceOrder() {
     currentSortKey = 'source-asc';
     const sortSel = g('sort-equipment');
     if (sortSel) sortSel.value = 'source-asc';
-    try {
-      localStorage.setItem(SORT_STORAGE_KEY, 'source-asc');
-    } catch (e) { /* ignore */ }
   }
 
   function applySort() {
@@ -581,6 +663,7 @@
         showFeedback('Sort applied; preference could not be saved.', 'info');
       }
       applySort();
+      notifyWorksheetChanged();
       const sortLabel = sel.selectedOptions && sel.selectedOptions[0] ? sel.selectedOptions[0].text : currentSortKey;
       showFeedback(`Sort: ${sortLabel}`, 'info');
     }
@@ -740,13 +823,15 @@
             if (ev.target) ev.target.value = '';
             return;
           }
-          if (data.scenarioName != null) {
+          if (data.scenarioName != null || data.name != null) {
             const el = g('scenario-name');
-            if (el) el.value = data.scenarioName;
+            const resolvedName = resolveScenarioNameField(data);
+            if (el && resolvedName != null) el.value = resolvedName;
           }
-          if (data.scenarioNotes != null) {
+          if (data.scenarioNotes != null || data.notes != null) {
             const el = g('scenario-notes');
-            if (el) el.value = data.scenarioNotes;
+            const resolvedNotes = resolveScenarioNotesField(data);
+            if (el && resolvedNotes != null) el.value = resolvedNotes;
           }
           if (data.consumables && Array.isArray(data.consumables)) {
             allConsumables = sanitizeImportedConsumables(data.consumables, issues);
@@ -789,15 +874,15 @@
             const bu = g('buffer');
             if (bu) bu.value = (bufferPercentage !== 0) ? bufferPercentage : '';
           }
-          if (data.fileName) {
-            currentFileName = data.fileName;
+          const importedLabel = resolveListLabel(data);
+          if (importedLabel) {
+            currentFileName = importedLabel;
             currentListType = resolveListType(data);
           } else {
             currentFileName = null;
-            currentListType = null;
+            currentListType = allConsumables.length > 0 ? 'custom' : null;
           }
-          clearViewFilters();
-          filterItems();
+          applyViewState(data);
           calculateAndDisplay();
           saveData();
           scenarioLoadGuardDirty = false;
@@ -831,14 +916,17 @@
     const nameEl = g('scenario-name');
     const notesEl = g('scenario-notes');
     return {
+      schemaVersion: SCHEMA_VERSION,
       scenarioName: (nameEl && nameEl.value.trim()) || '',
       scenarioNotes: notesEl ? notesEl.value.trim() : '',
       deploymentDays,
       deploymentBeds,
       bufferPercentage,
       consumables: allConsumables,
+      listLabel: currentFileName,
       fileName: currentFileName,
       listType: currentListType,
+      viewState: captureViewState(),
       exportedAt: new Date().toISOString()
     };
   }
@@ -1008,12 +1096,17 @@
       name,
       baseName,
       notes,
+      schemaVersion: SCHEMA_VERSION,
+      scenarioName: baseName,
+      scenarioNotes: notes,
       deploymentDays,
       deploymentBeds,
       bufferPercentage,
       consumables: allConsumables,
+      listLabel: currentFileName,
       fileName: currentFileName,
       listType: currentListType,
+      viewState: captureViewState(),
       timestamp: now.toISOString()
     };
 
@@ -1137,22 +1230,30 @@
       const bu = g('buffer');
       if (bu) bu.value = (bufferPercentage !== 0) ? bufferPercentage : '';
     }
-    if (scenario.fileName) {
-      currentFileName = scenario.fileName;
+    const loadedLabel = resolveListLabel(scenario);
+    if (loadedLabel) {
+      currentFileName = loadedLabel;
       currentListType = resolveListType(scenario);
-      if (currentFileName === 'Ward Consumables' || currentFileName === 'ICU Consumables') {
-        setSortToUcdSourceOrder();
-      }
     } else {
       currentFileName = null;
-      currentListType = null;
+      currentListType = allConsumables.length > 0 ? 'custom' : null;
     }
 
-    if (g('scenario-name')) g('scenario-name').value = scenario.baseName || scenario.name || '';
-    if (g('scenario-notes')) g('scenario-notes').value = scenario.notes || '';
+    const nameEl = g('scenario-name');
+    const notesEl = g('scenario-notes');
+    if (nameEl) {
+      if (scenario.baseName) nameEl.value = scenario.baseName;
+      else {
+        const resolvedName = resolveScenarioNameField(scenario);
+        nameEl.value = (resolvedName != null) ? resolvedName : (scenario.name || '');
+      }
+    }
+    if (notesEl) {
+      const resolvedNotes = resolveScenarioNotesField(scenario);
+      notesEl.value = (resolvedNotes != null) ? resolvedNotes : '';
+    }
     updateSavedDisplay(scenario.timestamp || null);
-    clearViewFilters();
-    filterItems();
+    applyViewState(scenario);
     calculateAndDisplay();
     saveData();
     scenarioLoadGuardDirty = false;
@@ -1270,12 +1371,13 @@
       const notesEl = g('scenario-notes');
       localStorage.setItem(STORAGE_SCENARIO_NAME, (nameEl && nameEl.value) ? nameEl.value : '');
       localStorage.setItem(STORAGE_SCENARIO_NOTES, (notesEl && notesEl.value) ? notesEl.value : '');
-      const searchEl = g('search');
-      const minQtyEl = g('min-qty-filter');
-      const nonzeroEl = g('nonzero-only-filter');
-      localStorage.setItem(STORAGE_SEARCH, (searchEl && searchEl.value) ? searchEl.value : '');
-      localStorage.setItem(STORAGE_MIN_QTY_FILTER, (minQtyEl && minQtyEl.value) ? minQtyEl.value : '');
-      localStorage.setItem(STORAGE_NONZERO_ONLY, (nonzeroEl && nonzeroEl.checked) ? '1' : '0');
+      const viewState = captureViewState();
+      localStorage.setItem(STORAGE_VIEW_STATE, JSON.stringify(viewState));
+      localStorage.setItem(STORAGE_SCHEMA_VERSION, String(SCHEMA_VERSION));
+      // Dual-write legacy filter keys for v0 readers / suite key list continuity.
+      localStorage.setItem(STORAGE_SEARCH, viewState.search || '');
+      localStorage.setItem(STORAGE_MIN_QTY_FILTER, viewState.minQtyFilter || '');
+      localStorage.setItem(STORAGE_NONZERO_ONLY, viewState.nonZeroOnly ? '1' : '0');
       if (allConsumables.length > 0) {
         localStorage.setItem(STORAGE_CONSUMABLES, JSON.stringify(allConsumables));
       } else {
@@ -1285,6 +1387,11 @@
         localStorage.setItem(STORAGE_FILENAME, currentFileName);
       } else {
         localStorage.removeItem(STORAGE_FILENAME);
+      }
+      if (currentListType) {
+        localStorage.setItem(STORAGE_LIST_TYPE, currentListType);
+      } else {
+        localStorage.removeItem(STORAGE_LIST_TYPE);
       }
       const now = new Date().toISOString();
       localStorage.setItem(LAST_SAVED_KEY, now);
@@ -1306,8 +1413,10 @@
     const savedBeds = localStorage.getItem(STORAGE_BEDS);
     const savedConsumables = localStorage.getItem(STORAGE_CONSUMABLES);
     const savedFileName = localStorage.getItem(STORAGE_FILENAME);
+    const savedListType = localStorage.getItem(STORAGE_LIST_TYPE);
     const savedScenarioName = localStorage.getItem(STORAGE_SCENARIO_NAME);
     const savedScenarioNotes = localStorage.getItem(STORAGE_SCENARIO_NOTES);
+    const savedViewStateRaw = localStorage.getItem(STORAGE_VIEW_STATE);
     const savedSearch = localStorage.getItem(STORAGE_SEARCH);
     const savedMinQtyFilter = localStorage.getItem(STORAGE_MIN_QTY_FILTER);
     const savedNonzeroOnly = localStorage.getItem(STORAGE_NONZERO_ONLY);
@@ -1317,15 +1426,9 @@
     const bu = g('buffer');
     const nameEl = g('scenario-name');
     const notesEl = g('scenario-notes');
-    const searchEl = g('search');
-    const minQtyEl = g('min-qty-filter');
-    const nonzeroEl = g('nonzero-only-filter');
 
     if (nameEl) nameEl.value = (savedScenarioName != null) ? savedScenarioName : '';
     if (notesEl) notesEl.value = (savedScenarioNotes != null) ? savedScenarioNotes : '';
-    if (searchEl) searchEl.value = (savedSearch != null) ? savedSearch : '';
-    if (minQtyEl) minQtyEl.value = (savedMinQtyFilter != null) ? savedMinQtyFilter : '';
-    if (nonzeroEl) nonzeroEl.checked = savedNonzeroOnly === '1';
 
     if (savedDays !== null) {
       deploymentDays = sanitizeDays(parseFloat(savedDays));
@@ -1363,9 +1466,14 @@
     filteredConsumables = allConsumables.slice();
     if (savedFileName) {
       currentFileName = savedFileName;
-      currentListType = listTypeFromFileName(savedFileName);
     } else {
       currentFileName = null;
+    }
+    if (savedListType === 'ward' || savedListType === 'icu' || savedListType === 'custom') {
+      currentListType = savedListType;
+    } else if (savedFileName) {
+      currentListType = listTypeFromFileName(savedFileName);
+    } else {
       currentListType = allConsumables.length > 0 ? 'custom' : null;
     }
 
@@ -1373,7 +1481,24 @@
     const ib = g('icu-list-btn');
     if (wb) wb.classList.remove('active');
     if (ib) ib.classList.remove('active');
-    filterItems();
+
+    let viewStateApplied = false;
+    if (savedViewStateRaw) {
+      try {
+        const parsedView = JSON.parse(savedViewStateRaw);
+        applyViewState({ viewState: parsedView });
+        viewStateApplied = true;
+      } catch (e) { /* fall through to legacy keys */ }
+    }
+    if (!viewStateApplied) {
+      applyViewState({
+        viewState: {
+          search: (savedSearch != null) ? savedSearch : '',
+          minQtyFilter: (savedMinQtyFilter != null) ? savedMinQtyFilter : '',
+          nonZeroOnly: savedNonzeroOnly === '1'
+        }
+      }, { preserveSort: true });
+    }
     calculateAndDisplay();
     let lastSaved = localStorage.getItem(LAST_SAVED_KEY);
     if (!lastSaved && (savedBuffer !== null || savedConsumables)) {

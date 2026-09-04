@@ -558,6 +558,165 @@ test.describe('Functional tests', () => {
     await ctx.close();
   });
 
+  test('Scenarios: Consumables — viewState search, sort, filters round-trip; preference untouched', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await page.locator(c.listLoadBtn).click();
+    await page.waitForTimeout(800);
+
+    await page.selectOption('#cons-sort-equipment', 'name-asc');
+    await page.waitForTimeout(200);
+    const storedPreference = await getStorageItem(page, 'cons-pseSort');
+    expect(storedPreference).toBe('name-asc');
+
+    await page.selectOption('#cons-sort-equipment', 'name-desc');
+    await page.locator('#cons-search').fill('glove');
+    await page.locator('#cons-search').dispatchEvent('input');
+    await page.locator('#cons-min-qty-filter').fill('1');
+    await page.locator('#cons-min-qty-filter').dispatchEvent('input');
+    await page.locator('#cons-nonzero-only-filter').check();
+    await page.waitForTimeout(200);
+
+    await fillAndTab(page, c.inputs.primary, '20');
+    await fillAndTab(page, c.inputs.secondary, '10');
+    await page.locator(c.scenarioName).fill('Cons ViewState Round Trip');
+    await page.locator(c.saveBtn).click();
+    await page.waitForTimeout(1000);
+
+    await page.selectOption('#cons-sort-equipment', 'name-asc');
+    await page.waitForTimeout(200);
+    await page.locator('#cons-search').fill('');
+    await page.locator('#cons-search').dispatchEvent('input');
+    await page.locator('#cons-min-qty-filter').fill('');
+    await page.locator('#cons-min-qty-filter').dispatchEvent('input');
+    await page.locator('#cons-nonzero-only-filter').uncheck();
+    await page.waitForTimeout(200);
+
+    const firstVal = await page.$eval(c.scenarioSelect, el => el.options[1]?.value || '');
+    expect(firstVal).not.toBe('');
+    await page.selectOption(c.scenarioSelect, firstVal);
+    await page.locator(c.loadBtn).click();
+
+    const modalShown = await page.waitForSelector('#shell-modal-overlay:not([hidden])', { timeout: 3000 }).catch(() => null);
+    if (modalShown) await acceptModal(page);
+    await page.waitForTimeout(1500);
+
+    expect(await getVal(page, '#cons-sort-equipment')).toBe('name-desc');
+    expect(await getVal(page, '#cons-search')).toBe('glove');
+    expect(await getVal(page, '#cons-min-qty-filter')).toBe('1');
+    expect(await page.$eval('#cons-nonzero-only-filter', el => el.checked)).toBe(true);
+    const preferenceAfterLoad = await getStorageItem(page, 'cons-pseSort');
+    expect(preferenceAfterLoad).toBe('name-asc');
+
+    await ctx.close();
+  });
+
+  test('Ward load: Consumables — does not write cons-pseSort', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await page.selectOption('#cons-sort-equipment', 'name-asc');
+    await page.waitForTimeout(200);
+    expect(await getStorageItem(page, 'cons-pseSort')).toBe('name-asc');
+
+    await page.locator(c.listLoadBtn).click();
+    await page.waitForTimeout(800);
+
+    expect(await getVal(page, '#cons-sort-equipment')).toBe('source-asc');
+    expect(await getStorageItem(page, 'cons-pseSort')).toBe('name-asc');
+
+    await ctx.close();
+  });
+
+  test('Scenarios: Consumables — v0 scenario without viewState loads defaults', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    await page.locator(c.listLoadBtn).click();
+    await page.waitForTimeout(800);
+    const sampleItems = await page.evaluate(() => {
+      const raw = localStorage.getItem('cons-pseConsumables');
+      return raw ? JSON.parse(raw).slice(0, 3) : [];
+    });
+    expect(sampleItems.length).toBeGreaterThan(0);
+
+    await page.evaluate((items) => {
+      const scenario = {
+        id: 'v0-cons-scenario',
+        name: 'Legacy v0 Cons (1/1/2020)',
+        baseName: 'Legacy v0 Cons',
+        notes: 'no viewState',
+        deploymentDays: 12,
+        deploymentBeds: 8,
+        bufferPercentage: 5,
+        consumables: items,
+        fileName: 'Ward Consumables',
+        listType: 'ward',
+        timestamp: '2020-01-01T00:00:00.000Z'
+      };
+      localStorage.setItem('cons-pseScenarios', JSON.stringify([scenario]));
+    }, sampleItems);
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(500);
+    await navTo(page, c.panelId);
+    await page.waitForTimeout(300);
+
+    await page.selectOption('#cons-sort-equipment', 'name-desc');
+    await page.locator('#cons-search').fill('noise');
+    await page.locator('#cons-search').dispatchEvent('input');
+    await page.waitForTimeout(200);
+
+    await page.selectOption(c.scenarioSelect, 'v0-cons-scenario');
+    await page.locator(c.loadBtn).click();
+    const modalShown = await page.waitForSelector('#shell-modal-overlay:not([hidden])', { timeout: 3000 }).catch(() => null);
+    if (modalShown) await acceptModal(page);
+    await page.waitForTimeout(1500);
+
+    expect(await getVal(page, c.inputs.primary)).toBe('12');
+    expect(await getVal(page, c.scenarioName)).toBe('Legacy v0 Cons');
+    expect(await getVal(page, '#cons-sort-equipment')).toBe('source-asc');
+    expect(await getVal(page, '#cons-search')).toBe('');
+    expect(await getVal(page, '#cons-min-qty-filter')).toBe('');
+    expect(await page.$eval('#cons-nonzero-only-filter', el => el.checked)).toBe(false);
+
+    await ctx.close();
+  });
+
+  test('Import: Consumables — legacy name/notes alias into scenario fields', async ({ browser }) => {
+    const c = CALCS.consumables;
+    const ctx = await browser.newContext();
+    const page = await freshPage(ctx, c.panelId);
+
+    if (!fs.existsSync(FIXTURES_DIR)) fs.mkdirSync(FIXTURES_DIR, { recursive: true });
+    const legacyPath = path.join(FIXTURES_DIR, `cons-legacy-name-notes-${Date.now()}.json`);
+    const legacyPayload = {
+      name: 'Pharma-shaped Name',
+      notes: 'Pharma-shaped notes',
+      deploymentDays: 7,
+      deploymentBeds: 4,
+      bufferPercentage: 0,
+      consumables: [{ name: 'Test Item', usagePerDayPerBed: 1, id: 1 }],
+      fileName: 'Ward Consumables'
+    };
+    fs.writeFileSync(legacyPath, JSON.stringify(legacyPayload, null, 2));
+
+    await page.locator(c.importInput).setInputFiles(legacyPath);
+    await page.waitForTimeout(2000);
+
+    expect(await getVal(page, c.scenarioName)).toBe('Pharma-shaped Name');
+    expect(await getVal(page, c.scenarioNotes)).toBe('Pharma-shaped notes');
+    expect(await getVal(page, c.inputs.primary)).toBe('7');
+    expect(await getVal(page, c.inputs.secondary)).toBe('4');
+
+    try { fs.unlinkSync(legacyPath); } catch (e) {}
+    await ctx.close();
+  });
+
   test('Import/Export: Water — v0 import works; v1 export carries schemaVersion', async ({ browser }) => {
     const c = CALCS.water;
     const ctx = await browser.newContext();

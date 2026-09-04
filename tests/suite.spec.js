@@ -269,6 +269,7 @@ function getAutosaveLocalStorageKeysForCalc(calc) {
       'cons-pseBuffer',
       'cons-pseConsumables',
       'cons-pseFileName',
+      'cons-pseListType',
       'cons-pseDays',
       'cons-pseBeds',
       'cons-pseScenarioName',
@@ -276,6 +277,8 @@ function getAutosaveLocalStorageKeysForCalc(calc) {
       'cons-pseSearch',
       'cons-pseMinQtyFilter',
       'cons-pseNonzeroOnly',
+      'cons-pseViewState',
+      'cons-pseSchemaVersion',
       'cons-pseLastSaved',
       'cons-pseSort'
     ];
